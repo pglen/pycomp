@@ -22,18 +22,18 @@ Usage: pycomp.py [options] filename
             -h        - Help
 ```
 
-| File | Description |  Notes |
+| File | Sub |Description |  Notes |
 |--------------|------------|------------|
-|Makefile          |Make it here|
-|pycomp.py         |main file to drive it|
-|README.md         |This file|
-|tests             |Directory for syntax tests|
-|complib/          |The compiler |
-|  -  garbage       |Ignore this|
-|  -  lexdef.py     |Lexical definitions| This is the token definition file |
-|  -  lexer.py      |Lex parser|
-|  -  parsedef.py   |Parser definitions| This is the actual grammer|
-|  -  parser.py     |Parser proper|
-|  -  stack.py      |Helper stack|
-|  -  utils.py      |Helper miscellanea|
+|Makefile  |        |Make it here|
+|pycomp.py |        |main file to drive it|
+|README.md |        |This file|
+|tests     |        |Directory for syntax tests|
+|complib/  |        |The compiler |
+|  -  |garbage       |Ignore this|
+|  -  |lexdef.py     |Lexical definitions| This is the token definition file |
+|  -  |lexer.py      |Lex parser|
+|  -  |parsedef.py   |Parser definitions| This is the actual grammer|
+|  -  |parser.py     |Parser proper|
+|  -  |stack.py      |Helper stack|
+|  -  |utils.py      |Helper miscellanea|
 
