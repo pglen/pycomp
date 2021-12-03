@@ -22,8 +22,8 @@ Usage: pycomp.py [options] filename
             -h        - Help
 ```
 
-| File | Sub |Description |  Notes |
-|--------------|------------|------------|
+| File | Sub | Description |  Notes |
+|----- |---------|------------|------------|
 |Makefile  |        |Make it here|
 |pycomp.py |        |main file to drive it|
 |README.md |        |This file|
