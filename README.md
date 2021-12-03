@@ -1,5 +1,6 @@
 # pycomp
-Simple py compiler to output assembler
+
+## Simple py compiler to output assembler for OS construction
 
 Under construction; check back later
 
