@@ -5,7 +5,8 @@ Under construction; check back later
 
 pycomp.py: Version 0.1 - Utility for compiling a pcomp file.
 
-`Usage: pycomp.py [options] filename'
+```
+Usage: pycomp.py [options] filename
 
   Options are:
             -d level  - Debug level (1-10)
@@ -18,4 +19,4 @@ pycomp.py: Version 0.1 - Utility for compiling a pcomp file.
             -x        - Show lexer output
             -p        - Show parser messages
             -h        - Help
-`
+```
