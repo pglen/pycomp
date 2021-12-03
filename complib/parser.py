@@ -15,12 +15,6 @@ The parser needs several variables to operate.
 See pangparser.py for documentation and examples.
 '''
 
-_gl_cnt = 0
-def uniq_next():             # create a unique temporary number
-    global _gl_cnt; _gl_cnt+= 10
-    return _gl_cnt
-
-
 # This variable controls the display of the default action.
 # The default action is executed when there is no rule for the
 # expression. Mostly useful for debugging the grammar.
@@ -31,8 +25,8 @@ _show_default_action = True
 
 # May be redefined, included here for required initial states:
 
-STA_ANY         = [-2, "anystate"]
-STA_REDUCE      = [-1, "reduce"]
+STA_ANY         = [punique(), "anystate"]
+STA_REDUCE      = [punique(), "reduce"]
 STA_IGNORE      = [punique(), "ignore"]
 STA_INIT        = [punique(), "init"]
 
