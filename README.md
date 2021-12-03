@@ -21,3 +21,19 @@ Usage: pycomp.py [options] filename
             -p        - Show parser messages
             -h        - Help
 ```
+
+| File | Description |
+|--------------|------------|
+|Makefile          |Make it here|
+|pycomp.py         |main file to drive it|
+|README.md         |This file|
+|tests             |Directory for syntax tests|
+|complib/          |The compiler |
+|    garbage       |Ignore this|
+|    lexdef.py     |Lexical definitions|
+|    lexer.py      |Lex parser|
+|    parsedef.py   |Parser definitions|
+|    parser.py     |Parser proper|
+|    stack.py      |Helper stack|
+|    utils.py      |Helper miscellanea|
+
