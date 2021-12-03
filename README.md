@@ -1,13 +1,14 @@
 # pycomp
 Simple py compiler to output assembler
 
-Under construction
+Under construction; check back later
 
 pycomp.py: Version 0.1 - Utility for compiling a pcomp file.
 
+`
 Usage: pycomp.py [options] filename
 
-Options are:
+  Options are:
             -d level  - Debug level (1-10)
             -o file   - Outfile name
             -e        - Emit parse string
@@ -18,4 +19,4 @@ Options are:
             -x        - Show lexer output
             -p        - Show parser messages
             -h        - Help
-
+`
