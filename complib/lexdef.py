@@ -52,8 +52,9 @@ tokdef = \
          "#else"    : punique(),
          "#endif"   : punique(),
          "#"        : punique(),
+         "bs"        : punique(),
          "if"       : punique(),
-         "public"   : punique(),
+         "quote"    : punique(),
          "ident"    : punique(),
          "str"      : punique(),
          "str2"     : punique(),
@@ -66,17 +67,25 @@ tokdef = \
          "sp"       : punique(),
          "tab"      : punique(),
          "tab2"     : punique(),
+         "eolnl"    : punique(),
          "nl"       : punique(),
+         "n"        : punique(),
+         "r"        : punique(),
+         "0"        : punique(),
+
+         # Fall through
          "any"      : punique(),
          }
 
 #print("tokdef", tokdef)
-#rtokdef =  {}
-#for aa in tokdef:
-#    rtokdef[tokdef[aa]] = aa
+rtokdef =  {}
+for aa in tokdef:
+        rtokdef[tokdef[aa]] = aa
+
 #print("rtokdef", rtokdef)
 
-INI_STATE, STR_STATE, SOME_STATE = range(3)
+INI_STATE, STR_STATE, ESC_STATE     = range(3)
+STATE_NOCH, STATE_CHG, STATE_DOWN, STATE_ESCD   = range(4)
 
 # ------------------------------------------------------------------------
 # Lexer tokens. The lexer will search for the next token.
@@ -84,32 +93,41 @@ INI_STATE, STR_STATE, SOME_STATE = range(3)
 #
 # The order of the definitions matter. First token match is returned.
 #
-# Please note for simplicity we defined a stateless lexer. For example,
-# the str is delimited by "" and str2 is delimited by '' to allow
-# quotes in the str. For more complex string with quotes in it, escape
-# the quotes. (\48)
-#
 # Elements:
 #  --- enum parstate - tokdef - token regex - compiled regex --
 
 tokens =  [
-    [INI_STATE, tokdef["#"],         "#"             ,      None  ],
-    [INI_STATE, tokdef["ident"],     "[A-Za-z0-9_\-\./]+",  None, ],
-    [INI_STATE, tokdef["str4"],      "\#[0-9a-zA-Z]+",      None, ],
-    [INI_STATE, tokdef["str3"],      "(\\\\[0-7]+)+",       None, ],
-    [INI_STATE, tokdef["str"],       "\".*?\""       ,      None, ],
-    [INI_STATE, tokdef["str2"],      "\'.*?\'"       ,      None, ],
-    [INI_STATE, tokdef["comm"],      "\n##.*"          ,    None, ],
-    [INI_STATE, tokdef["eq"],        "="             ,      None, ],
-    [INI_STATE, tokdef["lt"],        "<"             ,      None, ],
-    [INI_STATE, tokdef["gt"],        ">"             ,      None, ],
-    [INI_STATE, tokdef["sp"],        " "             ,      None, ],
-    [INI_STATE, tokdef["nl"],        r"\n"            ,     None, ],
-    [INI_STATE, tokdef["any"],       "."             ,      None, ],
+
+    [INI_STATE, tokdef["eolnl"],     "\\\\\n"               ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["bs"],        "\\\\"                 ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["#"],         "#"                    ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["ident"],     "[A-Za-z0-9_\-\./]+"   ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["str4"],      "\#[0-9a-zA-Z]+"       ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["str3"],      "(\\\\[0-7]+)+"        ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["quote"],     "\""                   ,  None, STATE_CHG,  ],
+    [INI_STATE, tokdef["str"],       "\".*?\""              ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["str2"],      "\'.*?\'"              ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["comm"],      "\n##.*"               ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["eq"],        "="                    ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["lt"],        "<"                    ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["gt"],        ">"                    ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["sp"],        " "                    ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["nl"],        r"\n"                  ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["any"],       "a"                    ,  None, STATE_NOCH, ],
+    [INI_STATE, tokdef["any"],       "."                    ,  None, STATE_NOCH, ],
+
+    # String state
+    [STR_STATE, tokdef["bs"],        "\\\\"                 ,  None, STATE_CHG, ],
+    [STR_STATE, tokdef["quote"],     "\""                   ,  None, STATE_DOWN, ],
+    [STR_STATE, tokdef["any"],       "."                    ,  None, STATE_NOCH, ],
+
+    # Escape state
+    [ESC_STATE, tokdef["quote"],       "\""                 ,  None, STATE_ESCD, ],
+    [ESC_STATE, tokdef["n"],         "n"                    ,  None, STATE_ESCD, ],
+    [ESC_STATE, tokdef["r"],         "r"                    ,  None, STATE_ESCD, ],
+    [ESC_STATE, tokdef["0"],         "0"                    ,  None, STATE_ESCD, ],
+    [ESC_STATE, tokdef["any"],       "."                    ,  None, STATE_NOCH, ],
+
     ]
 
 # EOF
-
-
-
-

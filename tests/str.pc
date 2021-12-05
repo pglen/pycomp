@@ -1,2 +1,2 @@
-string="jell'o"
+strvar = "jell\"o\n"
 
