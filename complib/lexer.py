@@ -4,6 +4,7 @@ import re, sys
 
 from . import lexdef, stack
 
+
 # ------------------------------------------------------------------------
 #
 
@@ -52,6 +53,8 @@ class Lexer():
         self.state =  lexdef.INI_STATE
         self.lexiter = _LexIter(self)
         self.statstack = stack.Stack()
+        self.straccum = ""
+        self.escaccum = ""
 
     def feed(self, data, stack):
         lastpos = 0; pos = 0; lenx = len(data)
@@ -68,31 +71,44 @@ class Lexer():
                 #print  (tt[1], "'" + data[tt[1].start():tt[1].end()] + "' - ",)
                 #print   ("'" + data[tt[1].start():tt[1].end()] + "' - ",)
 
+                # Fill accumulators:
+                if  self.state == lexdef.STR_STATE:
+                    self.straccum += tt[2]
+
+                if  self.state == lexdef.ESC_STATE:
+                    self.escaccum += tt[2]
+
                 # Change state if needed
-                if tt[0] ==  lexdef.tokdef["quote"]:
-                    #print("Str Change state", tt[0])
-                    if tt[4] == lexdef.STATE_CHG:
-                        print("Change str state up")
+                if tt[4] == lexdef.STATE_CHG:
+                    if tt[0] ==  lexdef.tokdef["quote"]:
+                        #print("Change str state up", tt[0])
+                        self.straccum += "\"";
                         self.statstack.push(self.state)
                         self.state = lexdef.STR_STATE
-                    elif tt[4] == lexdef.STATE_DOWN:
-                        if tt[0] ==  lexdef.tokdef["quote"]:
-                            print("Change str state down")
-                            self.state = self.statstack.pop()
 
-                if tt[0] ==  lexdef.tokdef["bs"]:
-                    if tt[4] == lexdef.STATE_CHG:
-                        print("Change bs state up")
+                    elif tt[0] ==  lexdef.tokdef["bs"]:
+                        #print("Change bs state up")
                         self.statstack.push(self.state)
                         self.state = lexdef.ESC_STATE
 
-                if tt[4] == lexdef.STATE_ESCD:
-                    if tt[0] ==  lexdef.tokdef["quote"]:
-                        print("Change bs state down", tt[2])
-                        self.state = self.statstack.pop()
+                if tt[4] == lexdef.STATE_DOWN:
+                    #print("Change str state down:", _p(self.straccum))
+                    sss = list(tt); sss[0] = lexdef.tokdef['strx'];
+                    sss[2] = self.straccum
+                    stack.push(sss)
+                    self.straccum = "\""
+                    self.state = self.statstack.pop()
 
-                print(self.state, tt[0], lexdef.rtokdef[tt[0]], "\t", tt[2])
-                stack.push(tt)
+                elif tt[4] == lexdef.STATE_ESCD:
+                    #print("Change bs state down:", _p(self.escaccum))
+                    self.straccum += self.escaccum
+                    self.escaccum = ""
+                    self.state = self.statstack.pop()
+                    #stack.push(tt)
+                else:
+                    #print(self.state, tt[0], lexdef.rtokdef[tt[0]], "\t", tt[2])
+                    if self.state == lexdef.INI_STATE:
+                        stack.push(tt)
             else:
                 pos += 1  # step to next char
 

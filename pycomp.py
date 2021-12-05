@@ -24,11 +24,22 @@ import  complib.lexer as lexer
 import  complib.lexdef as lexdef
 
 from complib.parsedef import *
+from complib.utils import *
 
 import inspect
 if inspect.isbuiltin(time.process_time):
     time.clock = time.process_time
 
+# Pretty
+
+def _p(strx):
+    if strx == "\n":
+        strx="\\n"
+    if strx == "\r":
+        strx="\\r"
+    if strx == "\t":
+        strx="tab"
+    return "'" + strx + "'"
 
 # Some globals read: (Pang View Globals):
 
@@ -47,7 +58,6 @@ class pvg():
 #if len(parser.tokens) != len(parser.tokdef):
 #    print ("Number of token definitions and tokens do not match.")
 #    sys.exit(1)
-
 
 # Our display object
 #mainview = pangdisp.PangoView(pvg)
@@ -182,7 +192,15 @@ def showfile(strx):
         print  ("lexer:", time.clock() - got_clock)
 
     if pvg.show_lexer:  # To show what the lexer did
-        xstack.dump()
+        #xstack.dump()
+        cnt = 0; xlen = len(xstack._store)
+        while cnt < xlen:
+            tt = xstack._store[cnt];
+            print(tt[0],  lexdef.rtokdef[tt[0]], _p(tt[2]))
+            cnt += 1
+
+    if lx.state == lexdef.STR_STATE:
+        print("Warning on lexer state: unterminated string")
 
     parser.Parse(buf, xstack, pvg)
     #cb.flush()
