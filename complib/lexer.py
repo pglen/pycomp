@@ -4,9 +4,8 @@ import re, sys
 
 from . import lexdef, stack
 
-
 # ------------------------------------------------------------------------
-#
+# Call this for every token
 
 class _LexIter():
 
@@ -24,12 +23,13 @@ class _LexIter():
             mmm = dd.match(strx, pos)
             if mmm:
                 #print (mmm.end() - mmm.start(), strx[mmm.start():mmm.end()])
-                tt = bb, mmm, strx[mmm.start():mmm.end()], dd, ee
+                tt = [bb, mmm, strx[mmm.start():mmm.end()], dd, ee]
                 return tt
 
         return None;
 
 # ------------------------------------------------------------------------
+# Construct lexer, precompile regex, fill into array
 
 class Lexer():
 
@@ -40,7 +40,7 @@ class Lexer():
             try:
                 tokens[cnt][3] = re.compile(tokens[cnt][2])
             except:
-                print("Cannot precomp regex at", cnt, sys.exc_info())
+                print("Cannot precomp regex at: '", tokens[cnt][2], "'", sys.exc_info())
                 #raise
                 break
             cnt += 1
@@ -55,6 +55,8 @@ class Lexer():
         self.statstack = stack.Stack()
         self.straccum = ""
         self.escaccum = ""
+        self.linenum = 0
+        self.lastline = 0
 
     def feed(self, data, stack):
         lastpos = 0; pos = 0; lenx = len(data)
@@ -64,12 +66,20 @@ class Lexer():
             tt = self.lexiter.lexiter(self, pos, data)
             if tt == None:
                 break
-
             if tt[1]:
                 # skip to token end
+                beg = pos
                 pos = tt[1].end()
                 #print  (tt[1], "'" + data[tt[1].start():tt[1].end()] + "' - ",)
                 #print   ("'" + data[tt[1].start():tt[1].end()] + "' - ",)
+                if  tt[0] == lexdef.tok("nl"):
+                    self.linenum += 1
+                    #print("Newline at ", tt[1], pos)
+                    self.lastline = beg
+
+                tt.append(self.linenum)
+                tt.append(beg - self.lastline)
+                #print(tt)
 
                 # Fill accumulators:
                 if  self.state == lexdef.STR_STATE:
@@ -93,9 +103,9 @@ class Lexer():
 
                 if tt[4] == lexdef.STATE_DOWN:
                     #print("Change str state down:", _p(self.straccum))
-                    sss = list(tt); sss[0] = lexdef.tokdef['strx'];
-                    sss[2] = self.straccum
-                    stack.push(sss)
+                    tt[0] = lexdef.tokdef['strx'];
+                    tt[2] = self.straccum
+                    stack.push(tt)
                     self.straccum = "\""
                     self.state = self.statstack.pop()
 
@@ -104,11 +114,11 @@ class Lexer():
                     self.straccum += self.escaccum
                     self.escaccum = ""
                     self.state = self.statstack.pop()
-                    #stack.push(tt)
                 else:
-                    #print(self.state, tt[0], lexdef.rtokdef[tt[0]], "\t", tt[2])
                     if self.state == lexdef.INI_STATE:
                         stack.push(tt)
+
+                #print(self.state, tt[0], lexdef.rtok[tt[0]], "\t", tt[2])
             else:
                 pos += 1  # step to next char
 

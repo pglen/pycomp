@@ -3,7 +3,7 @@
 import sys, os, re
 
 # Our modules
-from . import stack, lexer
+from . import stack
 
 from complib.utils import *
 
@@ -39,7 +39,7 @@ STA_INIT        = [punique(), "init"]
 
 class Parse():
 
-    def __init__(self, data, xstack, pvg = None):
+    def __init__(self,  pvg = None):
 
         self.fstack = stack.Stack()
         self.fsm = INIT; self.contflag = 0
@@ -68,17 +68,20 @@ class Parse():
                     else:
                         self.add_class(dd, pt)
 
-        '''for sss in self.pardict.iterkeys():
+        '''for sss in self.pardict.keys():
             print ("Key:", sss)
-            for cc in self.pardict[sss].iterkeys():
+            for cc in self.pardict[sss].keys():
                 print ("   Subkey:", cc)
-                print (self.pardict[sss][cc][2:])'''
+                print (self.pardict[sss][cc][2:])
+        '''
 
+    def feed(self, buf, xstack):
         while True:
             tt = xstack.get2()  # Gen Next token
             if not tt:
                 break
-            self.parse_item2(data, tt)
+            #print(tt[0], pp(tt[2]))
+            self.parse_item2(buf, tt)
 
     def add_class(self, dd, pt):
         for aa in pt[3]:
@@ -89,14 +92,14 @@ class Parse():
 
     def parse_item2(self, data, tt):
 
-        if self.pvg.pgdebug > 1:
-            print ("parse_item", data, tt[0], tt[1].start(), tt[1].end())
+        if self.pvg.pgdebug > 5:
+            print ("parse_item", data, tt[0], pp(tt[2]) ) #tt[1].start(), tt[1].end())
 
         mmm = tt[1];
         self.strx = data[mmm.start():mmm.end()]
-        #print ("parser:", tt[0], "=", "'" + self.strx + "'"        )
+
         if self.pvg.show_state:
-            print ("state:", self.fsm, "val:", "'" + self.strx + "' token:", tt[0], tt )
+            print ("state:", self.fsm, "token:", tt[0], "val:", pp(self.strx) )
         try:
             curr = self.pardict[self.fsm[1]]
         except:
@@ -125,7 +128,7 @@ class Parse():
         elif item[5] == IGNORE:
             pass
         else:
-            #print (" Setting new state", pt[3], self.strx)
+            print (" Setting new state", pt[3], self.strx)
             self.fstack.push([self.fsm, self.contflag, tt, self.strx])
             self.fsm = item[5]
             self.contflag = item[6]

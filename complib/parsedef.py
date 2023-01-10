@@ -8,10 +8,9 @@
 from __future__ import print_function
 
 import  complib.parser as parser
-import  complib.stack as stack
 import  complib.lexdef as lexdef
-import  complib.lexer as lexer
-import  complib.lexdef as lexdef
+
+from complib.utils import *
 
 # This parser digests formatted text similar to what the 'C' language does
 # Was created to quickly write assempbler fragments
@@ -35,79 +34,79 @@ import  complib.lexdef as lexdef
 # Once ready, operate on the numbers for speed.
 # The E-states are not used, kept it for extensibility.
 
-parser.IGNORE   = [parser.punique(),      "ignore"]
-parser.INIT     = [parser.punique(),      "init"]
-parser.SPAN     = [parser.punique(),      "span"]
-parser.SPANTXT  = [parser.punique(),      "spantxt"]
-parser.IDENT    = [parser.punique(),      "ident"]
-parser.KEY      = [parser.punique(),      "key"]
-parser.VAL      = [parser.punique(),      "val"]
-parser.EQ       = [parser.punique(),      "eq"]
-parser.KEYVAL   = [parser.punique(),      "keyval"]
-parser.ITALIC   = [parser.punique(),      "italic"]
-parser.EITALIC  = [parser.punique(),      "eitalic"]
-parser.BOLD     = [parser.punique(),      "bold"]
-parser.EBOLD    = [parser.punique(),      "ebold"]
-parser.ITBOLD   = [parser.punique(),      "itbold"]
-parser.EITBOLD  = [parser.punique(),      "eitbold"]
-parser.UL       = [parser.punique(),      "ul"]
-parser.EUL      = [parser.punique(),      "eul"]
-parser.DUL      = [parser.punique(),      "dul"]
-parser.EDUL     = [parser.punique(),      "edul"]
-parser.RED      = [parser.punique(),      "red"]
-parser.ERED     = [parser.punique(),      "ered"]
-parser.BGRED    = [parser.punique(),     "bgred"]
-parser.EBGRED   = [parser.punique(),    "ebgred"]
-parser.GREEN    = [parser.punique(),      "green"]
-parser.EGREEN   = [parser.punique(),      "egreen"]
-parser.BGGREEN  = [parser.punique(),    "bggreen"]
-parser.EBGGREEN = [parser.punique(),    "ebggreen"]
-parser.BLUE     = [parser.punique(),      "blue"]
-parser.EBLUE    = [parser.punique(),      "eblue"]
-parser.BGBLUE   = [parser.punique(),    "bgblue"]
-parser.EBGBLUE  = [parser.punique(),    "ebgblue"]
-parser.STRIKE   = [parser.punique(),      "strike"]
-parser.ESTRIKE  = [parser.punique(),      "estrike"]
-parser.LARGE    = [parser.punique(),       "large"]
-parser.ELARGE   = [parser.punique(),       "elarge"]
-parser.XLARGE   = [parser.punique(),      "xlarge"]
-parser.EXLARGE  = [parser.punique(),      "exlarge"]
-parser.XXLARGE  = [parser.punique(),     "xlarge"]
-parser.EXXLARGE = [parser.punique(),     "exlarge"]
-parser.SMALL    = [parser.punique(),       "small"]
-parser.ESMALL   = [parser.punique(),       "esmall"]
-parser.XSMALL   = [parser.punique(),      "xsmall"]
-parser.EXSMALL  = [parser.punique(),      "exsmall"]
-parser.CENT     = [parser.punique(),        "cent"]
-parser.ECENT    = [parser.punique(),        "ecent"]
-parser.RIGHT    = [parser.punique(),       "right"]
-parser.ERIGHT   = [parser.punique(),       "eright"]
-parser.WRAP     = [parser.punique(),        "wrap"]
-parser.EWRAP    = [parser.punique(),        "ewrap"]
-parser.LINK     = [parser.punique(),        "link"]
-parser.ELINK    = [parser.punique(),        "elink"]
-parser.IMAGE    = [parser.punique(),       "image"]
-parser.EIMAGE   = [parser.punique(),       "eimage"]
-parser.SUB      = [parser.punique(),         "sup"]
-parser.ESUB     = [parser.punique(),         "esup"]
-parser.SUP      = [parser.punique(),         "sub"]
-parser.ESUP     = [parser.punique(),         "esub"]
-parser.FILL     = [parser.punique(),        "fill"]
-parser.EFILL    = [parser.punique(),        "efill"]
-parser.FIXED    = [parser.punique(),       "fixed"]
-parser.EFIXED   = [parser.punique(),       "efixed"]
-parser.INDENT   = [parser.punique(),      "indent"]
-parser.EINDENT  = [parser.punique(),      "eindent"]
-parser.MARGIN   = [parser.punique(),      "margin"]
-parser.EMARGIN  = [parser.punique(),      "emargin"]
-parser.LMARGIN  = [parser.punique(),     "lmargin"]
-parser.ELMARGIN = [parser.punique(),     "elmargin"]
-parser.HID      = [parser.punique(),         "hid"]
-parser.EIHID    = [parser.punique(),        "ehid"]
-parser.NCOL     = [parser.punique(),        "ncol"]
-parser.ENCOL    = [parser.punique(),        "encol"]
-parser.NBGCOL   = [parser.punique(),      "nbgcol"]
-parser.ENBNCOL  = [parser.punique(),      "enbgcol"]
+parser.IGNORE   = [punique(),      "ignore"]
+parser.INIT     = [punique(),      "init"]
+parser.SPAN     = [punique(),      "span"]
+parser.SPANTXT  = [punique(),      "spantxt"]
+parser.IDENT    = [punique(),      "ident"]
+parser.KEY      = [punique(),      "key"]
+parser.VAL      = [punique(),      "val"]
+parser.EQ       = [punique(),      "eq"]
+parser.KEYVAL   = [punique(),      "keyval"]
+parser.ITALIC   = [punique(),      "italic"]
+parser.EITALIC  = [punique(),      "eitalic"]
+parser.BOLD     = [punique(),      "bold"]
+parser.EBOLD    = [punique(),      "ebold"]
+parser.ITBOLD   = [punique(),      "itbold"]
+parser.EITBOLD  = [punique(),      "eitbold"]
+parser.UL       = [punique(),      "ul"]
+parser.EUL      = [punique(),      "eul"]
+parser.DUL      = [punique(),      "dul"]
+parser.EDUL     = [punique(),      "edul"]
+parser.RED      = [punique(),      "red"]
+parser.ERED     = [punique(),      "ered"]
+parser.BGRED    = [punique(),     "bgred"]
+parser.EBGRED   = [punique(),    "ebgred"]
+parser.GREEN    = [punique(),      "green"]
+parser.EGREEN   = [punique(),      "egreen"]
+parser.BGGREEN  = [punique(),    "bggreen"]
+parser.EBGGREEN = [punique(),    "ebggreen"]
+parser.BLUE     = [punique(),      "blue"]
+parser.EBLUE    = [punique(),      "eblue"]
+parser.BGBLUE   = [punique(),    "bgblue"]
+parser.EBGBLUE  = [punique(),    "ebgblue"]
+parser.STRIKE   = [punique(),      "strike"]
+parser.ESTRIKE  = [punique(),      "estrike"]
+parser.LARGE    = [punique(),       "large"]
+parser.ELARGE   = [punique(),       "elarge"]
+parser.XLARGE   = [punique(),      "xlarge"]
+parser.EXLARGE  = [punique(),      "exlarge"]
+parser.XXLARGE  = [punique(),     "xlarge"]
+parser.EXXLARGE = [punique(),     "exlarge"]
+parser.SMALL    = [punique(),       "small"]
+parser.ESMALL   = [punique(),       "esmall"]
+parser.XSMALL   = [punique(),      "xsmall"]
+parser.EXSMALL  = [punique(),      "exsmall"]
+parser.CENT     = [punique(),        "cent"]
+parser.ECENT    = [punique(),        "ecent"]
+parser.RIGHT    = [punique(),       "right"]
+parser.ERIGHT   = [punique(),       "eright"]
+parser.WRAP     = [punique(),        "wrap"]
+parser.EWRAP    = [punique(),        "ewrap"]
+parser.LINK     = [punique(),        "link"]
+parser.ELINK    = [punique(),        "elink"]
+parser.IMAGE    = [punique(),       "image"]
+parser.EIMAGE   = [punique(),       "eimage"]
+parser.SUB      = [punique(),         "sup"]
+parser.ESUB     = [punique(),         "esup"]
+parser.SUP      = [punique(),         "sub"]
+parser.ESUP     = [punique(),         "esub"]
+parser.FILL     = [punique(),        "fill"]
+parser.EFILL    = [punique(),        "efill"]
+parser.FIXED    = [punique(),       "fixed"]
+parser.EFIXED   = [punique(),       "efixed"]
+parser.INDENT   = [punique(),      "indent"]
+parser.EINDENT  = [punique(),      "eindent"]
+parser.MARGIN   = [punique(),      "margin"]
+parser.EMARGIN  = [punique(),      "emargin"]
+parser.LMARGIN  = [punique(),     "lmargin"]
+parser.ELMARGIN = [punique(),     "elmargin"]
+parser.HID      = [punique(),         "hid"]
+parser.EIHID    = [punique(),        "ehid"]
+parser.NCOL     = [punique(),        "ncol"]
+parser.ENCOL    = [punique(),        "encol"]
+parser.NBGCOL   = [punique(),      "nbgcol"]
+parser.ENBNCOL  = [punique(),      "enbgcol"]
 
 # ------------------------------------------------------------------------
 # State groups for recursion:
@@ -168,10 +167,10 @@ class ParseState():
 # Class of tokens for simple alternates:
 
 # This token class is for generic text.
-TXTCLASS = lexdef.tokdef["ident"], lexdef.tokdef["eq"], lexdef.tokdef["lt"], \
-            lexdef.tokdef["str"], lexdef.tokdef["str2"],                     \
-             lexdef.tokdef["str3"], lexdef.tokdef["gt"], lexdef.tokdef["nl"],\
-                 lexdef.tokdef["sp"], lexdef.tokdef["any"],
+TXTCLASS = lexdef.tok2["ident"], lexdef.tok2["eq"], lexdef.tok2["lt"], \
+            lexdef.tok2["str"], lexdef.tok2["str2"],                     \
+             lexdef.tok2["str3"], lexdef.tok2["gt"], lexdef.tok2["nl"],\
+                 lexdef.tok2["sp"], lexdef.tok2["any"],
 
 ts = ParseState()
 
@@ -298,20 +297,25 @@ cb = parserCallBack(ts, emit, None)
 
 parser.parsetable = [
 
-    [ parser.INIT,   None,   None,                      TXTCLASS, cb.Text,     parser.IGNORE, 0 ],
-    [ parser.SPAN,   None,   lexdef.tokdef["ident"],    None,     None,        parser.KEY, 1 ],
-    [ parser.KEYVAL, None,   lexdef.tokdef["ident"],    None,     cb.Keyval,   parser.KEY, 1 ],
-    [ parser.KEY,    None,   lexdef.tokdef["eq"],       None,     None,        parser.VAL, 1 ],
-    [ parser.VAL,    None,   lexdef.tokdef["ident"],    None,     cb.Keyval,   parser.IGNORE, 0 ],
-    [ parser.VAL,    None,   lexdef.tokdef["str"],      None,     cb.Keyval,   parser.IGNORE, 0 ],
-    [ parser.VAL,    None,   lexdef.tokdef["str2"],     None,     cb.Keyval,   parser.IGNORE, 0 ],
-    [ parser.VAL,    None,   lexdef.tokdef["str4"],     None,     cb.Keyval,   parser.IGNORE, 0 ],
-    [ parser.SPAN,   None,   lexdef.tokdef["sp"],       None,     None,        parser.IGNORE, 0 ],
+    [ parser.INIT,      None,   None,                    TXTCLASS,  cb.Text,     parser.IGNORE, 0 ],
+    [ parser.SPAN,      None,   lexdef.tok2["ident"],    None,      None,        parser.KEY, 1 ],
+    [ parser.KEYVAL,    None,   lexdef.tok2["ident"],    None,      cb.Keyval,   parser.KEY, 1 ],
+    [ parser.KEY,       None,   lexdef.tok2["eq"],       None,      None,        parser.VAL, 1 ],
+    [ parser.VAL,       None,   lexdef.tok2["ident"],    None,      cb.Keyval,   parser.IGNORE, 0 ],
+    [ parser.VAL,       None,   lexdef.tok2["str"],      None,      cb.Keyval,   parser.IGNORE, 0 ],
+    [ parser.VAL,       None,   lexdef.tok2["str2"],     None,      cb.Keyval,   parser.IGNORE, 0 ],
+    [ parser.VAL,       None,   lexdef.tok2["str4"],     None,      cb.Keyval,   parser.IGNORE, 0 ],
+    [ parser.SPAN,      None,   lexdef.tok2["sp"],       None,      None,        parser.IGNORE, 0 ],
 
-    [ parser.SPANTXT, None, None,            TXTCLASS,      cb.Text,    parser.IGNORE, 0 ],
-    [ parser.ITALIC,   None, None,           TXTCLASS,     cb.Text,     parser.IGNORE, 0 ],
-    [ parser.BOLD,     None, None,           TXTCLASS,     cb.Text,     parser.IGNORE, 0 ],
+    [ parser.SPANTXT,   None,   None,                   TXTCLASS,   cb.Text,        parser.IGNORE, 0 ],
+    [ parser.ITALIC,    None,   None,                   TXTCLASS,   cb.Text,        parser.IGNORE, 0 ],
+    [ parser.BOLD,      None,   None,                   TXTCLASS,   cb.Text,        parser.IGNORE, 0 ],
     ]
+
+PARSE_IF, PARSE_ARG, PARSE_VAL = range(3)
+
+parser.table = [
+    [parser.PARSE_IF, [lexdef.tok2["if"], lexdef.tok2["paren"]], ]
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

@@ -30,17 +30,6 @@ import inspect
 if inspect.isbuiltin(time.process_time):
     time.clock = time.process_time
 
-# Pretty
-
-def _p(strx):
-    if strx == "\n":
-        strx="\\n"
-    if strx == "\r":
-        strx="\\r"
-    if strx == "\t":
-        strx="tab"
-    return "'" + strx + "'"
-
 # Some globals read: (Pang View Globals):
 
 class pvg():
@@ -51,6 +40,7 @@ class pvg():
     got_clock = 0; show_timing = False; second = ""
     xfull_screen = False; flag = False; show_parse = False
     emit = False; show_state = False; pane_pos = -1
+    currline = 0;
 
 
 # Just to make sure no one is left out: (for debug only)
@@ -156,7 +146,6 @@ def showfile(strx):
 
     if pvg.verbose:
         print ("Showing file:", strx)
-
     try:
         fh = open(strx)
     except:
@@ -196,13 +185,15 @@ def showfile(strx):
         cnt = 0; xlen = len(xstack._store)
         while cnt < xlen:
             tt = xstack._store[cnt];
-            print(tt[0],  lexdef.rtokdef[tt[0]], _p(tt[2]))
+            print(tt[5], ":", tt[6], " -- ", tt[0],  lexdef.rtok[tt[0]], pp(tt[2]))
             cnt += 1
 
     if lx.state == lexdef.STR_STATE:
         print("Warning on lexer state: unterminated string")
 
-    parser.Parse(buf, xstack, pvg)
+    par = parser.Parse(pvg)
+    par.feed(buf, xstack)
+
     #cb.flush()
     #mainview.showcur(False)
 
@@ -212,6 +203,8 @@ def showfile(strx):
     # Output results
     if pvg.emit:
         show_emit()
+
+# ------------------------------------------------------------------------
 
 def help():
     myname = os.path.basename(sys.argv[0])

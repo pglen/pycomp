@@ -3,6 +3,18 @@
 import sys, os, re, time, stat
 
 # ------------------------------------------------------------------------
+# Pretty Print
+
+def pp(strx):
+    if strx == "\n":
+        strx="\\n"
+    if strx == "\r":
+        strx="\\r"
+    if strx == "\t":
+        strx="tab"
+    return "'" + strx + "'"
+
+# ------------------------------------------------------------------------
 # Give a new integer value with every iteration
 
 _gl_pcnt = 0
