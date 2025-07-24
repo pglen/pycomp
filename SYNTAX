@@ -1,0 +1,451 @@
+                                SYNTAX
+
+    Please see pcomp_syntax.odt for more up to date info
+
+  Syntax of the pcomp source file. This is not meant to be a spec, more like
+  a spec draft or an idea starter.
+
+ Overall structure:
+
+    One or more of the following:
+
+        preprocessor statement(s)
+        platform statement(s)
+        import statement(s)
+        debug statement(s)
+        comment(s)
+        doc comment(s)
+        variable declaration(s)
+        assignments and declaration(s)
+        arithmetic and action statements
+        function declaration(s)
+        function call(s)
+
+ Comments:
+
+        lines with # as the first non space
+        from // to end of line
+        between    /* */
+
+ Doc comments:
+
+        from    ## to the end of line
+        from    /// to end of line
+        between /**  */ as the first non space
+
+ Line continuation:
+
+    Lines are continued on the next line if backslash is at the end.
+    Trailing spaces are discarded
+
+ Platform statement(s):
+
+    The generated code
+    platform name  native / cross
+
+ Import statement(s):
+
+    Import interface from source file or interface file
+
+ Data declarations:
+
+    type:varname=initval;
+    type varname1, varname2 .... varnameN;
+    type varname = exp;
+
+ Types:
+
+    u8; u16; u32; u64;          ; Unsigned integers
+    s8; s16; s32  s64;          ; Signed integers
+
+    single, double, quad        ; Floating point types
+
+    p8; p16; p32; p64;          ; Pointer to unsigned data
+    p8; p16; p32; p64;          ; Pointer to signed data
+
+ Custom types:
+
+    type_name                    ; declared by struct statement
+
+ Data attributes:
+
+    constant volatile static external register
+
+ Data initialization:
+
+    type decl;
+    type decl = const;
+    type decl = val;
+    type decl = const expr;
+    type decl = expr;
+
+ Constant Strings:
+
+      Between " and " or between ' and ';
+
+      Escape characters:
+
+        \r \n \a \t \" \' \? \b \\ \v \f \e
+
+        \xXX \DD \oOO \bBBB   \uUUUU
+        hex   dec  oct  bin   unicode
+
+  Aggregate:
+
+    struct    {
+            type1 element1;
+            type2 element2;
+            type3 element3;
+       }  type_name;
+
+    array  {
+           type : dimention
+           } array_name;
+
+  Struct access:
+
+    type_name struct_name;
+        struct_name.element1
+        struct_name.element2
+           .....
+
+    Pointer access:
+        *struct_name
+
+    Pointer production:
+        &struct_name
+
+    Member access:
+
+  Functions:
+
+    funct funcname () { funcbody }
+    funct funcname ( arg declarelist ) { funcbody }
+
+        arg declerelist:
+            type1:var=init, type2:var2=init2 ...
+
+        // ?? TODO ??
+        //max six arguments, loaded into ax bx .. si, di
+        //    (al->8 bit -- ax->16 bit -- eax->32 bit)
+
+        Stack is not changed by the args. Optional args are not set.
+
+        Function body may contain all elements that are permitted outside of
+        function, and the return statement.
+
+        globals are allocated and initialized, uninitialized vars are zeroed
+        local variables are assigned on the stack
+        expression temporaries are on the stack
+
+        Return value is delivered in rax.  (al, eax, rax); If the
+        function does not specify a return a value, zero is returned.
+
+        Because the function calls do not change the stack, functions can
+        be called without a prototype. The function itself is responsible
+        to restore the stack allocated during execution.
+
+    unit funcname ( arg declarelist ) { funcbody }
+
+
+ Allocations:
+
+        Memory is allocated in the free store, initialized or uninitialized.
+
+ Exceptions:
+
+        The kill exception terminates the application by default.
+        Other exceptions set (increment) the appropriate exception variable,
+        (excpt) and return without any action. The long exception code is then
+        called by way of stack patching, simiar to the low side of the interrupts.
+        It is the application's responsibility to respond to the exception
+        condition by checking the variable against a saved value.
+        The exception pointer variable is reset, and exception report reset automatically.
+
+ Expressions:
+
+        Expressions are evaluated much like in 'C'. New operators are introduced,
+        and the order of precendece follows industrial conventions.
+        The operators are obeying the signed / unsigned interpretation
+        of variables, in case the oparator sign-nesses are in conflict,
+        the compiler reports an error.
+
+ Type conversions:
+
+        Casting not required upwards, to larger storage size. Size promotion
+        is automatic.
+
+        (type)    cast to type
+
+    Grouping:
+
+        ( .. )    give precedence to expression in braces
+
+    Unary:
+
+        !           not bitwise
+         !!        not logical
+        &          address of
+        *        dereference of
+        -          unary minus
+        ^          power of
+        ++        increment (pre only)
+        --        decrement (pre only)
+
+    Binary:
+
+        *        multiply
+        /         divide
+        /%         int divide
+        %         modulus
+        +        addition
+        -        substration
+
+    Binary Logical:
+
+         &&        and
+         ||      or
+         ^^      xor
+
+    Binary Bitwise:
+
+        &       and
+        |       or
+        ^       xor
+
+    Binary bitwise operators:
+
+        >>     shift right
+        <<     shift left
+
+        <<<  rotate left
+        >>>  rotate right
+
+ Conditionals:
+
+        >        larger  (left larger then right)
+        <        smaller
+        >=        larger equal
+        <=        smaller equal
+        ==        equal
+        !=        not equal
+
+  Assignments:
+
+        =        expr
+        =        cond
+        =        const
+
+  Conditional elements:
+
+    if(condition)
+        {
+        }
+    elseif(condition2)
+        {
+        }
+    else
+        {
+        }
+
+ Looping elements:
+
+     loop
+         {
+        decl;
+
+        enter { decl init }
+        leave { decl closure }
+        cont  { decl closure }
+
+         if(condition)
+             break level;
+
+        if(condition2)
+            continue;
+         }
+
+  Looping creates an infinite loop, and break conditions need to be tested. Enter
+  clause executes on entry; leave clause executes on exit;
+
+ Execution control:
+
+  The goto statement transfers control to the label. Intra function
+  goto only;
+
+    label:
+    goto label;
+
+Additional language features:
+
+    No duplicate definitions of variables are permitted. This is to
+prevent local variables overriding global variables, a common source of errors
+in traditional languages. Variables and functions share the same name space, so no
+conflicting vars and func names are allowed either.
+
+     No nested functions.
+
+ Command line:
+
+ ./pcomp [option(s)] file(s)
+
+    The assembler file is generated with the same file name as
+    the sorce with the .asm extension.
+    The preprocessing file is generated with the same file name as
+    the sorce with the .pcc extension.
+
+ Preprocessing:
+
+    Pre - Processing is controlled by defined names and %ifdef statements.
+    The definitions are in an and exist / does not exist state.
+    The pre-processor is executed before every other stage.
+    The pre processor items are denoted by the '%' start char, and
+    ended with the semi-colon ';' or new-line '\n'.
+
+    The pre-processor maintains the following vars:
+
+        __file__  __line__  __func__
+        __date__   __time__    (current compile date/time)
+
+    Optional variables may be set by a configuration file. (./pcomp.conf)
+        __platform__ __target__
+        __author__  __copyright__
+        __version__ __code_version__
+
+    %define VARNAME
+    %define VARNAME value
+    %define VARNAME "value"
+    %define VARNAME expresion
+
+    %ifdef  DEFVAR
+         Statement list
+    %endif
+
+    %ifdef  DEFVAR
+         Statement list
+    %else
+         Statement list2
+    %endif
+
+    %ifdef  DEFVAR
+         Statement list
+    %elifdef  DEFVAR2
+         Statement list2
+    %else
+         Statement list3
+    %endif
+
+    %macro    MACNAME(arg1, arg2 ... argn)
+         Statement list
+    %endmac
+
+    %error  "Exit with Message to display"
+
+    %msg   "Message to display"
+    %msg   "Message strings " + "concatinated"
+    %msg    expression
+
+    %nl         "Add New line"
+    %newline    "Alias for %nl"
+
+    The pre processing expression:
+
+        operators: (in order of precedence)
+            () * / 5 + - | & ^
+
+    Preprocessor comments:
+
+        Starts with '#' or '//' to the end of line.
+
+        Comments are valid anywhere outside statements;
+        For example:
+                %msg hello ; # comment
+                %msg hello   # invalid comment
+
+    Strings:
+        Nested between " and "
+        Nested between ' and '
+
+    Escapes:
+        \r \n \t
+
+    Data types:          Example
+    --------------------------------------------------
+        u(size)          u32
+        s(size)          s32
+        p(size)          p32
+        Strings:         "1234"
+        Identifiers:     abcd _abcd 1234
+        Numbers:         0x1234 1234 0y0101
+        Expressions:     1234+1234
+
+ The notion of multipass items.
+
+    preprocess
+    compile
+    generate assembly
+    assemble
+    link
+
+    comment extraction -> to create optional interface file
+
+# pcomp Compiler studies
+
+    ## pcomp - parallel compiler
+
+Types:
+
+    u8; u16; u32;                  ; Unsigned integers
+    s8; s16; s32;                  ; Signed integers
+
+    single,    double, quad         ; Floating point IEEE types
+
+    p8; p16; p32                 ; pointer types:
+
+  Custom types, compound variables, aggregates:
+
+    type newtype realtype         ; declared as an alias
+    type newtype type:name type2:name2 ...
+
+  Delarations:
+
+    Declaring a variable is done via:
+
+        type:name=value
+
+    A variable has to be declared to be used. Custom types
+    will descend to their original native types via aliases.
+
+    Pointers:
+
+ Exceptions:
+
+        The kill exception terminates the application by default.
+        Other exceptions set (increment) the appropriate exception variable,
+        (excpt) and return without any action.
+        It is the application's responsibility to respond to the exception
+        condition by checking the variable against a saved value.
+        The exception variable is not reset automatically.
+
+ Expressions:
+
+        Expressions are evaluated much like in 'C'. New operators are
+        introduced, and the order of precedence follows
+        industrial conventions.
+        The operators are obeying the signed / unsigned interpretation
+        of variables, in case the operator sign-nesses are in conflict,
+        the compiler reports an error.
+
+ Type conversions:
+
+        Casting not required upwards, to larger storage size. Size promotion
+        is automatic. Downwards cast has to be explicit; and
+        a warning is issued.
+
+ Error reporting:
+
+        Errors are reorted by the file:line:col convention.
+        The next line has a carot to point to the reported location.
+
+# EOF
+

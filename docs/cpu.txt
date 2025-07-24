@@ -1,0 +1,16 @@
+ Flags:                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pg
+                             e mca cmov pat pse36 clflush dts acpi mmx fxsr sse
+                             sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm cons
+                             tant_tsc art arch_perfmon pebs bts rep_good nopl xt
+                             opology nonstop_tsc cpuid aperfmperf pni pclmulqdq
+                             dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fm
+                             a cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe po
+                             pcnt tsc_deadline_timer aes xsave avx f16c rdrand l
+                             ahf_lm abm 3dnowprefetch cpuid_fault epb pti ssbd i
+                             brs ibpb stibp tpr_shadow flexpriority ept vpid ept
+                             _ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms in
+                             vpcid mpx rdseed adx smap clflushopt intel_pt xsave
+                             opt xsavec xgetbv1 xsaves dtherm ida arat pln pts h
+                             wp hwp_notify hwp_act_window hwp_epp vnmi md_clear
+                             flush_l1d arch_capabilities
+
