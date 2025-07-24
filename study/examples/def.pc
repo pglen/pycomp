@@ -1,0 +1,6 @@
+#define hey
+#ifdef hey
+ echo this
+#else
+ echo that
+#endif

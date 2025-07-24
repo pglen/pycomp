@@ -8,16 +8,11 @@
 #
 
 all:
-	@echo "Targetes: clean check git"
+	@echo "Targetes: clean check"
 
 clean:
 	rm -f *.pyc
 	rm -rf __pycache__
-
-git:
-	git add .
-	git commit -m autocheck
-	git push
 
 check:
 	@echo -n "Checking parser "

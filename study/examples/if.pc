@@ -1,0 +1,5 @@
+if(hello==10)
+    hello+=1
+else
+    hello-=1
+endif
