@@ -86,6 +86,10 @@ def parsefile(strx):
     lstack.push(strx)
     lx = lexer.Lexer(lexdef.xtokens, lpg)
     res = []
+
+    if buf[len(buf)-1] != "\n":
+        buf += "\n"
+
     lx.feed(buf, res)
     if lpg.pgdebug > 5:
         prarr(res, "lex res: ")

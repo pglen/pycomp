@@ -54,7 +54,6 @@ class Lexer():
         self.statstack = stack.Stack()
         self.startstack = stack.Stack()
         self.straccum = ""
-        self.straccum2 = ""
         self.escaccum = ""
         self.strterm = ""
         self.linenum = 0
@@ -98,7 +97,8 @@ class Lexer():
             # Global actions
             if  tt.stamp[1] == "nl":
                 self.linenum += 1
-                print("Newline at ", tt.mstr, tt.start)
+                if self.pvg.lxdebug > 0:
+                    print("Newline at ", tt.mstr, tt.start)
                 self.lastline = tt.end
             #print("state =", tt, self.state)
 
@@ -106,7 +106,8 @@ class Lexer():
             if tt.stamp[3] == lexdef.STATE_DOWN:
                 if self.state == lexdef.STR_STATE:
                     self.straccum += '"';
-                    print("Change str state down:", self.straccum, tt)
+                    if self.pvg.lxdebug > 2:
+                        print("Change str state down:", self.straccum, tt)
                     ttt = self.startstack.pop()
                     tt.mstr = self.straccum
                     tt.start = ttt.start
@@ -122,10 +123,11 @@ class Lexer():
                     self.state = self.statstack.pop()
 
                 elif self.state == lexdef.STR_STATE2:
-                    self.straccum2 += "'";
-                    print("Change str state ' down:", self.straccum, tt)
+                    self.straccum += "'";
+                    if self.pvg.lxdebug > 2:
+                        print("Change str state ' down:", self.straccum, tt)
                     ttt = self.startstack.pop()
-                    tt.mstr = self.straccum2
+                    tt.mstr = self.straccum
                     tt.start = ttt.start
                     # Update list
                     sss = list(tt.stamp)
@@ -134,8 +136,8 @@ class Lexer():
                     tt.stamp = tuple(sss)
                     # Emit
                     res.append(tt)
-                    #print("accum2", self.straccum2)
-                    self.straccum2 = ""
+                    #print("accum2", self.straccum)
+                    self.straccum = ""
                     self.state = self.statstack.pop()
                 else:
                     pass
@@ -152,10 +154,10 @@ class Lexer():
                 self.state = self.statstack.pop()
 
             if self.state == lexdef.INI_STATE:
-
                 # Change state if needed
                 if tt.stamp[1] == "quote":
-                    print("Change str state with", tt)
+                    if self.pvg.lxdebug > 0:
+                        print("Change str state with", tt)
                     self.strterm = tt.stamp[1]
                     self.straccum = ""
                     self.startstack.push(tt)
@@ -163,14 +165,13 @@ class Lexer():
                     self.state = lexdef.STR_STATE
 
                 if tt.stamp[1] == "squote":
-                    print("Change str ' state with", tt)
+                    if self.pvg.lxdebug > 0:
+                        print("Change str ' state with", tt)
                     self.strterm = tt.stamp[1]
-                    self.straccum2 = ""
+                    self.straccum = ""
                     self.startstack.push(tt)
                     self.statstack.push(self.state)
                     self.state = lexdef.STR_STATE2
-
-
 
                 res.append(tt)
             else:
@@ -184,7 +185,7 @@ class Lexer():
 
             if  self.state == lexdef.STR_STATE2:
                 #print("accum: ", tt[2])
-                self.straccum2 += tt.mstr
+                self.straccum += tt.mstr
 
             if  self.state == lexdef.ESC_STATE:
                 self.escaccum += tt[2]

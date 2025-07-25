@@ -60,8 +60,8 @@ def tok(name):
         tok3[uni] = name
     return name
 
-INI_STATE, STR_STATE, STR_STATE2, ESC_STATE     = range(4)
-STATE_NOCH, STATE_CHG, STATE_DOWN, STATE_ESCD   = range(4)
+INI_STATE, STR_STATE, STR_STATE2, ESC_STATE, COMM_STATE  = range(5)
+STATE_NOCH, STATE_CHG, STATE_DOWN, STATE_ESCD = range(4)
 STATEX, TOKENX, REGEX, STATEX = range(4)
 
 IDEN2 = "[A-Za-z_][A-Za-z0-9_]*"
@@ -80,19 +80,27 @@ HEX2  = "0x[0-9a-fA-F]+"
 
 try:
     xtokens =  (
-    # State     Token      # Regex         # State Change
+    # State    # Token      # Regex         # State Change       # Notes
     (INI_STATE, "eolnl",    "\\\\\n"        , STATE_NOCH, ),
-    (INI_STATE, "bsla",      "\\\\"         , STATE_NOCH, ),
-    (INI_STATE, "ifdef",    "%ifdef"        , STATE_NOCH, ),
-    (INI_STATE, "elifdef",  "%elifdef"      , STATE_NOCH, ),
-    (INI_STATE, "define",   "%define"       , STATE_NOCH, ),
+    (INI_STATE, "bsla",     "\\\\"          , STATE_NOCH, ),
+
+    (INI_STATE, "ifdef2",    "%ifdef"        , STATE_NOCH, ),
+    (INI_STATE, "elifdef2",  "%elifdef"      , STATE_NOCH, ),
+    (INI_STATE, "define2",   "%define"       , STATE_NOCH, ),
     (INI_STATE, "else2",    "%else"         , STATE_NOCH, ),
     (INI_STATE, "endif2",   "%endif"        , STATE_NOCH, ),
 
     (INI_STATE, "if",       "if"            , STATE_NOCH, ),
     (INI_STATE, "elif",     "elif"          , STATE_NOCH, ),
     (INI_STATE, "else",     "else"          , STATE_NOCH, ),
-    (INI_STATE, "endif",    "endif"         , STATE_NOCH, ),
+    #(INI_STATE, "endif",    "endif"         , STATE_NOCH, ),
+
+    (INI_STATE, "func",      "func"         , STATE_NOCH, ),
+    (INI_STATE, "enter",     "enter"        , STATE_NOCH, ),
+    (INI_STATE, "leave",     "leave"        , STATE_NOCH, ),
+    (INI_STATE, "return",    "return"        , STATE_NOCH, ),
+
+    (INI_STATE, "type",      "type"         , STATE_NOCH, ),
 
     (INI_STATE, "S8"    ,    "S8"           , STATE_NOCH, ),
     (INI_STATE, "S16"   ,    "S16"          , STATE_NOCH, ),
@@ -105,15 +113,14 @@ try:
     (INI_STATE, "U64"   ,    "U64"          , STATE_NOCH, ),
     (INI_STATE, "U128"  ,    "U128"         , STATE_NOCH, ),
 
-    #(INI_STATE, "str4",     "\#[0-9a-zA-Z]" ,  STATE_NOCH, ),
-    #(INI_STATE, "str3",     "(\\\\[0-7]+)+" ,  STATE_NOCH, ),
-
     (INI_STATE, "hex",      HEX2            , STATE_NOCH, ),
     (INI_STATE, "oct",      "0o[0-7]+"      , STATE_NOCH, ),
     (INI_STATE, "bin",      "0b[0-1]+"      , STATE_NOCH, ),
     (INI_STATE, "oct2",     "0y[0-17]+"     , STATE_NOCH, ),
     (INI_STATE, "bin2",     "0z[0-1]+"      , STATE_NOCH, ),
 
+    (INI_STATE, "comm2d",    "\#\#.*\n"     , STATE_NOCH, ),
+    (INI_STATE, "comm2d",    "\/\/\/.*\n"   , STATE_NOCH, ),
     (INI_STATE, "comm2",     "\#.*\n"       , STATE_NOCH, ),
     (INI_STATE, "comm2",     "\/\/.*\n"     , STATE_NOCH, ),
 
@@ -126,33 +133,49 @@ try:
 
     (INI_STATE, "peq",      "\+="           , STATE_NOCH, ),
     (INI_STATE, "meq",      "\-="           , STATE_NOCH, ),
-    (INI_STATE, "deq",      "=="            , STATE_NOCH, ),
+    (INI_STATE, "deq",      "=="            , STATE_NOCH, ),    # Equal
+    (INI_STATE, "teq",      "==="           , STATE_NOCH, ),    # Identical
     (INI_STATE, "put",      "=>"            , STATE_NOCH, ),
-    (INI_STATE, "dref",     "->"            ,  STATE_NOCH, ),
+    (INI_STATE, "gett",     "<="            , STATE_NOCH, ),
+    (INI_STATE, "dref",     "->"            , STATE_NOCH, ),
+    (INI_STATE, "aref",     "<-"            , STATE_NOCH, ),
 
     (INI_STATE, "at",       "@"             , STATE_NOCH, ),
-    (INI_STATE, "exc",      "!"             , STATE_NOCH, ),
-    (INI_STATE, "tilde",    "~"             ,  STATE_NOCH, ),
-    (INI_STATE, "under",    "_"             ,  STATE_NOCH, ),
+    (INI_STATE, "excl",     "!"             , STATE_NOCH, ),
+    (INI_STATE, "tilde",    "~"             , STATE_NOCH, ),
+    (INI_STATE, "under",    "_"             , STATE_NOCH, ),
 
-    (INI_STATE, "(",        "\("            ,  STATE_NOCH, ),
+    (INI_STATE, "comm3",    "\/\*"          , STATE_DOWN, ),
+    (INI_STATE, "ecomm3",   "\*\/"          , COMM_STATE, ),
+
+    (INI_STATE, "(",        "\("            , STATE_NOCH, ),
     (INI_STATE, ")",        "\)"            , STATE_NOCH, ),
-    (INI_STATE, "=",       "="              , STATE_NOCH, ),
+    (INI_STATE, "=",        "="             , STATE_NOCH, ),
     (INI_STATE, "<",        "<"             , STATE_NOCH, ),
     (INI_STATE, ">",        ">"             , STATE_NOCH, ),
     (INI_STATE, "&",        "&"             , STATE_NOCH, ),
     (INI_STATE, "*",        "\*"            , STATE_NOCH, ),
     (INI_STATE, "+",        "\+"            , STATE_NOCH, ),
+    (INI_STATE, "-",        "\-"            , STATE_NOCH, ),
     (INI_STATE, "/",        "/"             , STATE_NOCH, ),
     (INI_STATE, "[",        "\["            , STATE_NOCH, ),
     (INI_STATE, "]",        "\]"            , STATE_NOCH, ),
     (INI_STATE, "{",        "\{"            , STATE_NOCH, ),
     (INI_STATE, "}",        "\}"            , STATE_NOCH, ),
-    (INI_STATE, ":",        ";"             , STATE_NOCH, ),
-    (INI_STATE, ";",        ":"             , STATE_NOCH, ),
+    (INI_STATE, "semi",     ";"             , STATE_NOCH, ),
+    (INI_STATE, "colon",    ":"             , STATE_NOCH, ),
+    (INI_STATE, "::",       "::"            , STATE_NOCH, ),     # Double colon
+    (INI_STATE, "dot",      "\."            , STATE_NOCH, ),
+
+    (INI_STATE, "<<",       "<<"            , STATE_NOCH, ),     # Shift <
+    (INI_STATE, ">>",       ">>"            , STATE_NOCH, ),
+    (INI_STATE, "<<<",      "<<<"           , STATE_NOCH, ),     # Rotate <
+    (INI_STATE, ">>>",      ">>>"           , STATE_NOCH, ),     # Rotate >
+    (INI_STATE, "++",       "\+\+"          , STATE_NOCH, ),
+    (INI_STATE, "--",       "\-\-"          , STATE_NOCH, ),
 
     (INI_STATE, "caret",    "\^"            , STATE_NOCH, ),
-    (INI_STATE, "%",        "%"             , STATE_NOCH, ),
+    (INI_STATE, "cent",     "%"             , STATE_NOCH, ),
     (INI_STATE, "sp",       " "             , STATE_NOCH, ),
     (INI_STATE, "tab",      "\t"            , STATE_NOCH, ),
 
