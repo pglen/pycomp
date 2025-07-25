@@ -24,33 +24,33 @@ def func_str(self2, idx, tprog, iprog):
 
 def func_paren(self2, tprog, iprog):
 
+    #if pvg.pgdebug > 5:
+    #    print("match paren tprog =", tprog, "iprog=", iprog)
+
     if pvg.pgdebug > 5:
-        print("match paren tprog =", tprog, "iprog=", iprog)
-    if pvg.pgdebug > 2:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx paren pre: ")
 
-    #self2.arrx[tprog].flag = 1
-    #self2.arrx[tprog+iprog-1].flag = 1
+    # Done with parentheses
+    self2.arrx[tprog].flag = 1
+    self2.arrx[tprog + iprog - 1].flag = 1
 
     if pvg.pgdebug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog+1], "arrx pre par feed:")
+        prarr(self2.arrx, "arrx pre par feed:", True)
 
     self2._feed(tprog + 1, tprog+iprog - 1)
 
     if pvg.pgdebug > 5:
         prarr(self2.arrx[tprog:tprog+iprog+1], "arrx post par feed:")
 
-    # Done with parentheses
-    self2.arrx[tprog].flag = 1
-    self2.arrx[tprog + iprog - 1].flag = 1
+    if pvg.pgdebug > 6:
+        prarr(self2.arrx, "arrx paren post:", True)
 
-    if pvg.pgdebug > 2:
-        prarr(self2.arrx[tprog:tprog+iprog+1], "arrx paren post:")
+    # Force rescan
+    return True
 
 def _func_arith(self2, opstr, tprog, iprog):
 
     uprog = 0;
-
     # Skip till number
     while 1:
         if uprog >= iprog: return
@@ -61,7 +61,6 @@ def _func_arith(self2, opstr, tprog, iprog):
     #print("num[", uprog, self2.arrx[tprog + uprog][2])
     startx = uprog
     ttt =  self2.arrx[tprog + uprog]
-
     # Skip till operator
     while 1:
         if uprog >= iprog: return
@@ -85,9 +84,9 @@ def _func_arith(self2, opstr, tprog, iprog):
     #print("ttt2 =", ttt2)
 
     if opstr == "+":
-        ttt.mstr = int(ttt.mstr) + int(ttt2.mstr)
+        ttt.mstr = str(int(ttt.mstr) + int(ttt2.mstr))
     elif opstr == "*":
-        ttt.mstr = int(ttt.mstr) * int(ttt2.mstr)
+        ttt.mstr = str(int(ttt.mstr) * int(ttt2.mstr))
     else:
         print("Invalid op:", opstr);
 
@@ -110,12 +109,12 @@ def func_mul(self2, tprog, iprog):
         prarr(self2.arrx[tprog:tprog+iprog], "arrx mul post: ")
 
 def func_add(self2, tprog, iprog):
-    if pvg.pgdebug > 5:
+    if pvg.pgdebug > 6:
         print("match add tprog =", tprog, "iprog=", iprog)
-    if pvg.pgdebug > 2:
+    if pvg.pgdebug > 6:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx add pre: ")
     _func_arith(self2, "+", tprog, iprog)
-    if pvg.pgdebug > 2:
+    if pvg.pgdebug > 6:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx add post: ")
 
 # EOF

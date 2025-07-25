@@ -5,11 +5,13 @@ import sys, os, re, time, stat
 # ------------------------------------------------------------------------
 # Pretty Print
 
-def prarr(xarr, pre = ""):
+def prarr(xarr, pre = "", all = False):
     if pre:
         print(pre, end = "")
+
     for aa in xarr:
-        print( " [" + pp(aa.stamp[1]) + " " + pp(aa.mstr), aa.flag, end = "]")
+        if all or not aa.flag:
+            print( " [" + pp(aa.stamp[1]) + " " + pp(aa.mstr), aa.flag, end = "]")
     print()
 
 def pp(strx):

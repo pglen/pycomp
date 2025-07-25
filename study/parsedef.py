@@ -168,10 +168,9 @@ class ParseState():
 
 # This token class is for generic text.
 TXTCLASS = lexdef.tok2["ident"], lexdef.tok2["eq"], lexdef.tok2["lt"], \
-            #lexdef.tok2["str"], lexdef.tok2["str2"],                     \
-            # lexdef.tok2["str3"],
-            # lexdef.tok2["gt"], lexdef.tok2["nl"],\
-            #     lexdef.tok2["sp"], lexdef.tok2["any"],
+            lexdef.tok2["str"], lexdef.tok2["str2"],                     \
+             lexdef.tok2["str3"], lexdef.tok2["gt"], lexdef.tok2["nl"],\
+                 lexdef.tok2["sp"], lexdef.tok2["any"],
 
 ts = ParseState()
 
@@ -316,9 +315,7 @@ parser.parsetable = [
 PARSE_IF, PARSE_ARG, PARSE_VAL = range(3)
 
 parser.table = [
-    #[parser.PARSE_IF, lexdef.tok2["if"], lexdef.tok2["paren"],
-        [ lexdef.tok2["if"], lexdef.tok2["paren"], ],
-    ]
+    [parser.PARSE_IF, [lexdef.tok2["if"], lexdef.tok2["paren"]], ]
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

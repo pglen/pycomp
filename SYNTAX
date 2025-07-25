@@ -1,6 +1,7 @@
                                 SYNTAX
 
-    Please see pcomp_syntax.odt for more up to date info
+    This file is obsolete.
+        Please see pycomp_syntax.odt for more up to date info
 
   Syntax of the pcomp source file. This is not meant to be a spec, more like
   a spec draft or an idea starter.

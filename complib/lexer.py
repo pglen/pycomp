@@ -62,7 +62,8 @@ class Lexer():
                  continue
             mmm = vv.match(strx, pos)
             if mmm:
-                #print (mmm.end() - mmm.start(), strx[mmm.start():mmm.end()])
+                #print (mmm.end(), mmm.start(),
+                #        "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
                 # Add empty at end for state information
                 tt = Lex(ttt, mstr, mmm.start(), mmm.end())
