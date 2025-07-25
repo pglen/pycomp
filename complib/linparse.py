@@ -193,8 +193,8 @@ class LinParse():
             if redo:
                 idx = 0
                 sprog = 0
-                if self.pvg.pgdebug > 4:
-                    print("redo", sprog)
+                if self.pvg.pgdebug > 6:
+                    print("redo, sprog =", sprog)
             else:
                 idx += 1
 # EOF

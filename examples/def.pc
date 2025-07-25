@@ -1,6 +1,6 @@
-#define hey
-#ifdef hey
+%define hey
+%ifdef hey
  echo this
-#else
+%else
  echo that
-#endif
+%endif

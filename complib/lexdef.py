@@ -25,8 +25,7 @@ from complib.utils import *
 # successfully digested. For more info see lex / yacc literature.
 '''
 
-tok2 = {}
-tok3 = {}
+tok2 = {}; tok3 = {}
 
 # ------------------------------------------------------------------------
 # Token definitions:
@@ -52,7 +51,7 @@ tok3 = {}
 def tok(name):
     #print("adding:", name)
     if name in tok2.keys():
-        #print("Warn: dup token", name)
+        print("Warn: dup token", name)
         pass
     else:
         pass
@@ -60,13 +59,12 @@ def tok(name):
         tok2[name] = uni
         tok3[uni] = name
     return name
-    #return tok2[name]
 
-INI_STATE, STR_STATE, ESC_STATE     = range(3)
+INI_STATE, STR_STATE, STR_STATE2, ESC_STATE     = range(4)
 STATE_NOCH, STATE_CHG, STATE_DOWN, STATE_ESCD   = range(4)
 STATEX, TOKENX, REGEX, STATEX = range(4)
 
-IDEN2 = "[A-Za-z0-9_\-\./]+"
+IDEN2 = "[A-Za-z_][A-Za-z0-9_]*"
 HEX2  = "0x[0-9a-fA-F]+"
 
 # ------------------------------------------------------------------------
@@ -82,32 +80,24 @@ HEX2  = "0x[0-9a-fA-F]+"
 
 try:
     xtokens =  (
-
     # State     Token      # Regex         # State Change
     (INI_STATE, "eolnl",    "\\\\\n"        , STATE_NOCH, ),
-    (INI_STATE, "bsl",      "\\\\"          ,  STATE_NOCH, ),
+    (INI_STATE, "bsla",      "\\\\"         , STATE_NOCH, ),
     (INI_STATE, "ifdef",    "%ifdef"        , STATE_NOCH, ),
+    (INI_STATE, "elifdef",  "%elifdef"      , STATE_NOCH, ),
     (INI_STATE, "define",   "%define"       , STATE_NOCH, ),
     (INI_STATE, "else2",    "%else"         , STATE_NOCH, ),
     (INI_STATE, "endif2",   "%endif"        , STATE_NOCH, ),
 
-    (INI_STATE, "#",        "#"             , STATE_NOCH, ),
+    (INI_STATE, "if",       "if"            , STATE_NOCH, ),
+    (INI_STATE, "elif",     "elif"          , STATE_NOCH, ),
+    (INI_STATE, "else",     "else"          , STATE_NOCH, ),
+    (INI_STATE, "endif",    "endif"         , STATE_NOCH, ),
 
-    (INI_STATE, "endif",    "endif"        , STATE_NOCH, ),
-    (INI_STATE, "if",       "if"           ,  STATE_NOCH, ),
-
-    (INI_STATE, "char",     "char"         ,  STATE_NOCH, ),
-    (INI_STATE, "shor" ,    "short"         , STATE_NOCH, ),
-    (INI_STATE, "int"  ,    "int"           , STATE_NOCH, ),
-    (INI_STATE, "long" ,    "long"          , STATE_NOCH, ),
-    (INI_STATE, "uchar" ,   "uchar"         , STATE_NOCH, ),
-    (INI_STATE, "ushort",   "ushort"        , STATE_NOCH, ),
-    (INI_STATE, "uin"  ,    "uint"          , STATE_NOCH, ),
-    (INI_STATE, "ulon" ,    "ulong"         , STATE_NOCH, ),
     (INI_STATE, "S8"    ,    "S8"           , STATE_NOCH, ),
     (INI_STATE, "S16"   ,    "S16"          , STATE_NOCH, ),
     (INI_STATE, "S32"   ,    "S32"          , STATE_NOCH, ),
-    (INI_STATE, "S66"   ,    "S64"          , STATE_NOCH, ),
+    (INI_STATE, "S64"   ,    "S64"          , STATE_NOCH, ),
     (INI_STATE, "S128"  ,    "S128"         , STATE_NOCH, ),
     (INI_STATE, "U8"    ,    "U8"           , STATE_NOCH, ),
     (INI_STATE, "U16"   ,    "U16"          , STATE_NOCH, ),
@@ -115,25 +105,24 @@ try:
     (INI_STATE, "U64"   ,    "U64"          , STATE_NOCH, ),
     (INI_STATE, "U128"  ,    "U128"         , STATE_NOCH, ),
 
-    (INI_STATE, "str4",     "\#[0-9a-zA-Z]" ,  STATE_NOCH, ),
-    (INI_STATE, "str3",     "(\\\\[0-7]+)+" ,  STATE_NOCH, ),
+    #(INI_STATE, "str4",     "\#[0-9a-zA-Z]" ,  STATE_NOCH, ),
+    #(INI_STATE, "str3",     "(\\\\[0-7]+)+" ,  STATE_NOCH, ),
 
     (INI_STATE, "hex",      HEX2            , STATE_NOCH, ),
     (INI_STATE, "oct",      "0o[0-7]+"      , STATE_NOCH, ),
     (INI_STATE, "bin",      "0b[0-1]+"      , STATE_NOCH, ),
-    (INI_STATE, "oct2",     "0y[0-17]+"     ,  STATE_NOCH, ),
-    (INI_STATE, "bin2",     "0z[0-1]+"      ,  STATE_NOCH, ),
+    (INI_STATE, "oct2",     "0y[0-17]+"     , STATE_NOCH, ),
+    (INI_STATE, "bin2",     "0z[0-1]+"      , STATE_NOCH, ),
+
+    (INI_STATE, "comm2",     "\#.*\n"       , STATE_NOCH, ),
+    (INI_STATE, "comm2",     "\/\/.*\n"     , STATE_NOCH, ),
 
     (INI_STATE, "num",      "[0-9]+"        , STATE_NOCH, ),
 
-    (INI_STATE, "bs",       "\b"            , STATE_CHG, ),
-    (INI_STATE, "quote",    "\""            ,  STR_STATE, ),
-    #(INI_STATE, "str",     "\".*?\""       ,  STATE_NOCH, ),
-    #(INI_STATE, "strx",    "\".*?\""       ,  STATE_NOCH, ),
-    #(INI_STATE, "str2",    "\'.*?\'"       ,  STATE_NOCH, ),
-    (INI_STATE, "ident",    IDEN2           ,  STATE_NOCH, ),
-
-    (INI_STATE, "comm",     "\n##.*"        ,  STATE_NOCH, ),
+    (INI_STATE, "bs",       "\b"            , STATE_CHG,  ),
+    (INI_STATE, "quote",    "\""            , STR_STATE,  ),
+    (INI_STATE, "squote",   "\'"            , STR_STATE2, ),
+    (INI_STATE, "ident",    IDEN2           , STATE_NOCH, ),
 
     (INI_STATE, "peq",      "\+="           , STATE_NOCH, ),
     (INI_STATE, "meq",      "\-="           , STATE_NOCH, ),
@@ -145,6 +134,7 @@ try:
     (INI_STATE, "exc",      "!"             , STATE_NOCH, ),
     (INI_STATE, "tilde",    "~"             ,  STATE_NOCH, ),
     (INI_STATE, "under",    "_"             ,  STATE_NOCH, ),
+
     (INI_STATE, "(",        "\("            ,  STATE_NOCH, ),
     (INI_STATE, ")",        "\)"            , STATE_NOCH, ),
     (INI_STATE, "=",       "="              , STATE_NOCH, ),
@@ -154,34 +144,41 @@ try:
     (INI_STATE, "*",        "\*"            , STATE_NOCH, ),
     (INI_STATE, "+",        "\+"            , STATE_NOCH, ),
     (INI_STATE, "/",        "/"             , STATE_NOCH, ),
-    (INI_STATE, "caret",    "\^"            , STATE_NOCH, ),
-    (INI_STATE, "%",        "%"             , STATE_NOCH, ),
-    (INI_STATE, "sp",       " "             , STATE_NOCH, ),
-
-    (INI_STATE, "nl",       "\n"            , STATE_NOCH, ),
     (INI_STATE, "[",        "\["            , STATE_NOCH, ),
     (INI_STATE, "]",        "\]"            , STATE_NOCH, ),
     (INI_STATE, "{",        "\{"            , STATE_NOCH, ),
     (INI_STATE, "}",        "\}"            , STATE_NOCH, ),
-    (INI_STATE, "comma",    ","             , STATE_NOCH, ),
     (INI_STATE, ":",        ";"             , STATE_NOCH, ),
     (INI_STATE, ";",        ":"             , STATE_NOCH, ),
+
+    (INI_STATE, "caret",    "\^"            , STATE_NOCH, ),
+    (INI_STATE, "%",        "%"             , STATE_NOCH, ),
+    (INI_STATE, "sp",       " "             , STATE_NOCH, ),
+    (INI_STATE, "tab",      "\t"            , STATE_NOCH, ),
+
+    (INI_STATE, "nl",       "\n"            , STATE_NOCH, ),
+    (INI_STATE, "comma",    ","             , STATE_NOCH, ),
     # Fallback here
     (INI_STATE, "any",      "."             , STATE_NOCH, ),
 
     # String states
-    (STR_STATE, "sbsl",     "\\\\"          ,  STATE_CHG, ),
-    (STR_STATE, "squote",   "\""            ,  STATE_DOWN, ),
-    (STR_STATE, "sany",     "."             ,  STATE_NOCH, ),
+    (STR_STATE, "sbsla",     "\\\\"         ,  STATE_CHG, ),
+    (STR_STATE, "dquote",     "\""          ,  STATE_DOWN, ),
+    (STR_STATE, "sany",      "."            ,  STATE_NOCH, ),
+
+    # String states2
+    (STR_STATE2, "sbsla",     "\\\\"        ,  STATE_CHG, ),
+    (STR_STATE2, "dsquote",    "\'"         ,  STATE_DOWN, ),
+    (STR_STATE2, "ssany",      "."          ,  STATE_NOCH, ),
 
     # Escape states
-    (ESC_STATE, "shex",     "[0-9A-Za-z]+"  ,  STATE_ESCD, ),
-    (ESC_STATE, "n",        "n"             , STATE_ESCD, ),
-    (ESC_STATE, "r",        "r"             , STATE_ESCD, ),
-    (ESC_STATE, "a",        "a"             , STATE_ESCD, ),
-    (ESC_STATE, "0",        "0"             , STATE_ESCD, ),
-    (ESC_STATE, "quote",    "\""            ,  STATE_ESCD, ),
-    (ESC_STATE, "anyx",     "."             ,  STATE_ESCD, ),
+    (ESC_STATE, "shex",     "[0-9A-Za-z]+"   , STATE_ESCD, ),
+    (ESC_STATE, "n",        "n"              , STATE_ESCD, ),
+    (ESC_STATE, "r",        "r"              , STATE_ESCD, ),
+    (ESC_STATE, "a",        "a"              , STATE_ESCD, ),
+    (ESC_STATE, "0",        "0"              , STATE_ESCD, ),
+    (ESC_STATE, "quote",    "\""             , STATE_ESCD, ),
+    (ESC_STATE, "anyx",     "."              , STATE_ESCD, ),
     )
 
 except KeyError as err:

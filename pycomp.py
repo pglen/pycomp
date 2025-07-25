@@ -20,17 +20,20 @@ import inspect
 if inspect.isbuiltin(time.process_time):
     time.clock = time.process_time
 
-# Some globals read: (Pang View Globals):
+class lpg():
 
-class pvg():
+    ''' Some class globals. Read: (Lexer and Parser Globals) '''
 
     buf = None; xstack = None; verbose = 0
-    pgdebug = 0; show_lexer = False;
+    lxdebug = 0; pgdebug = 0; show_lexer = False;
     lstack = None;  fullpath = None; docroot = None
     got_clock = 0; show_timing = False; second = ""
     flag = False; show_parse = False
-    emit = False; show_state = False; pane_pos = -1
+    emit = False; show_state = False;
     currline = 0;
+
+    def __repr__(self):
+        return("repr")
 
 # ------------------------------------------------------------------------
 # Accumulate output: (mostly for testing)
@@ -53,13 +56,12 @@ def show_emit():
 
 def parsefile(strx):
 
-    global buf, pvg
+    global buf, lpg
 
     got_clock =  time.clock()
 
-    #if pvg.verbose > 2:
-    #    print ("Showing file:", strx)
-
+    if lpg.verbose > 1:
+        print ("Showing file:", strx)
     try:
         fh = open(strx)
     except:
@@ -77,31 +79,32 @@ def parsefile(strx):
         return
     fh.close()
 
-    if pvg.show_timing:
+    if lpg.show_timing:
         print  ("loader:", time.clock() - got_clock)
 
-    if pvg.pgdebug > 5: print (buf)
+    if lpg.pgdebug > 5: print (buf)
     lstack.push(strx)
-    lx = lexer.Lexer(lexdef.xtokens, pvg)
+    lx = lexer.Lexer(lexdef.xtokens, lpg)
     res = []
     lx.feed(buf, res)
-    if pvg.pgdebug > 5:
+    if lpg.pgdebug > 5:
         prarr(res, "lex res: ")
 
-    if pvg.show_timing:
+    if lpg.show_timing:
         print  ("lexer:", time.clock() - got_clock)
-    if pvg.show_lexer:  # To show what the lexer did
+    if lpg.show_lexer:  # To show what the lexer did
         for aa in res:
             print(aa, end = " ")
         print()
 
     if lx.state != lexdef.INI_STATE:
-        print("Warning on lexer state: unterminated string")
-    par = linparse.LinParse(stamps, pvg)
+        print("Warning on lexer state: unterminated string", "line",
+                            lx.linenum + 1, lx.lastline)
+    par = linparse.LinParse(stamps, lpg)
     par.feed(res, buf)
-    if pvg.show_timing: print  ("parser:", time.clock() - got_clock)
+    if lpg.show_timing: print  ("parser:", time.clock() - got_clock)
     # Output results
-    if pvg.emit:
+    if lpg.emit:
         show_emit()
 
 # ------------------------------------------------------------------------
@@ -110,7 +113,8 @@ def help():
     myname = os.path.basename(sys.argv[0])
     print ("Utility for compiling a pycomp file.")
     print ("Usage: " + myname + " [options] filename [ filename ] ... ")
-    print ("Options:    -d level  - Debug level (1-10) default: 0")
+    print ("Options:    -d level  - Parser debug level (1-10) default: 0")
+    print ("            -l level  - Lexer debug level (1-10) default: 0")
     print ("            -o file   - Outfile name")
     print ("            -e        - Emit parse string")
     print ("            -V        - Print version")
@@ -127,34 +131,34 @@ if __name__ == "__main__":
 
     import getopt
 
-    sys.setrecursionlimit(25)
+    #sys.setrecursionlimit(25)
 
     opts = []; args = []
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "thvVfpesxd:o:")
+        opts, args = getopt.getopt(sys.argv[1:], "thvVfpesxl:d:o:")
     except getopt.GetoptError as err:
         print ("Invalid option(s) on command line:", err)
         sys.exit(1)
     #print ("opts", opts, "args", args)
     for aa in opts:
-        if aa[0] == "-d":
-            try: pvg.pgdebug = int(aa[1])
-            except: pass
+        if   aa[0] == "-d": lpg.pgdebug = xint(aa[1], 1)
+        elif aa[0] == "-l": lpg.lxdebug = xint(aa[1], 1)
+        elif aa[0] == "-v": lpg.verbose += 1
+        elif aa[0] == "-x": lpg.show_lexer = True
+        elif aa[0] == "-t": lpg.show_timing = True
+        elif aa[0] == "-e": lpg.emit = True
+        elif aa[0] == "-p": lpg.show_parse  = True
+        elif aa[0] == "-s": lpg.show_state  = True
+        elif aa[0] == "-o": lpg.outfile = aa[0]
+
         elif aa[0] == "-h": help();  exit(1)
         elif aa[0] == "-V": print("Version 0.9"); exit(0)
-        elif aa[0] == "-v": pvg.verbose += 1
-        elif aa[0] == "-x": pvg.show_lexer = True
-        elif aa[0] == "-t": pvg.show_timing = True
-        elif aa[0] == "-e": pvg.emit = True
-        elif aa[0] == "-p": pvg.show_parse  = True
-        elif aa[0] == "-s": pvg.show_state  = True
-        elif aa[0] == "-s": pvg.show_state  = True
-        elif aa[0] == "-o": pvg.outfile = aa[0]
+
     try:     strx = args[0]
     except:  help(); exit(1)
     lstack = stack.Stack()
     fullpath = os.path.abspath(strx);
-    pvg.docroot = os.path.dirname(fullpath)
+    lpg.docroot = os.path.dirname(fullpath)
     parsefile(strx)
 
 # EOF

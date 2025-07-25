@@ -1,2 +1,2 @@
 hello = \
-tabx	new "world]\n
+brave	new world

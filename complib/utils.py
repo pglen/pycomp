@@ -15,13 +15,26 @@ def prarr(xarr, pre = "", all = False):
     print()
 
 def pp(strx):
-    if strx == "\n":
-        strx="\\n"
-    if strx == "\r":
-        strx="\\r"
-    if strx == "\t":
-        strx="tab"
-    return "'" + str(strx) + "'"
+    str2 = cesc(strx)
+    return "'" + str(str2) + "'"
+
+def xint(strx, defx = 0):
+
+    ''' Convert to integer without fault.
+            Return defx if it is an invalid integer. '''
+
+    ret = defx
+    try:
+        ret = int(strx)
+    except ValueError:      pass
+    except: print(sys.exc_info())
+    return ret
+
+def prclass(lpg):
+    for aa in dir(lpg):
+        if aa[:2] != "__":
+            print("[", aa, "=", getattr(lpg, aa), end = " ] ")
+    print
 
 # ------------------------------------------------------------------------
 # Give a new integer value with every iteration
@@ -85,6 +98,70 @@ def uni(xtab):
         pass
 
     return ccc
+
+def rcesc(strx):
+
+    ''' reverse 'C' escape sequences \\n '''
+
+    retx = ""; pos = 0; lenx = len(strx)
+    while True:
+        if pos >= lenx:
+            break
+        chh = strx[pos]
+        if(chh == '\\'):
+            if pos >= lenx:
+                retx += chh
+                break
+            chh2 = strx[pos+1]
+            if chh2 == "n":
+                retx += '\n'
+                pos += 1
+            elif chh2 == "r":
+                retx += '\r'
+                pos += 1
+            elif chh2 == "a":
+                retx += '\a'
+                pos += 1
+            elif chh2 == "t":
+                retx += '\t'
+                pos += 1
+            else:
+                retx += chh + chh2;
+        else:
+            retx += chh
+        pos += 1
+
+    #print("revesc", strx)
+    #for aa in retx:
+    #    print(ord(retx))
+
+    return retx
+
+def cesc(strx):
+
+    ''' erase new line as \\n '''
+
+    #print (" x[" + strx + "]x ")
+
+    retx = u""; pos = 0; lenx = len(strx)
+
+    while True:
+        if pos >= lenx:
+            break
+        chh = strx[pos]
+        if(chh == '\n'):
+            retx += '\\n'
+        elif(chh == '\r'):
+            retx += '\\r'
+        elif(chh == '\a'):
+            retx += '\\a'
+        elif(chh == '\\'):
+            retx += '\\\\'
+        else:
+            retx += chh
+        pos += 1
+    return retx
+
 
 # ------------------------------------------------------------------------
 # Unescape unicode into displayable sequence

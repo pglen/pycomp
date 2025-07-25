@@ -18,7 +18,7 @@ def func_dummy(self2, idx, tprog, iprog):
 
 def func_str(self2, idx, tprog, iprog):
     print("match str idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
-    if pvg.pgdebug > 2:
+    if pvg.pgdebug > 4:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx str pre: ")
     sys.exit(0)
 
@@ -102,10 +102,10 @@ def _func_arith(self2, opstr, tprog, iprog):
 def func_mul(self2, tprog, iprog):
     if pvg.pgdebug > 5:
         print("match mul tprog =", tprog, "iprog=", iprog)
-    if pvg.pgdebug > 2:
+    if pvg.pgdebug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx mul pre: ")
     _func_arith(self2, "*", tprog, iprog)
-    if pvg.pgdebug > 2:
+    if pvg.pgdebug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx mul post: ")
 
 def func_add(self2, tprog, iprog):

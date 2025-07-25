@@ -1,0 +1,3 @@
+strvar = "hello world\n"  intvar
+qwerty
+12 = 23 + 45
