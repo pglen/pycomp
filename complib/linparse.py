@@ -54,11 +54,10 @@ class LinParse():
         '''  Compare items. Return end of scan point '''
         currstamp = self.stamps[idx][0];
 
-        match = 0
         if self.pvg.pgdebug > 6:
             print("  itemx", "tprog =", tprog, "endd =", endd)
 
-        miss = istamp = iprog = 0
+        match = miss = istamp = iprog = 0
         skiplen = self.skiplen(currstamp)
         while True:
             if istamp >= len(currstamp):
@@ -145,6 +144,7 @@ class LinParse():
         stamp = self.stamps[idx][0]; call  = self.stamps[idx][1];
         if self.pvg.pgdebug > 6:
             print("stampx idx =", idx, "start =", start, "endd =", endd)
+        matchx = 0
         while True:
             # Walk all text see if we have a match
             if tprog >= endd:
@@ -158,14 +158,14 @@ class LinParse():
                 for bb in range(len(stamp)+6):
                     if tprog + bb < len(self.arrx):
                         print(self.arrx[tprog + bb].stamp[1], end = " ")
-            match, xprog = self.itemx(idx, tprog, endd, call)
+            matchx, xprog = self.itemx(idx, tprog, endd, call)
             #print("tprog =", tprog, "match =", match, "xprog =", xprog)
-            if match:
+            if matchx:
                 break
             if not xprog:
                 xprog = 1               # assure forward motion
             tprog += xprog
-        return  match
+        return  matchx
 
     def _feed(self, start, endd):
         if self.pvg.pgdebug > 5:

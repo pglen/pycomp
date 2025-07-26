@@ -22,6 +22,11 @@ def func_str(self2, idx, tprog, iprog):
         prarr(self2.arrx[tprog:tprog+iprog], "arrx str pre: ")
     sys.exit(0)
 
+def func_func(self2, tprog, iprog):
+    if pvg.pgdebug > 3:
+        prarr(self2.arrx[tprog:tprog+iprog], "arrx func pre: ")
+
+
 def func_paren(self2, tprog, iprog):
 
     #if pvg.pgdebug > 5:

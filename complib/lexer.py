@@ -11,20 +11,37 @@ class Lex():
     def __init__(self, stampx = [], mstr = "", startx = 0, endx = 0):
         self.state = lexdef.INI_STATE
         self.stamp = stampx
-        self.mstr = mstr
+        self.mstr = mstr        # Main payload
         self.start = startx
         self.end = endx
-        # Add fields for state information
-        self.flag = 0
+        self.flag = 0           # state information
         self.val = 0.0
         self.ival = 0
 
     def copy(self, other):
         other.state = self.state
+        other.stamp = self.stamp
+        other.mstr = self.mstr
+        other.start = self.start
+        other.end = self.end
+        other.flag = self.flag
+        other.val = self.val
+        other.ival = self.ival
 
     def __repr__(self):
         return  "[ '" + str(self.stamp[1]) + "' = '" +  \
                         cesc(self.mstr) + "' " + str(self.flag) + " ]"
+    def __str__(self):
+        return(self.__repr__())
+
+    def dump(self):
+        return  "[ '" + str(self.stamp[1]) + "' = '" +  \
+                        cesc(self.mstr) + "'" + \
+                        " flag=" + str(self.flag) + \
+                        " pos=" + str(self.start) + ":" + str(self.end) +  \
+                        " val=" + str(self.val) + \
+                        " ival=" + str(self.ival) + \
+                        " ]"
 
 # ------------------------------------------------------------------------
 # Construct lexer, precompile regex, fill into array
@@ -49,7 +66,7 @@ class Lexer():
             for aa in self.tokens:
                 print("token:", aa)
 
-        # Remember args
+        self.lastpos = 0;
         self.state =  lexdef.INI_STATE
         self.statstack = stack.Stack()
         self.startstack = stack.Stack()
@@ -60,9 +77,10 @@ class Lexer():
         self.lastline = 0
         self.start_tt = None
 
-    # Call this for every token
-
     def _lexiter(self, pos, strx):
+
+        '''  Call this for every token '''
+
         #print (strx[pos:])
         for ttt, vv in self.tokens:
             if ttt[0] != self.state:
@@ -76,8 +94,31 @@ class Lexer():
                 return tt
         return None;
 
+    def _set_state(self, tt, state):
+        self.strterm = tt.stamp[1]
+        self.straccum = ""
+        self.startstack.push(tt)
+        self.statstack.push(self.state)
+        self.state = state
+
+    def _down_state(self, tt, typex):
+
+        ttt = self.startstack.pop()
+        tt.mstr = self.straccum
+        tt.start = ttt.start
+        # Update list
+        sss = list(tt.stamp)
+        sss[1] = typex
+        ## Back to read only list
+        tt.stamp = tuple(sss)
+        self.straccum = ""
+        self.state = self.statstack.pop()
+
     def feed(self, data, res):
-        lastpos = 0; pos = 0; lenx = len(data)
+
+        ''' Data comes in here, emit results at res '''
+
+        pos = 0; lenx = len(data)
         while True:
             if pos >= lenx:
                 break;
@@ -91,99 +132,86 @@ class Lexer():
 
             # Update pos, and skip to token end
             beg = pos; pos = tt.end
-            if self.pvg.lxdebug > 0:
-                print("tt", tt)
+            if self.pvg.lxdebug > 2:
+                print("token:", tt, "state =", self.state)
+
+            self.lastpos = pos
 
             # Global actions
             if  tt.stamp[1] == "nl":
                 self.linenum += 1
-                if self.pvg.lxdebug > 0:
-                    print("Newline at ", tt.mstr, tt.start)
+                if self.pvg.lxdebug > 1:
+                    print("Newline at ", tt.start)
                 self.lastline = tt.end
             #print("state =", tt, self.state)
-
-            # Handle back offs
-            if tt.stamp[3] == lexdef.STATE_DOWN:
-                if self.state == lexdef.STR_STATE:
-                    self.straccum += '"';
-                    if self.pvg.lxdebug > 2:
-                        print("Change str state down:", self.straccum, tt)
-                    ttt = self.startstack.pop()
-                    tt.mstr = self.straccum
-                    tt.start = ttt.start
-                    # Update list
-                    sss = list(tt.stamp)
-                    sss[1] = "strx"
-                    ## Back to read only list
-                    tt.stamp = tuple(sss)
-                    # Emit
-                    res.append(tt)
-                    #print("accum", self.straccum)
-                    self.straccum = ""
-                    self.state = self.statstack.pop()
-
-                elif self.state == lexdef.STR_STATE2:
-                    self.straccum += "'";
-                    if self.pvg.lxdebug > 2:
-                        print("Change str state ' down:", self.straccum, tt)
-                    ttt = self.startstack.pop()
-                    tt.mstr = self.straccum
-                    tt.start = ttt.start
-                    # Update list
-                    sss = list(tt.stamp)
-                    sss[1] = "strx"
-                    ## Back to read only list
-                    tt.stamp = tuple(sss)
-                    # Emit
-                    res.append(tt)
-                    #print("accum2", self.straccum)
-                    self.straccum = ""
-                    self.state = self.statstack.pop()
-                else:
-                    pass
-
-            #if tt.stamp[1] ==  "bsla":
-            #    #print("Change bs state up")
-            #    self.statstack.push(self.state)
-            #    self.state = lexdef.ESC_STATE
-
-            if tt.stamp[3] == lexdef.STATE_ESCD:
-                #print("Change bs state down:", _p(self.escaccum))
-                self.straccum += self.escaccum
-                self.escaccum = ""
-                self.state = self.statstack.pop()
 
             if self.state == lexdef.INI_STATE:
                 # Change state if needed
                 if tt.stamp[1] == "quote":
                     if self.pvg.lxdebug > 0:
-                        print("Change str state with", tt)
-                    self.strterm = tt.stamp[1]
-                    self.straccum = ""
-                    self.startstack.push(tt)
-                    self.statstack.push(self.state)
-                    self.state = lexdef.STR_STATE
+                        print("Change to str state with", tt)
+                    self._set_state(tt, lexdef.STR_STATE)
 
-                if tt.stamp[1] == "squote":
+                elif tt.stamp[1] == "squote":
                     if self.pvg.lxdebug > 0:
-                        print("Change str ' state with", tt)
-                    self.strterm = tt.stamp[1]
-                    self.straccum = ""
-                    self.startstack.push(tt)
-                    self.statstack.push(self.state)
-                    self.state = lexdef.STR_STATE2
+                        print("Change to str2 state with", tt)
+                    self._set_state(tt, lexdef.STR_STATE2)
 
-                res.append(tt)
+                elif tt.stamp[1] == "comm3":
+                    if self.pvg.lxdebug > 0:
+                        print("Change to comm3 state with", tt,
+                                    "state =", lexdef.COMM_STATE)
+                    self._set_state(tt, lexdef.COMM_STATE)
+                else:
+                    #print("no state")
+                    res.append(tt)
+
+            # Handle back offs
+            elif tt.stamp[1] == "dquote": # and self.state == lexdef.STR_STATE:
+                self.straccum += '"';
+                if self.pvg.lxdebug > 0:
+                    print("Change str state down:", self.straccum, tt)
+                self._down_state(tt, "strx")
+                res.append(tt)    # Emit
+
+            elif tt.stamp[1] == "dsquote": # self.state == lexdef.STR_STATE2:
+                self.straccum += "'";
+                if self.pvg.lxdebug > 0:
+                    print("Change str state2 down:", self.straccum, tt)
+                self._down_state(tt, "strx")
+                res.append(tt)    # Emit
+
+            elif tt.stamp[1] == "ecomm3": # self.state == lexdef.COMM_STATE:
+                self.straccum += "'";
+                if self.pvg.lxdebug > 0:
+                    print("Change comm state down:",
+                                self.straccum, tt, lexdef.COMM_STATE)
+                self._down_state(tt, "comm3")
+                res.append(tt)    # Emit
+
+                #elif tt.stamp[1] == ""bs";
+                #    #print("Change bs state down:", _p(self.escaccum))
+                #    self.straccum += self.escaccum
+                #    self.escaccum = ""
+                #    self.state = self.statstack.pop()
+
+                #if tt.stamp[1] ==  "bsla":
+                #    #print("Change bs state up")
+                #    self.statstack.push(self.state)
+                #    self.state = lexdef.ESC_STATE
             else:
                 pass
-                #print("no state")
 
-            # Fill accumulators:
+            # Default to fill accumulators:
             if  self.state == lexdef.STR_STATE:
                 #print("accum: ", tt[2])
                 self.straccum += tt.mstr
 
             if  self.state == lexdef.STR_STATE2:
+                #print("accum: ", tt[2])
+                self.straccum += tt.mstr
+
+            if  self.state == lexdef.COMM_STATE:
                 #print("accum: ", tt[2])
                 self.straccum += tt.mstr
 

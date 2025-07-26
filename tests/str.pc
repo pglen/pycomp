@@ -1,3 +1,0 @@
-strvar = "jelo\n and \"helo"
-strvar2 = "sss \aa111 helo" 11
-

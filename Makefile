@@ -22,30 +22,49 @@ git:
 	git commit -m autocheck
 	git push
 
-# This is a simple send / expect for quick checking parser
+# Decide on one or the other
 ERR=/dev/null
+#ERR=err
+
+# This is a simple send / expect for quick checking parser
 
 check:
 	@echo -n "Checking parser "
-	@./pycomp.py -d 4 examples/add.pc    | grep "'num' '3' 0" >${ERR}
+	@./pycomp.py examples/add.pc       | grep "'num' '3' 0" >${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/add2.pc   | grep "'num' '10' 0" >${ERR}
+	@./pycomp.py examples/add2.pc      | grep "'num' '10' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/mul.pc    | grep "'num' '6' 0" >>${ERR}
+	@./pycomp.py examples/mul.pc       | grep "'num' '6' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/mul2.pc   | grep "'num' '24' 0" >>${ERR}
+	@./pycomp.py examples/mul2.pc      | grep "'num' '24' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/expr.pc   | grep "'num' '7' 0" >>${ERR}
+	@./pycomp.py  examples/expr.pc     | grep "'num' '7' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/expr2.pc  | grep "'num' '11' 0" >>${ERR}
+	@./pycomp.py  examples/expr2.pc    | grep "'num' '11' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/paren.pc  | grep "'num' '15' 0" >>${ERR}
+	@./pycomp.py examples/paren.pc     | grep "'num' '15' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/paren2.pc | grep "'num' '25' 0" >>${ERR}
+	@./pycomp.py examples/paren2.pc    | grep "'num' '25' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/paren3.pc | grep "'num' '15' 0" >>${ERR}
+	@./pycomp.py  examples/paren3.pc   | grep "'num' '15' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -d 4 examples/paren4.pc | grep "'num' '8' 0" >>${ERR}
+	@./pycomp.py  examples/paren4.pc   | grep "'num' '11' 0" >>${ERR}
+	@echo " OK"
+
+lexcheck:
+	@echo -n "."
+	@./pycomp.py -x examples/comm2.pc  | grep "Another"  >>${ERR}
+	@echo -n "."
+	@./pycomp.py -x examples/comm3.pc  | grep "comment \"here\""  >>${ERR}
+	@echo -n "."
+	@./pycomp.py -x examples/comm4.pc  | grep "Doc Comment"  >>${ERR}
+	@echo -n "."
+	@./pycomp.py -x examples/str.pc  | grep "hello 'old' world"  >>${ERR}
+	@echo -n "."
+	@./pycomp.py -x examples/str2.pc  | grep "hello \"new\" world"  >>${ERR}
+	@echo -n "."
+	@./pycomp.py -x examples/str3.pc  | grep "hello world"  >>${ERR}
+
 	@echo " OK"
 
 # End of Makefile

@@ -29,7 +29,7 @@ class lpg():
     lstack = None;  fullpath = None; docroot = None
     got_clock = 0; show_timing = False; second = ""
     flag = False; show_parse = False
-    emit = False; show_state = False;
+    emit = False; show_state = False; lex_only = False
     currline = 0;
 
     def __repr__(self):
@@ -87,23 +87,30 @@ def parsefile(strx):
     lx = lexer.Lexer(lexdef.xtokens, lpg)
     res = []
 
+    # This is a convenience matter
     if buf[len(buf)-1] != "\n":
         buf += "\n"
-
     lx.feed(buf, res)
+    if lpg.show_timing:
+        print  ("lexer:", time.clock() - got_clock)
+
     if lpg.pgdebug > 5:
         prarr(res, "lex res: ")
 
-    if lpg.show_timing:
-        print  ("lexer:", time.clock() - got_clock)
     if lpg.show_lexer:  # To show what the lexer did
         for aa in res:
-            print(aa, end = " ")
+            if lpg.verbose:
+                print(aa.dump(), end = " ")
+            else:
+                print(aa, end = " ")
         print()
+    if lpg.lex_only:
+        exit(0)
 
     if lx.state != lexdef.INI_STATE:
-        print("Warning on lexer state: unterminated string", "line",
-                            lx.linenum + 1, lx.lastline)
+        sss = lexdef.state2str(lx.state)
+        print("Warning on lexer state: unterminated state", sss,
+                        "line:", lx.linenum + 1, "col:", lx.lastpos - lx.lastline + 1)
     par = linparse.LinParse(stamps, lpg)
     par.feed(res, buf)
     if lpg.show_timing: print  ("parser:", time.clock() - got_clock)
@@ -125,6 +132,7 @@ def help():
     print ("            -v        - Verbose (add -v for more details)")
     print ("            -s        - Show parser states"    )
     print ("            -t        - Show timing of compile")
+    print ("            -L        - Lex only")
     print ("            -x        - Show lexer output")
     print ("            -p        - Show parser messages")
     print ("            -h        - Help (this screen)")
@@ -139,7 +147,7 @@ if __name__ == "__main__":
 
     opts = []; args = []
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "thvVfpesxl:d:o:")
+        opts, args = getopt.getopt(sys.argv[1:], "thvVfpesxLl:d:o:")
     except getopt.GetoptError as err:
         print ("Invalid option(s) on command line:", err)
         sys.exit(1)
@@ -147,13 +155,14 @@ if __name__ == "__main__":
     for aa in opts:
         if   aa[0] == "-d": lpg.pgdebug = xint(aa[1], 1)
         elif aa[0] == "-l": lpg.lxdebug = xint(aa[1], 1)
+        elif aa[0] == "-o": lpg.outfile = aa[1]
         elif aa[0] == "-v": lpg.verbose += 1
         elif aa[0] == "-x": lpg.show_lexer = True
         elif aa[0] == "-t": lpg.show_timing = True
         elif aa[0] == "-e": lpg.emit = True
         elif aa[0] == "-p": lpg.show_parse  = True
         elif aa[0] == "-s": lpg.show_state  = True
-        elif aa[0] == "-o": lpg.outfile = aa[0]
+        elif aa[0] == "-L": lpg.lex_only  = True
 
         elif aa[0] == "-h": help();  exit(1)
         elif aa[0] == "-V": print("Version 0.9"); exit(0)

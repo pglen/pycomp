@@ -67,10 +67,18 @@ class Stack():
         while cnt >= 0:
             print (self._store[cnt]);  cnt -= 1
 
+def test_main():
+    print("Tests:")
+    ss = Stack()
+    assert ss
+    vvv = "abc"
+    ss.push(vvv)
+    tt = ss.pop()
+    assert tt == vvv
+    ttt = ss.pop()
+    assert ttt == None
+
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
 
 # EOF
-
-
-

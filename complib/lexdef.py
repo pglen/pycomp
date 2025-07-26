@@ -15,7 +15,7 @@ from complib.utils import *
 # a.) Token definitions, b.) Lexer tokens,
 # c.) Parser functions, d.) Parser state, e.) Parse table
 #
-# To create a custom parser, just add new tokens / states
+# To create a custom parser, just add new tokens / states here
 #
 
 # Quick into: The lexer creates a stack of tokens. The parser scans
@@ -48,6 +48,14 @@ tok2 = {}; tok3 = {}
 
 # Create token on the fly, if there is one already, return it.
 
+INI_STATE, STR_STATE, STR_STATE2, ESC_STATE, COMM_STATE, STATE_NOCH, \
+STATE_CHG, STATE_DOWN, STATE_ESCD = range(9)
+
+STATEX, TOKENX, REGEX, STATEX = range(4)
+
+IDEN2 = "[A-Za-z_][A-Za-z0-9_]*"
+HEX2  = "0x[0-9a-fA-F]+"
+
 def tok(name):
     #print("adding:", name)
     if name in tok2.keys():
@@ -60,12 +68,14 @@ def tok(name):
         tok3[uni] = name
     return name
 
-INI_STATE, STR_STATE, STR_STATE2, ESC_STATE, COMM_STATE  = range(5)
-STATE_NOCH, STATE_CHG, STATE_DOWN, STATE_ESCD = range(4)
-STATEX, TOKENX, REGEX, STATEX = range(4)
-
-IDEN2 = "[A-Za-z_][A-Za-z0-9_]*"
-HEX2  = "0x[0-9a-fA-F]+"
+def state2str(state):
+    strx = "None"
+    if state == INI_STATE: strx =    "INI_STATE"
+    if state == STR_STATE: strx =    "STR_STATE"
+    if state == STR_STATE2: strx =   "STR_STATE2"
+    if state == ESC_STATE: strx =    "ESC_STATE"
+    if state == COMM_STATE: strx =   "COMM_STATE"
+    return strx
 
 # ------------------------------------------------------------------------
 # Lexer tokens. The lexer will search for the next token match.
@@ -80,128 +90,132 @@ HEX2  = "0x[0-9a-fA-F]+"
 
 try:
     xtokens =  (
-    # State    # Token      # Regex         # State Change       # Notes
-    (INI_STATE, "eolnl",    "\\\\\n"        , STATE_NOCH, ),
-    (INI_STATE, "bsla",     "\\\\"          , STATE_NOCH, ),
+    # State    # Token      # Regex              # Notes
+    (INI_STATE, "eolnl",    "\\\\\n"         ),
+    (INI_STATE, "bsla",     "\\\\"           ),
 
-    (INI_STATE, "ifdef2",    "%ifdef"        , STATE_NOCH, ),
-    (INI_STATE, "elifdef2",  "%elifdef"      , STATE_NOCH, ),
-    (INI_STATE, "define2",   "%define"       , STATE_NOCH, ),
-    (INI_STATE, "else2",    "%else"         , STATE_NOCH, ),
-    (INI_STATE, "endif2",   "%endif"        , STATE_NOCH, ),
+    (INI_STATE, "ifdef2",    "%ifdef"        ),
+    (INI_STATE, "elifdef2",  "%elifdef"      ),
+    (INI_STATE, "define2",   "%define"       ),
+    (INI_STATE, "else2",    "%else"          ),
+    (INI_STATE, "endif2",   "%endif"         ),
 
-    (INI_STATE, "if",       "if"            , STATE_NOCH, ),
-    (INI_STATE, "elif",     "elif"          , STATE_NOCH, ),
-    (INI_STATE, "else",     "else"          , STATE_NOCH, ),
-    #(INI_STATE, "endif",    "endif"         , STATE_NOCH, ),
+    (INI_STATE, "if",       "if"             ),
+    (INI_STATE, "elif",     "elif"           ),
+    (INI_STATE, "else",     "else"           ),
+    #(INI_STATE, "endif",    "endif"         ),
 
-    (INI_STATE, "func",      "func"         , STATE_NOCH, ),
-    (INI_STATE, "enter",     "enter"        , STATE_NOCH, ),
-    (INI_STATE, "leave",     "leave"        , STATE_NOCH, ),
-    (INI_STATE, "return",    "return"        , STATE_NOCH, ),
+    (INI_STATE, "func",      "func"          ),
+    (INI_STATE, "enter",     "enter"         ),
+    (INI_STATE, "leave",     "leave"         ),
+    (INI_STATE, "return",    "return"        ),
 
-    (INI_STATE, "type",      "type"         , STATE_NOCH, ),
+    (INI_STATE, "type",      "type"          ),
 
-    (INI_STATE, "S8"    ,    "S8"           , STATE_NOCH, ),
-    (INI_STATE, "S16"   ,    "S16"          , STATE_NOCH, ),
-    (INI_STATE, "S32"   ,    "S32"          , STATE_NOCH, ),
-    (INI_STATE, "S64"   ,    "S64"          , STATE_NOCH, ),
-    (INI_STATE, "S128"  ,    "S128"         , STATE_NOCH, ),
-    (INI_STATE, "U8"    ,    "U8"           , STATE_NOCH, ),
-    (INI_STATE, "U16"   ,    "U16"          , STATE_NOCH, ),
-    (INI_STATE, "U32"   ,    "U32"          , STATE_NOCH, ),
-    (INI_STATE, "U64"   ,    "U64"          , STATE_NOCH, ),
-    (INI_STATE, "U128"  ,    "U128"         , STATE_NOCH, ),
+    (INI_STATE, "S8"    ,    "S8"            ),
+    (INI_STATE, "S16"   ,    "S16"           ),
+    (INI_STATE, "S32"   ,    "S32"           ),
+    (INI_STATE, "S64"   ,    "S64"           ),
+    (INI_STATE, "S128"  ,    "S128"          ),
+    (INI_STATE, "U8"    ,    "U8"            ),
+    (INI_STATE, "U16"   ,    "U16"           ),
+    (INI_STATE, "U32"   ,    "U32"           ),
+    (INI_STATE, "U64"   ,    "U64"           ),
+    (INI_STATE, "U128"  ,    "U128"          ),
 
-    (INI_STATE, "hex",      HEX2            , STATE_NOCH, ),
-    (INI_STATE, "oct",      "0o[0-7]+"      , STATE_NOCH, ),
-    (INI_STATE, "bin",      "0b[0-1]+"      , STATE_NOCH, ),
-    (INI_STATE, "oct2",     "0y[0-17]+"     , STATE_NOCH, ),
-    (INI_STATE, "bin2",     "0z[0-1]+"      , STATE_NOCH, ),
+    (INI_STATE, "hex",      HEX2             ),
+    (INI_STATE, "oct",      "0o[0-7]+"       ),
+    (INI_STATE, "bin",      "0b[0-1]+"       ),
+    (INI_STATE, "oct2",     "0y[0-17]+"      ),
+    (INI_STATE, "bin2",     "0z[0-1]+"       ),
 
-    (INI_STATE, "comm2d",    "\#\#.*\n"     , STATE_NOCH, ),
-    (INI_STATE, "comm2d",    "\/\/\/.*\n"   , STATE_NOCH, ),
-    (INI_STATE, "comm2",     "\#.*\n"       , STATE_NOCH, ),
-    (INI_STATE, "comm2",     "\/\/.*\n"     , STATE_NOCH, ),
+    (INI_STATE, "comm2d",    "\#\#.*\n"      ),
+    (INI_STATE, "comm2d",    "\/\/\/.*\n"    ),
+    (INI_STATE, "comm2",     "\#.*\n"        ),
+    (INI_STATE, "comm2",     "\/\/.*\n"      ),
 
-    (INI_STATE, "num",      "[0-9]+"        , STATE_NOCH, ),
+    (INI_STATE, "num",      "[0-9]+"         ),
 
-    (INI_STATE, "bs",       "\b"            , STATE_CHG,  ),
-    (INI_STATE, "quote",    "\""            , STR_STATE,  ),
-    (INI_STATE, "squote",   "\'"            , STR_STATE2, ),
-    (INI_STATE, "ident",    IDEN2           , STATE_NOCH, ),
+    (INI_STATE, "bs",       "\b"             ),
+    (INI_STATE, "quote",    "\""             ),
+    (INI_STATE, "squote",   "\'"             ),
+    (INI_STATE, "ident",    IDEN2            ),
 
-    (INI_STATE, "peq",      "\+="           , STATE_NOCH, ),
-    (INI_STATE, "meq",      "\-="           , STATE_NOCH, ),
-    (INI_STATE, "deq",      "=="            , STATE_NOCH, ),    # Equal
-    (INI_STATE, "teq",      "==="           , STATE_NOCH, ),    # Identical
-    (INI_STATE, "put",      "=>"            , STATE_NOCH, ),
-    (INI_STATE, "gett",     "<="            , STATE_NOCH, ),
-    (INI_STATE, "dref",     "->"            , STATE_NOCH, ),
-    (INI_STATE, "aref",     "<-"            , STATE_NOCH, ),
+    (INI_STATE, "peq",      "\+="            ),  # Add to
+    (INI_STATE, "meq",      "\-="            ),  # Sub from
+    (INI_STATE, "deq",      "=="             ),  # Equal
+    (INI_STATE, "teq",      "==="            ),  # Identical
+    (INI_STATE, "put",      "=>"             ),  # Put into
+    (INI_STATE, "gett",     "<="             ),  # Get from
+    (INI_STATE, "dref",     "->"             ),  # Reference
+    (INI_STATE, "aref",     "<-"             ),  # De ref
 
-    (INI_STATE, "at",       "@"             , STATE_NOCH, ),
-    (INI_STATE, "excl",     "!"             , STATE_NOCH, ),
-    (INI_STATE, "tilde",    "~"             , STATE_NOCH, ),
-    (INI_STATE, "under",    "_"             , STATE_NOCH, ),
+    (INI_STATE, "at",       "@"              ),
+    (INI_STATE, "excl",     "!"              ),
+    (INI_STATE, "tilde",    "~"              ),
+    (INI_STATE, "under",    "_"              ),
 
-    (INI_STATE, "comm3",    "\/\*"          , STATE_DOWN, ),
-    (INI_STATE, "ecomm3",   "\*\/"          , COMM_STATE, ),
+    (INI_STATE, "comm3",    "\/\*"           ),
 
-    (INI_STATE, "(",        "\("            , STATE_NOCH, ),
-    (INI_STATE, ")",        "\)"            , STATE_NOCH, ),
-    (INI_STATE, "=",        "="             , STATE_NOCH, ),
-    (INI_STATE, "<",        "<"             , STATE_NOCH, ),
-    (INI_STATE, ">",        ">"             , STATE_NOCH, ),
-    (INI_STATE, "&",        "&"             , STATE_NOCH, ),
-    (INI_STATE, "*",        "\*"            , STATE_NOCH, ),
-    (INI_STATE, "+",        "\+"            , STATE_NOCH, ),
-    (INI_STATE, "-",        "\-"            , STATE_NOCH, ),
-    (INI_STATE, "/",        "/"             , STATE_NOCH, ),
-    (INI_STATE, "[",        "\["            , STATE_NOCH, ),
-    (INI_STATE, "]",        "\]"            , STATE_NOCH, ),
-    (INI_STATE, "{",        "\{"            , STATE_NOCH, ),
-    (INI_STATE, "}",        "\}"            , STATE_NOCH, ),
-    (INI_STATE, "semi",     ";"             , STATE_NOCH, ),
-    (INI_STATE, "colon",    ":"             , STATE_NOCH, ),
-    (INI_STATE, "::",       "::"            , STATE_NOCH, ),     # Double colon
-    (INI_STATE, "dot",      "\."            , STATE_NOCH, ),
+    (INI_STATE, "(",        "\("             ),
+    (INI_STATE, ")",        "\)"             ),
+    (INI_STATE, "=",        "="              ),
+    (INI_STATE, "<",        "<"              ),
+    (INI_STATE, ">",        ">"              ),
+    (INI_STATE, "&",        "&"              ),
+    (INI_STATE, "*",        "\*"             ),
+    (INI_STATE, "+",        "\+"             ),
+    (INI_STATE, "-",        "\-"             ),
+    (INI_STATE, "/",        "/"              ),
+    (INI_STATE, "[",        "\["             ),
+    (INI_STATE, "]",        "\]"             ),
+    (INI_STATE, "{",        "\{"             ),
+    (INI_STATE, "}",        "\}"             ),
+    (INI_STATE, "semi",     ";"              ),
+    (INI_STATE, "colon",    ":"              ),
+    (INI_STATE, "::",       "::"             ),     # Double colon
+    (INI_STATE, "dot",      "\."             ),
 
-    (INI_STATE, "<<",       "<<"            , STATE_NOCH, ),     # Shift <
-    (INI_STATE, ">>",       ">>"            , STATE_NOCH, ),
-    (INI_STATE, "<<<",      "<<<"           , STATE_NOCH, ),     # Rotate <
-    (INI_STATE, ">>>",      ">>>"           , STATE_NOCH, ),     # Rotate >
-    (INI_STATE, "++",       "\+\+"          , STATE_NOCH, ),
-    (INI_STATE, "--",       "\-\-"          , STATE_NOCH, ),
+    (INI_STATE, "<<",       "<<"             ),     # Shift <
+    (INI_STATE, ">>",       ">>"             ),
+    (INI_STATE, "<<<",      "<<<"            ),     # Rotate <
+    (INI_STATE, ">>>",      ">>>"            ),     # Rotate >
+    (INI_STATE, "++",       "\+\+"           ),
+    (INI_STATE, "--",       "\-\-"           ),
 
-    (INI_STATE, "caret",    "\^"            , STATE_NOCH, ),
-    (INI_STATE, "cent",     "%"             , STATE_NOCH, ),
-    (INI_STATE, "sp",       " "             , STATE_NOCH, ),
-    (INI_STATE, "tab",      "\t"            , STATE_NOCH, ),
+    (INI_STATE, "caret",    "\^"             ),
+    (INI_STATE, "cent",     "%"              ),
+    (INI_STATE, "sp",       " "              ),
+    (INI_STATE, "tab",      "\t"             ),
 
-    (INI_STATE, "nl",       "\n"            , STATE_NOCH, ),
-    (INI_STATE, "comma",    ","             , STATE_NOCH, ),
+    (INI_STATE, "nl",       "\n"             ),
+    (INI_STATE, "comma",    ","              ),
     # Fallback here
-    (INI_STATE, "any",      "."             , STATE_NOCH, ),
+    (INI_STATE, "any",      "."              ),
 
     # String states
-    (STR_STATE, "sbsla",     "\\\\"         ,  STATE_CHG, ),
-    (STR_STATE, "dquote",     "\""          ,  STATE_DOWN, ),
-    (STR_STATE, "sany",      "."            ,  STATE_NOCH, ),
+    (STR_STATE, "sbsla",     "\\\\"         ),
+    (STR_STATE, "dquote",    "\""           ),
+    (STR_STATE, "sany",      "."            ),
 
     # String states2
-    (STR_STATE2, "sbsla",     "\\\\"        ,  STATE_CHG, ),
-    (STR_STATE2, "dsquote",    "\'"         ,  STATE_DOWN, ),
-    (STR_STATE2, "ssany",      "."          ,  STATE_NOCH, ),
+    (STR_STATE2, "sbsla2",     "\\\\"       ),
+    (STR_STATE2, "dsquote",    "\'"         ),
+    (STR_STATE2, "ssany",      "."          ),
+
+    # Comm states
+    (COMM_STATE, "cbsla",     "\\\\"        ),
+    (COMM_STATE, "ecomm3",    "\*\/"        ),
+    (COMM_STATE, "cany",      "."           ),
 
     # Escape states
-    (ESC_STATE, "shex",     "[0-9A-Za-z]+"   , STATE_ESCD, ),
-    (ESC_STATE, "n",        "n"              , STATE_ESCD, ),
-    (ESC_STATE, "r",        "r"              , STATE_ESCD, ),
-    (ESC_STATE, "a",        "a"              , STATE_ESCD, ),
-    (ESC_STATE, "0",        "0"              , STATE_ESCD, ),
-    (ESC_STATE, "quote",    "\""             , STATE_ESCD, ),
-    (ESC_STATE, "anyx",     "."              , STATE_ESCD, ),
+    (ESC_STATE, "shex",     "[0-9A-Za-z]+"  ),
+    (ESC_STATE, "n",        "n"             ),
+    (ESC_STATE, "r",        "r"             ),
+    (ESC_STATE, "a",        "a"             ),
+    (ESC_STATE, "0",        "0"             ),
+    (ESC_STATE, "quote",    "\""            ),
+    (ESC_STATE, "anyx",     "."             ),
     )
 
 except KeyError as err:

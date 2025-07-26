@@ -30,8 +30,8 @@ def xint(strx, defx = 0):
     except: print(sys.exc_info())
     return ret
 
-def prclass(lpg):
-    for aa in dir(lpg):
+def prclass(lpgx):
+    for aa in dir(lpgx):
         if aa[:2] != "__":
             print("[", aa, "=", getattr(lpg, aa), end = " ] ")
     print

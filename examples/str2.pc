@@ -1,1 +1,1 @@
-   strvar = 'hello "new" world'  intvar
+   strvar = 'hello "new" world' intvar
