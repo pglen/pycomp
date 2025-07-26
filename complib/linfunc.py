@@ -18,21 +18,20 @@ def func_dummy(self2, idx, tprog, iprog):
 
 def func_str(self2, idx, tprog, iprog):
     print("match str idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
-    if pvg.pgdebug > 4:
+    if pvg.pgdebug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx str pre: ")
     sys.exit(0)
 
 def func_func(self2, tprog, iprog):
     if pvg.pgdebug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx func pre: ")
-
+        prarr(self2.arrx[tprog:tprog+iprog], "arrx func pre: ", True)
 
 def func_paren(self2, tprog, iprog):
 
     #if pvg.pgdebug > 5:
     #    print("match paren tprog =", tprog, "iprog=", iprog)
 
-    if pvg.pgdebug > 5:
+    if pvg.pgdebug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx paren pre: ")
 
     # Done with parentheses

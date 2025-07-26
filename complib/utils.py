@@ -33,7 +33,7 @@ def xint(strx, defx = 0):
 def prclass(lpgx):
     for aa in dir(lpgx):
         if aa[:2] != "__":
-            print("[", aa, "=", getattr(lpg, aa), end = " ] ")
+            print("[", aa, "=", getattr(lpgx, aa), end = " ] ")
     print
 
 # ------------------------------------------------------------------------
@@ -139,7 +139,7 @@ def rcesc(strx):
 
 def cesc(strx):
 
-    ''' erase new line as \\n '''
+    ''' convert like 'C' like: \n \\n '''
 
     #print (" x[" + strx + "]x ")
 
@@ -161,7 +161,6 @@ def cesc(strx):
             retx += chh
         pos += 1
     return retx
-
 
 # ------------------------------------------------------------------------
 # Unescape unicode into displayable sequence
@@ -238,7 +237,6 @@ def unescape(strx):
                     break
                 pos2 += 1
         else:
-
             if xtablen == len(xtab) and xtablen != 0:
                 retx += uni(xtab)
             xtab=[]; xtablen = 0
@@ -255,29 +253,81 @@ def unescape(strx):
 # ------------------------------------------------------------------------
 # Give the user the usual options for true / false - 1 / 0 - y / n
 
-def isTrue(strx):
+def isTrue(strx, defx = False):
     if strx == "1": return True
     if strx == "0": return False
     uuu = strx.upper()
+    if uuu == "OK": return True
     if uuu == "TRUE": return True
     if uuu == "FALSE": return False
+    if uuu == "YES": return True
+    if uuu == "NO": return False
     if uuu == "Y": return True
     if uuu == "N": return False
-    return False
+    return defx
 
 # ------------------------------------------------------------------------
-# Return True if file exists
 
 def isfile(fname):
-
+    ''' # Return True if file exists '''
     try:
         ss = os.stat(fname)
     except:
         return False
-
     if stat.S_ISREG(ss[stat.ST_MODE]):
         return True
     return False
 
+def hd(varx):
+    ''' Hex dump it '''
+    strx = ""
+    for aa in range(len(varx)):
+        strx += "%02x " % (int(aa) & 0xff);
+    strx += "\n"
+    return strx
 
+if __name__ == "__main__":
+    print ("This module was not meant to operate as main.")
 
+def test_cesc():
+    org = "12345678\r\n\a\tabcdef"
+    sss = cesc(org)
+    ttt = rcesc(sss)
+    assert ttt == org
+
+def test_hd():
+    org = "12345678\r\n\a\tabcdef"
+    sss = hd(org)
+    #print(sss)
+    assert sss == "00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 \n"
+
+def test_true():
+
+    assert True == isTrue("Yes")
+    assert True == isTrue("YES")
+    assert True == isTrue("OK")
+    assert True == isTrue("True")
+    assert True == isTrue("Y")
+    assert True == isTrue("1")
+
+    assert False == isTrue("xrue")
+    assert False == isTrue("False")
+    assert False == isTrue("")
+
+def test_xint():
+
+    assert 0 == xint(0);
+    assert 1 == xint(1);
+    assert 0 == xint("a");
+    assert 1 == xint("b", 1);
+
+def test_oct2():
+
+    sss = oct2int("111")
+    assert sss == 73
+    ttt = oct2int("123456")
+    assert ttt == 42798
+    uuu = oct2int("888")
+    assert uuu == 0
+
+# EOF

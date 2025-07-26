@@ -40,14 +40,14 @@ class LinParse():
         self.arrx = arrx
         if self.pvg.verbose > 1:
             print("stamps len =", len(self.stamps), "arrx len =", len(self.arrx))
-        if self.pvg.verbose:
-            for aa in arrx:
-                print(" [", aa.stamp[1], pp(aa.mstr), aa.flag, " ]", end = " ")
-                #print(" [", aa, "] ", end = " ")
-            print()
-        self._feed(0, len(arrx))
 
-        prarr(self.arrx, "result:")
+        #if self.pvg.lxdebug:
+        #    for aa in arrx:
+        #        print(" [", aa.stamp[1], pp(aa.mstr), aa.flag, " ]", end = " ")
+        #        #print(" [", aa, "] ", end = " ")
+        #    print()
+
+        self._feed(0, len(arrx))
 
     def itemx(self, idx, tprog, endd, call):
 
@@ -126,10 +126,10 @@ class LinParse():
             iprog += 1    # step forward
             if istamp >= skiplen:
                 if not miss:
-                    if self.pvg.pgdebug > 3:
+                    if self.pvg.pgdebug > 5:
                         #print("stamp match:", "tprog =", tprog, "iprog =", iprog)
                         #print( " curr =", currstamp);
-                        prarr(self.arrx[tprog:tprog+iprog], " match %d arrx = " % idx)
+                        prarr(self.arrx[tprog:tprog+iprog], " match idx=%d arrx = " % idx)
                     call(self, tprog, iprog )
                     if self.pvg.pgdebug > 6:
                         #prarr(self.arrx[tprog:tprog+iprog], " post arrx = ", True)

@@ -15,13 +15,17 @@ def defpvg(xpvg):
     global pvg
     pvg = xpvg
 
+PARENX = ("(",N), ("sp",M), ("num",A), ("sp",M), (")",N)
+BRACEX = ("{",M), ("sp",M), ("num",A), ("sp",M), ("}",N)
+
+
 # There are the entries to be matched agains the parse array.
 #       (parse items,flags) ...                              function
 #       --------------------------                           ----------
 
 stamps =  (
-    ( (("func",N), ("sp",M), ("(",N), ("num",A), ("sp",M), (")",M), ("{",M), ("num",A), ("}",M)), func_func),
-    ( (("(",N),    ("sp",M),  ("num",A), ("sp",M), (")",M)), func_paren),
+    ( (("func",N), ("sp",M), *PARENX, ("sp",M), *BRACEX, ("sp",M) ), func_func),
+    ( ( *PARENX, ), func_paren),
     ( (("num",N),  ("sp",M),  ("*",N),  ("sp",M),  ("num",N)), func_mul),
     ( (("num",N),  ("sp",P|M),("+",N),  ("sp",P|M),("num",N)), func_add),
 
@@ -29,5 +33,7 @@ stamps =  (
     #( (("ident",N),("=",N),  ("strx",N)), func_dummy),
     #( (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("strx",N)), func_str),
   )
+
+#print(stamps)
 
 # EOF

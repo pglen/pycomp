@@ -53,8 +53,10 @@ STATE_CHG, STATE_DOWN, STATE_ESCD = range(9)
 
 STATEX, TOKENX, REGEX, STATEX = range(4)
 
-IDEN2 = "[A-Za-z_][A-Za-z0-9_]*"
-HEX2  = "0x[0-9a-fA-F]+"
+IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
+HEX2    = "0x[0-9a-fA-F]+"
+NOIDEN  = "[^a-zA-Z0-9_]"
+WSPC    = "[ \t\n]"
 
 def tok(name):
     #print("adding:", name)
@@ -94,23 +96,25 @@ try:
     (INI_STATE, "eolnl",    "\\\\\n"         ),
     (INI_STATE, "bsla",     "\\\\"           ),
 
-    (INI_STATE, "ifdef2",    "%ifdef"        ),
-    (INI_STATE, "elifdef2",  "%elifdef"      ),
-    (INI_STATE, "define2",   "%define"       ),
-    (INI_STATE, "else2",    "%else"          ),
-    (INI_STATE, "endif2",   "%endif"         ),
+    (INI_STATE, "ifdef2",    "%ifdef" + WSPC        ),
+    (INI_STATE, "elifdef2",  "%elifdef" + WSPC      ),
+    (INI_STATE, "define2",   "%define" + WSPC       ),
+    (INI_STATE, "else2",    "%else" + WSPC          ),
+    (INI_STATE, "endif2",   "%endif" + WSPC         ),
 
-    (INI_STATE, "if",       "if"             ),
-    (INI_STATE, "elif",     "elif"           ),
-    (INI_STATE, "else",     "else"           ),
-    #(INI_STATE, "endif",    "endif"         ),
+    (INI_STATE, "if",       "if" + WSPC             ),
+    (INI_STATE, "elif",     "elif" + WSPC           ),
+    (INI_STATE, "else",     "else" + WSPC           ),
+    #(INI_STATE, "endif",    "endif" + WSPC         ),
 
-    (INI_STATE, "func",      "func"          ),
-    (INI_STATE, "enter",     "enter"         ),
-    (INI_STATE, "leave",     "leave"         ),
-    (INI_STATE, "return",    "return"        ),
+    (INI_STATE, "func",      "func" + WSPC          ),
+    (INI_STATE, "enter",     "enter" + WSPC         ),
+    (INI_STATE, "leave",     "leave" + WSPC         ),
+    (INI_STATE, "return",    "return" + WSPC        ),
+    (INI_STATE, "loop",      "loop" + WSPC        ),
 
-    (INI_STATE, "type",      "type"          ),
+    (INI_STATE, "type",      "type" + WSPC          ),
+    (INI_STATE, "aggr",      "aggr" + WSPC          ),
 
     (INI_STATE, "S8"    ,    "S8"            ),
     (INI_STATE, "S16"   ,    "S16"           ),
@@ -144,11 +148,17 @@ try:
     (INI_STATE, "peq",      "\+="            ),  # Add to
     (INI_STATE, "meq",      "\-="            ),  # Sub from
     (INI_STATE, "deq",      "=="             ),  # Equal
+    (INI_STATE, "ndeq",     "!="             ),  # Not Equal
     (INI_STATE, "teq",      "==="            ),  # Identical
+    (INI_STATE, "tneq",     "!=="            ),  # Not Identical
     (INI_STATE, "put",      "=>"             ),  # Put into
     (INI_STATE, "gett",     "<="             ),  # Get from
     (INI_STATE, "dref",     "->"             ),  # Reference
     (INI_STATE, "aref",     "<-"             ),  # De ref
+    (INI_STATE, "idev",     "\/\%"           ),  # Int divide
+    (INI_STATE, "and",      "\&\&"           ),  # Logical and
+    (INI_STATE, "or",       "\|\|"           ),  # Logical or
+    (INI_STATE, "xor",      "\^\^"           ),  # Logical or
 
     (INI_STATE, "at",       "@"              ),
     (INI_STATE, "excl",     "!"              ),

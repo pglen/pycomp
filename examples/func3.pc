@@ -1,0 +1,6 @@
+func hello ()
+{
+enter {}
+leave {}
+return val
+}

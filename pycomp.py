@@ -113,6 +113,9 @@ def parsefile(strx):
                         "line:", lx.linenum + 1, "col:", lx.lastpos - lx.lastline + 1)
     par = linparse.LinParse(stamps, lpg)
     par.feed(res, buf)
+
+    prarr(par.arrx, "result:", lpg.verbose)
+
     if lpg.show_timing: print  ("parser:", time.clock() - got_clock)
     # Output results
     if lpg.emit:
@@ -167,9 +170,16 @@ if __name__ == "__main__":
         elif aa[0] == "-h": help();  exit(1)
         elif aa[0] == "-V": print("Version 0.9"); exit(0)
 
+    #prclass(lpg)
+
+    #print(hd("hello"))
+    #sys.exit(0);
+
     try:     strx = args[0]
     except:  help(); exit(1)
+
     lstack = stack.Stack()
+
     fullpath = os.path.abspath(strx);
     lpg.docroot = os.path.dirname(fullpath)
     parsefile(strx)

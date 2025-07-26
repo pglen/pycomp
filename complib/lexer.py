@@ -66,6 +66,7 @@ class Lexer():
             for aa in self.tokens:
                 print("token:", aa)
 
+        self.lastbeg = 0;
         self.lastpos = 0;
         self.state =  lexdef.INI_STATE
         self.statstack = stack.Stack()
@@ -76,6 +77,7 @@ class Lexer():
         self.linenum = 0
         self.lastline = 0
         self.start_tt = None
+        self.backslash = 0
 
     def _lexiter(self, pos, strx):
 
@@ -83,15 +85,21 @@ class Lexer():
 
         #print (strx[pos:])
         for ttt, vv in self.tokens:
+            #print(pos, ttt, vv)
             if ttt[0] != self.state:
                  continue
             mmm = vv.match(strx, pos)
+
             if mmm:
-                #print (mmm.end(), mmm.start(),
-                #        "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
+                print (mmm.end(), mmm.start(),
+                        "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
                 tt = Lex(ttt, mstr, mmm.start(), mmm.end())
                 return tt
+            else:
+                #print("pos", pos)
+                pass
+
         return None;
 
     def _set_state(self, tt, state):
@@ -124,18 +132,17 @@ class Lexer():
                 break;
             #raise  ValueError
             tt = self._lexiter(pos, data)
-            if tt == None:
+            if not tt:
                 break
             if not tt.end:
                 pos += 1  # Step to next char in no match
                 continue
-
             # Update pos, and skip to token end
+            self.lastbeg = pos
             beg = pos; pos = tt.end
+            self.lastpos = pos
             if self.pvg.lxdebug > 2:
                 print("token:", tt, "state =", self.state)
-
-            self.lastpos = pos
 
             # Global actions
             if  tt.stamp[1] == "nl":
@@ -205,7 +212,10 @@ class Lexer():
             # Default to fill accumulators:
             if  self.state == lexdef.STR_STATE:
                 #print("accum: ", tt[2])
-                self.straccum += tt.mstr
+                if tt.stamp[1] ==  "sbsla":
+                    backslash += 1
+                else:
+                    self.straccum += tt.mstr
 
             if  self.state == lexdef.STR_STATE2:
                 #print("accum: ", tt[2])
