@@ -69,8 +69,8 @@ class Lexer():
         self.lastbeg = 0;
         self.lastpos = 0;
         self.state =  lexdef.ST.INI_STATE.value
-        self.statstack = stack.Stack()
-        self.startstack = stack.Stack()
+        self.statstack = stack.pStack()
+        self.startstack = stack.pStack()
         self.escaccum = ""
         self.linenum = 0
         self.lastline = 0
@@ -112,7 +112,7 @@ class Lexer():
         self.state = state
         #self.accum[self.state] = ""
 
-    def _pop_state(self, typex):
+    def _pop_state(self, tt, typex):
 
         ''' Done with a section, pop state '''
 
@@ -124,7 +124,7 @@ class Lexer():
         tt.start = ttt.start
         # Update stamp to reflect collected data
         sss = list(tt.stamp)
-        sss[1] = tt.typex
+        sss[1] = typex
         tt.stamp = tuple(sss)   # Back to tuple (for read only)
         self.state = self.statstack.pop()
 
@@ -193,7 +193,8 @@ class Lexer():
 
                 # Copy up:
                 if self.pvg.lxdebug > 0:
-                   print("up:", self.state, "to:", statstack.pop2())
+                    print("stack", self.statstack)
+                    print("up:", self.state, "to:", self.statstack.pop2())
 
                 self.accum[self.state-1] = self.accum[self.state]
                 self._pop_state(tt, "hex")

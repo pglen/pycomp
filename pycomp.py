@@ -159,7 +159,7 @@ if __name__ == "__main__":
     try:     strx = args[0]
     except:  help(); exit(1)
 
-    lstack = stack.Stack()
+    lstack = stack.pStack()
 
     fullpath = os.path.abspath(strx);
     lpg.docroot = os.path.dirname(fullpath)
