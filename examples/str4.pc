@@ -1,0 +1,1 @@
+strvar = "hello world: \f\t\r\n "

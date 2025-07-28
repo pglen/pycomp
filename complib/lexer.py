@@ -31,8 +31,8 @@ class Lex():
     def __repr__(self):
         return  "[ '" + str(self.stamp[1]) + "' = '" +  \
                         cesc(self.mstr) + "' " + str(self.flag) + " ]"
-    def __str__(self):
-        return(self.__repr__())
+    #def __str__(self):
+    #    return(self.__repr__())
 
     def dump(self):
         return  "[ '" + str(self.stamp[1]) + "' = '" +  \
@@ -71,13 +71,14 @@ class Lexer():
         self.state =  lexdef.INI_STATE
         self.statstack = stack.Stack()
         self.startstack = stack.Stack()
-        self.straccum = ""
         self.escaccum = ""
-        self.strterm = ""
         self.linenum = 0
         self.lastline = 0
         self.start_tt = None
         self.backslash = 0
+        self.straccum = []
+        for aa in range(6):             # Sync to lexdef number of states
+            self.straccum.append("")
 
     def _lexiter(self, pos, strx):
 
@@ -91,7 +92,8 @@ class Lexer():
             mmm = vv.match(strx, pos)
 
             if mmm:
-                print (mmm.end(), mmm.start(),
+                if self.pvg.lxdebug > 4:
+                    print(mmm.end(), mmm.start(),
                         "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
                 tt = Lex(ttt, mstr, mmm.start(), mmm.end())
@@ -102,24 +104,26 @@ class Lexer():
 
         return None;
 
-    def _set_state(self, tt, state):
-        self.strterm = tt.stamp[1]
-        self.straccum = ""
+    def _push_state(self, tt, state):
         self.startstack.push(tt)
         self.statstack.push(self.state)
         self.state = state
+        #self.straccum[self.state] = ""
 
-    def _down_state(self, tt, typex):
+    def _pop_state(self, tt, typex):
 
+        ''' Done with a section, pop state '''
+
+        if self.pvg.lxdebug > 2:
+            print("Down from", typex, " state, accum:",
+                        cesc(self.straccum[self.state]), "tt =", tt)
         ttt = self.startstack.pop()
-        tt.mstr = self.straccum
+        tt.mstr = self.straccum[self.state]
         tt.start = ttt.start
-        # Update list
+        # Update stamp to reflect collected data
         sss = list(tt.stamp)
         sss[1] = typex
-        ## Back to read only list
-        tt.stamp = tuple(sss)
-        self.straccum = ""
+        tt.stamp = tuple(sss)   # Back to tuple (for read only)
         self.state = self.statstack.pop()
 
     def feed(self, data, res):
@@ -152,86 +156,187 @@ class Lexer():
                 self.lastline = tt.end
             #print("state =", tt, self.state)
 
+            # Statful actions
             if self.state == lexdef.INI_STATE:
                 # Change state if needed
                 if tt.stamp[1] == "quote":
-                    if self.pvg.lxdebug > 0:
-                        print("Change to str state with", tt)
-                    self._set_state(tt, lexdef.STR_STATE)
+                    if self.pvg.lxdebug > 2:
+                        print("Changed to str state with", tt)
+                    self._push_state(tt, lexdef.STR_STATE)
 
                 elif tt.stamp[1] == "squote":
-                    if self.pvg.lxdebug > 0:
-                        print("Change to str2 state with", tt)
-                    self._set_state(tt, lexdef.STR_STATE2)
+                    if self.pvg.lxdebug > 2:
+                        print("Changed to str2 state with", tt)
+                    self._push_state(tt, lexdef.STR_STATE2)
 
                 elif tt.stamp[1] == "comm3":
-                    if self.pvg.lxdebug > 0:
-                        print("Change to comm3 state with", tt,
+                    if self.pvg.lxdebug > 2:
+                        print("Changed to comm3 state with", tt,
                                     "state =", lexdef.COMM_STATE)
-                    self._set_state(tt, lexdef.COMM_STATE)
+                    self._push_state(tt, lexdef.COMM_STATE)
                 else:
                     #print("no state")
                     res.append(tt)
 
+            elif self.state == lexdef.HEX_STATE:
+                if self.pvg.lxdebug > 2:
+                    print("hex_state:", tt.mstr,  chr(int(tt.mstr, 16)))
+                self.straccum[self.state] = chr(int(tt.mstr, 16))
+
+                self.straccum[self.state-1] = self.straccum[self.state]
+                self._pop_state(tt, "hex")
+                #self.straccum[self.state-1] += self.straccum[self.state]
+                self._pop_state(tt, "esc")
+
+            # Handle escapes:
+            elif self.state == lexdef.ESC_STATE:
+                wasesc = True
+                if   tt.mstr == "r":  self.straccum[self.state] += "\r"
+                elif tt.mstr == "n":  self.straccum[self.state] += "\n"
+                elif tt.mstr == "a":  self.straccum[self.state] += "\a"
+                elif tt.mstr == "t":  self.straccum[self.state] += "\t"
+                elif tt.mstr == "b":  self.straccum[self.state] += "\b"
+                elif tt.mstr == "v":  self.straccum[self.state] += "\v"
+                elif tt.mstr == "f":  self.straccum[self.state] += "\f"
+                elif tt.mstr == "e":  self.straccum[self.state] += "\e"
+                elif tt.mstr == "\?": self.straccum[self.state] += "\?"
+                elif tt.mstr == "\"": self.straccum[self.state] += "\\"
+                elif tt.mstr == "\'": self.straccum[self.state] += "\'"
+                elif tt.mstr == "\\": self.straccum[self.state] += "\""
+                elif tt.mstr == "x":
+                    self._push_state(tt, lexdef.HEX_STATE)
+                    if self.pvg.lxdebug > 2:
+                        print("Changed to HEX state with:", tt.stamp[1], tt.mstr)
+                    wasesc = False
+                elif tt.mstr == "u":
+                    if self.pvg.lxdebug > 2:
+                        print("Changed to UNI state with:", tt.stamp[1], tt.mstr)
+                    wasesc = False
+                if wasesc:
+                    # Unrecognized, or non continuation escape, exit state
+                    self.straccum[self.state-1] = self.straccum[self.state]
+                    self._pop_state(tt, "esc")
+
+                #else:
+                #    self.straccum[self.state] += tt.mstr
+                #    if self.pvg.lxdebug > 0:
+                #        print("Changed to ESC state:",
+                #                    self.straccum[self.state], tt, lexdef.ESC_STATE)
+
+            elif tt.stamp[1] == "sbsla":
+                self.straccum[self.state] += "";
+                self._push_state(tt, lexdef.ESC_STATE)
+                if self.pvg.lxdebug > 2:
+                    print("Changed to ESC state with:", tt.stamp[1])
+                self.backslash = 0
+                #res.append(tt)    # Emit
+
             # Handle back offs
             elif tt.stamp[1] == "dquote": # and self.state == lexdef.STR_STATE:
-                self.straccum += '"';
-                if self.pvg.lxdebug > 0:
-                    print("Change str state down:", self.straccum, tt)
-                self._down_state(tt, "strx")
+                self.straccum[self.state] += '"';
+                self._pop_state(tt, "strx")
                 res.append(tt)    # Emit
 
-            elif tt.stamp[1] == "dsquote": # self.state == lexdef.STR_STATE2:
-                self.straccum += "'";
-                if self.pvg.lxdebug > 0:
-                    print("Change str state2 down:", self.straccum, tt)
-                self._down_state(tt, "strx")
+            elif tt.stamp[1] == "dquote2": # self.state == lexdef.STR_STATE2:
+                self.straccum[self.state] += "'";
+                #if self.pvg.lxdebug > 0:
+                #    print("Down from str state2:", self.straccum[self.state], tt)
+                self._pop_state(tt, "strx")
                 res.append(tt)    # Emit
 
             elif tt.stamp[1] == "ecomm3": # self.state == lexdef.COMM_STATE:
-                self.straccum += "'";
+                self.straccum[self.state] += "*/";
                 if self.pvg.lxdebug > 0:
                     print("Change comm state down:",
-                                self.straccum, tt, lexdef.COMM_STATE)
-                self._down_state(tt, "comm3")
+                                self.straccum[self.state], tt, lexdef.COMM_STATE)
+
+                self._pop_state(tt, "comm3")
                 res.append(tt)    # Emit
 
-                #elif tt.stamp[1] == ""bs";
-                #    #print("Change bs state down:", _p(self.escaccum))
-                #    self.straccum += self.escaccum
-                #    self.escaccum = ""
-                #    self.state = self.statstack.pop()
-
-                #if tt.stamp[1] ==  "bsla":
-                #    #print("Change bs state up")
-                #    self.statstack.push(self.state)
-                #    self.state = lexdef.ESC_STATE
             else:
                 pass
 
             # Default to fill accumulators:
             if  self.state == lexdef.STR_STATE:
-                #print("accum: ", tt[2])
-                if tt.stamp[1] ==  "sbsla":
-                    backslash += 1
-                else:
-                    self.straccum += tt.mstr
+                self.straccum[self.state] += tt.mstr
 
             if  self.state == lexdef.STR_STATE2:
-                #print("accum: ", tt[2])
-                self.straccum += tt.mstr
+                self.straccum[self.state] += tt.mstr
 
             if  self.state == lexdef.COMM_STATE:
-                #print("accum: ", tt[2])
-                self.straccum += tt.mstr
-
-            if  self.state == lexdef.ESC_STATE:
-                self.escaccum += tt[2]
+                self.straccum[self.state] += tt.mstr
 
             #print(self.state, tt.stamp, lexdef.rtok[tt.stamp], "\t", tt[2])
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
     #print("tok", tokens)
+
+def test_letters():
+
+    org = "abcdef"
+    res2 = "[[ 'ident' = 'abcdef' 0 ]]"
+    lx = Lexer(lexdef.xtokens, lpg)
+    res = []
+    lx.feed(org, res)
+    #print(str(res))
+    #assert 0
+    del lx
+    assert str(res) == res2
+
+def test_keywords():
+
+    org = "func loop enter leave return "
+    res2 =  "[[ 'func' = 'func ' 0 ], [ 'loop' = 'loop ' 0 ], " \
+            "[ 'enter' = 'enter ' 0 ], [ 'leave' = 'leave ' 0 ], " \
+            "[ 'return' = 'return ' 0 ]]"
+    lx = Lexer(lexdef.xtokens, lpg)
+    res = []
+    lx.feed(org, res)
+    del lx
+    #print(str(res))
+    #assert 0
+    assert str(res) == res2
+
+def test_operators():
+    org = "== != !== += >= <= -> <- && || ^^"
+    res2 = "[[ 'deq' = '==' 0 ], [ 'sp' = ' ' 0 ], [ 'ndeq' = '!=' 0 ], " \
+    "[ 'sp' = ' ' 0 ], [ 'ndeq' = '!=' 0 ], [ '=' = '=' 0 ], [ 'sp' = ' ' 0 ], "\
+    "[ 'peq' = '+=' 0 ], [ 'sp' = ' ' 0 ], [ '>' = '>' 0 ], [ '=' = '=' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ 'gett' = '<=' 0 ], [ 'sp' = ' ' 0 ], [ 'dref' = '->' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ 'aref' = '<-' 0 ], [ 'sp' = ' ' 0 ], [ 'and' = '&&' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ 'or' = '||' 0 ], [ 'sp' = ' ' 0 ], [ 'xor' = '^^' 0 ]]"
+    lx = Lexer(lexdef.xtokens, lpg)
+    res = []
+    lx.feed(org, res)
+    del lx
+    #print(str(res))
+    #assert 0
+    assert str(res) == res2
+
+def test_oper():
+
+    org = " ! ~ _ ( ) = / : . << >> ++ -- ^ % "
+
+    res2 = \
+    "[[ 'sp' = ' ' 0 ], [ 'excl' = '!' 0 ], [ 'sp' = ' ' 0 ], "\
+    "[ 'tilde' = '~' 0 ], [ 'sp' = ' ' 0 ], [ 'ident' = '_' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ '(' = '(' 0 ], [ 'sp' = ' ' 0 ], [ ')' = ')' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ '=' = '=' 0 ], [ 'sp' = ' ' 0 ], [ '/' = '/' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ 'colon' = ':' 0 ], [ 'sp' = ' ' 0 ], [ 'dot' = '.' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ '<' = '<' 0 ], [ '<' = '<' 0 ], [ 'sp' = ' ' 0 ], "\
+    "[ '>' = '>' 0 ], [ '>' = '>' 0 ], [ 'sp' = ' ' 0 ], [ '+' = '+' 0 ], "\
+    "[ '+' = '+' 0 ], [ 'sp' = ' ' 0 ], [ '-' = '-' 0 ], [ '-' = '-' 0 ], "\
+    "[ 'sp' = ' ' 0 ], [ 'caret' = '^' 0 ], [ 'sp' = ' ' 0 ], [ 'cent' = '%' 0 ], "\
+    "[ 'sp' = ' ' 0 ]]"
+
+    lx = Lexer(lexdef.xtokens, lpg)
+    res = []
+    lx.feed(org, res)
+    del lx
+    #print(str(res))
+    #assert 0
+    assert str(res) == res2
+
 
 # EOF

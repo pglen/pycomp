@@ -2,6 +2,24 @@
 
 import sys, os, re, time, stat
 
+class lpg():
+
+    ''' Some class globals. Read: (Lexer and Parser Globals) '''
+
+    buf = None; xstack = None; verbose = 0
+    lxdebug = 0; pgdebug = 0; show_lexer = False;
+    lstack = None;  fullpath = None; docroot = None
+    got_clock = 0; show_timing = False; second = ""
+    flag = False; show_parse = False
+    emit = False; show_state = False; lex_only = False
+    currline = 0;
+
+    def print():
+        for aa in dir(lpg):
+            if aa[:2] != "__":
+                print("[", aa, "=", getattr(lpg, aa), end = " ] ")
+        print()
+
 # ------------------------------------------------------------------------
 # Pretty Print
 
@@ -155,6 +173,14 @@ def cesc(strx):
             retx += '\\r'
         elif(chh == '\a'):
             retx += '\\a'
+        elif(chh == '\t'):
+            retx += '\\t'
+        elif(chh == '\f'):
+            retx += '\\f'
+        elif(chh == '\v'):
+            retx += '\\v'
+        elif(chh == '\e'):
+            retx += '\\e'
         elif(chh == '\\'):
             retx += '\\\\'
         else:
@@ -329,5 +355,9 @@ def test_oct2():
     assert ttt == 42798
     uuu = oct2int("888")
     assert uuu == 0
+
+def test_hd():
+    pass
+    #print(hd("hello"))
 
 # EOF

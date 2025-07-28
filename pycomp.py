@@ -20,20 +20,6 @@ import inspect
 if inspect.isbuiltin(time.process_time):
     time.clock = time.process_time
 
-class lpg():
-
-    ''' Some class globals. Read: (Lexer and Parser Globals) '''
-
-    buf = None; xstack = None; verbose = 0
-    lxdebug = 0; pgdebug = 0; show_lexer = False;
-    lstack = None;  fullpath = None; docroot = None
-    got_clock = 0; show_timing = False; second = ""
-    flag = False; show_parse = False
-    emit = False; show_state = False; lex_only = False
-    currline = 0;
-
-    def __repr__(self):
-        return("repr")
 
 # ------------------------------------------------------------------------
 # Accumulate output: (mostly for testing)
@@ -169,11 +155,6 @@ if __name__ == "__main__":
 
         elif aa[0] == "-h": help();  exit(1)
         elif aa[0] == "-V": print("Version 0.9"); exit(0)
-
-    #prclass(lpg)
-
-    #print(hd("hello"))
-    #sys.exit(0);
 
     try:     strx = args[0]
     except:  help(); exit(1)
