@@ -1,1 +1,1 @@
-strvar = "hello world: \x41\x42 \xz again "
+strvar = "hello world: \x41\x42 \xzs \u0041 again "

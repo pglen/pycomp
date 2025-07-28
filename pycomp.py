@@ -93,7 +93,7 @@ def parsefile(strx):
     if lpg.lex_only:
         exit(0)
 
-    if lx.state != lexdef.INI_STATE:
+    if lx.state != lexdef.ST.INI_STATE.value:
         sss = lexdef.state2str(lx.state)
         print("Warning on lexer state: unterminated state", sss,
                         "line:", lx.linenum + 1, "col:", lx.lastpos - lx.lastline + 1)
