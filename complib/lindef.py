@@ -15,23 +15,54 @@ def defpvg(xpvg):
     global pvg
     pvg = xpvg
 
-PARENX = ("(",N), ("sp",M), ("num",A), ("sp",M), (")",N)
-BRACEX = ("{",M), ("sp",M), ("num",A), ("sp",M), ("}",N)
+SP = ("sp", M)
 
+from enum import Enum
+
+class SL(Enum):
+    INI = 0; FUNC=2; ARGS=2; DECL=3
+
+class CO(Enum):
+    INI = 0; FUNC=2; ARGS=2; DECL=3
+
+class Stmp():
+
+    ''' Our parser stamp '''
+    def __init__(self):
+        self.state = SL.INI
+        self.scan = ()
+        self.callf = None
+
+    def call(self):
+        ret = None
+        if self.callf:
+             ret = self.callf()
+        return ret
+
+# Short hand for major items
+
+BRACEX  = ("{",M), ("sp",M), ("num",A), ("sp",M), ("}",N)
+PARENX  = ("(",N), ("sp",M), ("num",A), ("sp",M), (")",N)
+
+# Short hand for language components
+
+FUNCD   = ("func",N), ("sp",M), *PARENX, ("sp",M), *BRACEX, ("sp",M)
+MULX     = ("num",N),  ("sp",M),  ("*",N),  ("sp",M),  ("num",N)
+ADDX     = ("num",N),  ("sp",P|M),("+",N),  ("sp",P|M),("num",N)
 
 # There are the entries to be matched agains the parse array.
-#       (parse items,flags) ...                              function
-#       --------------------------                           ----------
+#    state      (parse items,flags) ...         function
+#    -----      --------------------            ----------
 
 stamps =  (
-    ( (("func",N), ("sp",M), *PARENX, ("sp",M), *BRACEX, ("sp",M) ), func_func),
-    ( ( *PARENX, ), func_paren),
-    ( (("num",N),  ("sp",M),  ("*",N),  ("sp",M),  ("num",N)), func_mul),
-    ( (("num",N),  ("sp",P|M),("+",N),  ("sp",P|M),("num",N)), func_add),
+    (SL.INI.value,  FUNCD,  func_func),
+    (SL.INI.value,  PARENX, func_paren),
+    (SL.INI.value,  MULX,    func_mul),
+    (SL.INI.value,  ADDX,    func_add),
 
-    #( (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("num",N)), func_dummy),
-    #( (("ident",N),("=",N),  ("strx",N)), func_dummy),
-    #( (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("strx",N)), func_str),
+    #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("num",N)), func_dummy),
+    #(SL.INI.value,  (("ident",N),("=",N),  ("strx",N)), func_dummy),
+    #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("strx",N)), func_str),
   )
 
 #print(stamps)

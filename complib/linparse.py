@@ -17,6 +17,8 @@ class LinParse():
         defpvg(pvg)
         funcpvg(pvg)
         self.stamps = stamps
+        self.state = SL.INI.value
+        self.context = CO.INI.value
         # Check integrity
         for ss in range(len(self.stamps)):
             pass
@@ -52,7 +54,7 @@ class LinParse():
     def itemx(self, idx, tprog, endd, call):
 
         '''  Compare items. Return end of scan point '''
-        currstamp = self.stamps[idx][0];
+        currstamp = self.stamps[idx][1];
 
         if self.pvg.pgdebug > 6:
             print("  itemx", "tprog =", tprog, "endd =", endd)
@@ -141,7 +143,12 @@ class LinParse():
 
     def stampx(self, idx, start, endd):
         tprog = start
-        stamp = self.stamps[idx][0]; call  = self.stamps[idx][1];
+        if  self.stamps[idx][0] != self.state:
+            if self.pvg.pgdebug > 0:
+                print("Out of state:", self.state, "idx = ", idx)
+            return False
+        stamp = self.stamps[idx][1];
+        call  = self.stamps[idx][2];
         if self.pvg.pgdebug > 6:
             print("stampx idx =", idx, "start =", start, "endd =", endd)
         matchx = 0

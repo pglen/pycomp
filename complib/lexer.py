@@ -62,7 +62,7 @@ class Lexer():
                 raise
             self.tokens.append((xtokens[idx], ccc))
 
-        if self.pvg.lxdebug > 3:
+        if self.pvg.lxdebug > 6:
             for aa in self.tokens:
                 print("token:", aa)
 
@@ -71,12 +71,10 @@ class Lexer():
         self.state =  lexdef.ST.INI_STATE.value
         self.statstack = stack.pStack()
         self.startstack = stack.pStack()
-        self.escaccum = ""
         self.linenum = 0
         self.lastline = 0
         self.start_tt = None
         self.backslash = 0
-        self.uni = False
         self.accum = []
         for aa in lexdef.ST:
             #print("init:", aa.value)
@@ -87,30 +85,30 @@ class Lexer():
         '''  Call this for every token '''
 
         #print (strx[pos:])
+        ret = None
         for ttt, vv in self.tokens:
             #print(pos, ttt, vv)
             if ttt[0] != self.state:
                  continue
             mmm = vv.match(strx, pos)
-
             if mmm:
                 if self.pvg.lxdebug > 4:
                     print(mmm.end(), mmm.start(),
                         "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
                 tt = Lex(ttt, mstr, mmm.start(), mmm.end())
-                return tt
+                ret = tt
+                break
             else:
-                #print("pos", pos)
                 pass
 
-        return None;
+        return ret;
 
     def _push_state(self, tt, state):
         self.startstack.push(tt)
         self.statstack.push(self.state)
         self.state = state
-        #self.accum[self.state] = ""
+        self.accum[self.state] = ""
 
     def _pop_state(self, tt, typex):
 
@@ -180,6 +178,23 @@ class Lexer():
                     #print("no state")
                     res.append(tt)
 
+            elif self.state == lexdef.ST.UNI_STATE.value:
+                try:
+                    ccc = chr(int(tt.mstr, 16))
+                except:
+                    #print("back off", tt.mstr)
+                    ccc = "\\u" + tt.mstr
+
+                if self.pvg.lxdebug > 2:
+                    print("uni_state:", tt.mstr)
+                self.accum[self.state] = ccc
+
+                # Copy up:
+                self.accum[self.statstack.pop2()] += self.accum[self.state]
+                self._pop_state(tt, "uni")
+                self.accum[self.statstack.pop2()] += self.accum[self.state]
+                self._pop_state(tt, "esc")
+
             elif self.state == lexdef.ST.HEX_STATE.value:
                 try:
                     ccc = chr(int(tt.mstr, 16))
@@ -192,14 +207,11 @@ class Lexer():
                 self.accum[self.state] = ccc
 
                 # Copy up:
-                if self.pvg.lxdebug > 0:
-                    print("stack", self.statstack)
-                    print("up:", self.state, "to:", self.statstack.pop2())
-
-                self.accum[self.state-1] = self.accum[self.state]
+                self.accum[self.statstack.pop2()] += self.accum[self.state]
                 self._pop_state(tt, "hex")
-                #self.accum[self.state-1] += self.accum[self.state]
+                self.accum[self.statstack.pop2()] += self.accum[self.state]
                 self._pop_state(tt, "esc")
+                continue
 
             # Handle escapes:
             elif self.state == lexdef.ST.ESC_STATE.value:
@@ -218,29 +230,22 @@ class Lexer():
                 elif tt.mstr == "\\": self.accum[self.state] += "\""
                 elif tt.mstr == "x":
                     self._push_state(tt, lexdef.ST.HEX_STATE.value)
-                    self.uni = False
                     if self.pvg.lxdebug > 2:
                         print("Changed to HEX state with:", tt.stamp[1], tt.mstr)
                     wasesc = False
                 elif tt.mstr == "u":
-                    self.uni = True
-                    self._push_state(tt, lexdef.ST.HEX_STATE.value)
+                    self._push_state(tt, lexdef.ST.UNI_STATE.value)
                     if self.pvg.lxdebug > 2:
                         print("Changed to UNI state with:", tt.stamp[1], tt.mstr)
                     wasesc = False
                 if wasesc:
                     # Unrecognized, or non continuation escape, exit state
-                    self.accum[self.state-1] = self.accum[self.state]
+                    self.accum[self.statstack.pop2()] += self.accum[self.state]
                     self._pop_state(tt, "esc")
-
-                #else:
-                #    self.accum[self.state] += tt.mstr
-                #    if self.pvg.lxdebug > 0:
-                #        print("Changed to ESC state:",
-                #                    self.accum[self.state], tt, lexdef.ST.ESC_STATE.value)
+                    continue
 
             elif tt.stamp[1] == "sbsla":
-                self.accum[self.state] += "";
+                #self.accum[self.state] += "";
                 self._push_state(tt, lexdef.ST.ESC_STATE.value)
                 if self.pvg.lxdebug > 2:
                     print("Changed to ESC state with:", tt.stamp[1])
@@ -255,8 +260,6 @@ class Lexer():
 
             elif tt.stamp[1] == "dquote2": # self.state == lexdef.ST.STR2_STATE.value:
                 self.accum[self.state] += "'";
-                #if self.pvg.lxdebug > 0:
-                #    print("Down from str state2:", self.accum[self.state], tt)
                 self._pop_state(tt, "strx")
                 res.append(tt)    # Emit
 
@@ -265,10 +268,8 @@ class Lexer():
                 if self.pvg.lxdebug > 0:
                     print("Change comm state down:",
                                 self.accum[self.state], tt, lexdef.ST.COMM_STATE.value)
-
                 self._pop_state(tt, "comm3")
                 res.append(tt)    # Emit
-
             else:
                 pass
 

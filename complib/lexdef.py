@@ -112,6 +112,7 @@ try:
 
     (ST.INI_STATE.value, "type",         "type" + WSPC       ),
     (ST.INI_STATE.value, "aggr",         "aggr" + WSPC       ),
+    (ST.INI_STATE.value, "enum",         "enum" + WSPC       ),
 
     (ST.INI_STATE.value, "S8" ,          "S8"                ),
     (ST.INI_STATE.value, "S16",          "S16"               ),
@@ -212,23 +213,17 @@ try:
 
     # Comm states
     #ST.(COMM_STATE.value, "cbsla",     "\\\\"               ),
-    (ST.COMM_STATE.value, "ecomm3",    "\*\/"                ),
-    (ST.COMM_STATE.value, "cany",      "."                   ),
+    (ST.COMM_STATE.value, "ecomm3",     "\*\/"               ),
+    (ST.COMM_STATE.value, "cany",       "."                  ),
 
     # Escape states
-    #ST.(ESC_STATE.value, "escx",         "x"                 ),
-    #ST.(ESC_STATE.value, "n",            "n"                 ),
-    #ST.(ESC_STATE.value, "r",            "r"                 ),
-    #ST.(ESC_STATE.value, "a",            "a"                 ),
-    #ST.(ESC_STATE.value, "0",            "0"                 ),
-    #ST.(ESC_STATE.value, "quote",        "\""                ),
-    (ST.ESC_STATE.value, "anyx",         "."                  ),
+    (ST.ESC_STATE.value, "anyx",        "."                  ),
 
-    (ST.UNI_STATE.value, "unihex",       "[0-9A-Fa-f]{1,4}"   ),
-    (ST.HEX_STATE.value, "anyu",         "."                  ),
+    (ST.UNI_STATE.value, "unihex",      "[0-9A-Fa-f]{4,8}"   ),
+    (ST.UNI_STATE.value, "anyu",        "."                  ),
 
-    (ST.HEX_STATE.value, "eschex",       "[0-9A-Fa-f]{1,2}"   ),
-    (ST.HEX_STATE.value, "anyh",         "."                  ),
+    (ST.HEX_STATE.value, "eschex",      "[0-9A-Fa-f]{1,2}"   ),
+    (ST.HEX_STATE.value, "anyh",        "."                  ),
     )
 
 except KeyError as err:

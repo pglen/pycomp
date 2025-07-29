@@ -59,11 +59,13 @@ lexcheck:
 	@echo -n "."
 	@./pycomp.py -x examples/comm4.pc  | grep "Doc Comment"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str.pc  | grep "hello 'old' world"  >>${ERR}
+	@./pycomp.py -x examples/str.pc    | grep "Hello World"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str2.pc  | grep "hello \"new\" world"  >>${ERR}
+	@./pycomp.py -x examples/str2.pc   | grep "hello 'old' world"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str3.pc  | grep "hello world"  >>${ERR}
+	@./pycomp.py -x examples/str3.pc   | grep "hello world" >>${ERR}
+	@echo -n "."
+	@./pycomp.py -x examples/str5.pc   | grep "hello world: 1234 AB :; again " >>${ERR}
 
 	@echo " OK"
 

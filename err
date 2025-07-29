@@ -1,0 +1,8 @@
+[ 'comm2' = '// Another\n' 0 ] 
+result: ['comm2' '// Another\n' 0]
+[ 'sp' = ' ' 0 ] [ 'comm3' = '/* 'C' comment "here" again */' 0 ] [ 'nl' = '\n' 0 ] 
+result: ['sp' ' ' 0] ['comm3' '/* 'C' comment "here" again */' 0] ['nl' '\n' 0]
+[ 'comm2d' = '/// Doc Comment\n' 0 ] [ 'comm2d' = '## Doc comment\n' 0 ] 
+result: ['comm2d' '/// Doc Comment\n' 0] ['comm2d' '## Doc comment\n' 0]
+[ 'ident' = 'strvar' 0 ] [ 'sp' = ' ' 0 ] [ '=' = '=' 0 ] [ 'sp' = ' ' 0 ] [ 'strx' = '"Hello World"' 0 ] [ 'sp' = ' ' 0 ] [ 'sp' = ' ' 0 ] [ 'ident' = 'intvar' 0 ] [ 'nl' = '\n' 0 ] 
+result: ['ident' 'strvar' 0] ['sp' ' ' 0] ['=' '=' 0] ['sp' ' ' 0] ['strx' '"Hello World"' 0] ['sp' ' ' 0] ['sp' ' ' 0] ['ident' 'intvar' 0] ['nl' '\n' 0]
