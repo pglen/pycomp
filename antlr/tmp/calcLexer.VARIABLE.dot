@@ -1,0 +1,21 @@
+digraph ATN {
+rankdir=LR;
+s50[fontsize=11, label="50", shape=doublecircle, fixedsize=true, width=.6];
+s49[fontsize=11,label="49", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s137[fontsize=11,label="137", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s138[fontsize=11,label="138", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s139[fontsize=11,label="&rarr;\n139*", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s140[fontsize=11,label="&larr;\n140", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s141[fontsize=11,label="{141*\nd=1|{<p0>|<p1>}}", shape=record, fixedsize=false, peripheries=1];
+s142[fontsize=11,label="142", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s143[fontsize=11,label="143*", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s49 -> s137 [fontname="Times-Italic", label="&epsilon;"];
+s137 -> s141 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<VALID_ID_START>", arrowhead = normal];
+s141:p0 -> s139 [fontname="Times-Italic", label="&epsilon;"];
+s141:p1 -> s142 [fontname="Times-Italic", label="&epsilon;"];
+s139 -> s138 [fontname="Times-Italic", label="&epsilon;"];
+s142 -> s50 [fontname="Times-Italic", label="&epsilon;"];
+s138 -> s140 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<VALID_ID_CHAR>", arrowhead = normal];
+s140 -> s143 [fontname="Times-Italic", label="&epsilon;"];
+s143 -> s141 [fontname="Times-Italic", label="&epsilon;", style="dashed"];
+}

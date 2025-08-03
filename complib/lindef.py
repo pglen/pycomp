@@ -39,26 +39,30 @@ class Stmp():
              ret = self.callf()
         return ret
 
+# Short hand for some items
+SPC =  ("sp",M)
+
 # Short hand for major items
 
-BRACEX  = ("{",M), ("sp",M), ("num",A), ("sp",M), ("}",N)
-PARENX  = ("(",N), ("sp",M), ("num",A), ("sp",M), (")",N)
+BRACEX  = ("{",M), SPC, ("num",A), ("sp",M), ("}",N)
+PARENX  = ("(",N), SPC, ("num",A), ("sp",M), (")",N)
 
 # Short hand for language components
 
-FUNCD   = ("func",N), ("sp",M), *PARENX, ("sp",M), *BRACEX, ("sp",M)
-MULX     = ("num",N),  ("sp",M),  ("*",N),  ("sp",M),  ("num",N)
-ADDX     = ("num",N),  ("sp",P|M),("+",N),  ("sp",P|M),("num",N)
+FUNCD   = ("func",N), ("sp",M), ("ident",N), ("sp",M), *PARENX, ("sp",M), *BRACEX, ("sp",M)
+MULX    = ("num",N), ("sp",M), ("*",N), ("sp",M), ("num",N)
+ADDX    = ("num",N), ("sp",P|M), ("+",N), ("sp",P|M), ("num",N)
 
 # There are the entries to be matched agains the parse array.
 #    state      (parse items,flags) ...         function
 #    -----      --------------------            ----------
 
 stamps =  (
-    (SL.INI.value,  FUNCD,  func_func),
+#    (SL.INI.value,  FUNCD,  func_func),
+    (SL.INI.value,  BRACEX, func_brace),
     (SL.INI.value,  PARENX, func_paren),
-    (SL.INI.value,  MULX,    func_mul),
-    (SL.INI.value,  ADDX,    func_add),
+    (SL.INI.value,  MULX,   func_mul),
+    (SL.INI.value,  ADDX,   func_add),
 
     #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("num",N)), func_dummy),
     #(SL.INI.value,  (("ident",N),("=",N),  ("strx",N)), func_dummy),

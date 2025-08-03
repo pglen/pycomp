@@ -1,0 +1,33 @@
+digraph ATN {
+rankdir=LR;
+s56[fontsize=11, label="56", shape=doublecircle, fixedsize=true, width=.6];
+s160[fontsize=11,label="{&rarr;\n160\nd=5|{<p0>|<p1>}}", shape=record, fixedsize=false, peripheries=1];
+s161[fontsize=11,label="&larr;\n161", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s150[fontsize=11,label="150", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s55[fontsize=11,label="55", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s151[fontsize=11,label="151", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s152[fontsize=11,label="152", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s153[fontsize=11,label="{&rarr;\n153\nd=3|{<p0>|<p1>}}", shape=record, fixedsize=false, peripheries=1];
+s154[fontsize=11,label="&larr;\n154", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s155[fontsize=11,label="155", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s156[fontsize=11,label="{&rarr;\n156\nd=4|{<p0>|<p1>}}", shape=record, fixedsize=false, peripheries=1];
+s157[fontsize=11,label="&larr;\n157", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s158[fontsize=11,label="158", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s159[fontsize=11,label="159", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s55 -> s150 [fontname="Times-Italic", label="&epsilon;"];
+s150 -> s160 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<NUMBER>", arrowhead = normal];
+s160:p0 -> s153 [fontname="Times-Italic", label="&epsilon;"];
+s160:p1 -> s161 [fontname="Times-Italic", label="&epsilon;"];
+s153:p0 -> s151 [fontname="Times-Italic", label="&epsilon;"];
+s153:p1 -> s152 [fontname="Times-Italic", label="&epsilon;"];
+s161 -> s56 [fontname="Times-Italic", label="&epsilon;"];
+s151 -> s154 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<E1>", arrowhead = normal];
+s152 -> s154 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<E2>", arrowhead = normal];
+s154 -> s156 [fontname="Times-Italic", label="&epsilon;"];
+s156:p0 -> s155 [fontname="Times-Italic", label="&epsilon;"];
+s156:p1 -> s157 [fontname="Times-Italic", label="&epsilon;"];
+s155 -> s157 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<SIGN>", arrowhead = normal];
+s157 -> s158 [fontname="Times-Italic", label="&epsilon;"];
+s158 -> s159 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<NUMBER>", arrowhead = normal];
+s159 -> s161 [fontname="Times-Italic", label="&epsilon;"];
+}

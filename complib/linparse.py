@@ -20,8 +20,11 @@ class LinParse():
         self.state = SL.INI.value
         self.context = CO.INI.value
         # Check integrity
-        for ss in range(len(self.stamps)):
-            pass
+        #for ss in range(len(self.stamps)):
+        #    pass
+        # Print stamps:
+        #for ss in range(len(self.stamps)):
+        #    print(self.stamps[ss][1])
 
     def skiplen(self, stampz):
         ret = 0 ; uprog = 0; umax = len(stampz)
@@ -77,7 +80,6 @@ class LinParse():
             if tprog + iprog >= endd:
                 if  self.pvg.pgdebug > 5:
                     print("break on end of buffer", "tprog =", tprog, "iprog =", iprog)
-                    pass
                 break
             #print("scan:", "'", self.arrx[tprog + iprog].mstr, "'", end = " ")
             if currstamp[istamp][1] & P:
@@ -104,6 +106,8 @@ class LinParse():
                 ebound = currstamp[istamp][0]
                 #print("accum skip till:", "'"+ebound+"'", end = " => ")
                 while 1:
+                    if tprog + iprog >= endd:
+                        break
                     #print(self.arrx[tprog + iprog][0][1], end = " ")
                     if ebound == self.arrx[tprog + iprog].stamp[1]:
                         break
@@ -114,10 +118,19 @@ class LinParse():
                 if  self.pvg.pgdebug > 6:
                     prarr(self.arrx[tprog : iprog+1], "stamp A opt:")
             #print("before: istamp =", istamp, "iprog =", iprog, "tprog =", tprog)
+            if tprog + iprog >= endd:
+                if  self.pvg.pgdebug > 5:
+                    print("break on end of buffer", "tprog =", tprog, "iprog =", iprog)
+                break
+
             if  self.pvg.pgdebug > 5:
-                print(" cmp: %2d %2d" % (tprog, iprog), "'"+currstamp[istamp][0]+"'",
-                                    "'"+self.arrx[tprog + iprog].stamp[1]+"'",
-                                        self.arrx[tprog + iprog].mstr)
+                sss = self.arrx[tprog + iprog].mstr
+                print(" cmp: idx=%d tprog=%d iprog=%d istamp=%d"  % \
+                                    (idx, tprog, iprog, istamp),
+                                "stamp='"+currstamp[istamp][0]+"'",
+                                    "item='"+self.arrx[tprog + iprog].stamp[1]+"'",
+                                        "mstr='"+sss+"'")
+
             if currstamp[istamp][0] != self.arrx[tprog + iprog].stamp[1]:
                 miss = True
                 if  self.pvg.pgdebug > 7:

@@ -1,0 +1,31 @@
+digraph ATN {
+rankdir=LR;
+s19[fontsize=11, label="19", shape=doublecircle, fixedsize=true, width=.6];
+s76[fontsize=11,label="76", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s77[fontsize=11,label="77", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s78[fontsize=11,label="78", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s79[fontsize=11,label="79", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s80[fontsize=11,label="80", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s81[fontsize=11,label="&rarr;\n81*", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s18[fontsize=11,label="18", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s82[fontsize=11,label="&larr;\n82", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s83[fontsize=11,label="{83*\nd=5|{<p0>|<p1>}}", shape=record, fixedsize=false, peripheries=1];
+s84[fontsize=11,label="84", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s85[fontsize=11,label="85*", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s86[fontsize=11,label="86", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s87[fontsize=11,label="87", shape=circle, fixedsize=true, width=.55, peripheries=1];
+s18 -> s76 [fontname="Times-Italic", label="&epsilon;"];
+s76 -> s77 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<funcname>", arrowhead = normal];
+s77 -> s78 [fontsize=11, fontname="Courier", arrowsize=.7, label = "'('", arrowhead = normal];
+s78 -> s83 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<expression>", arrowhead = normal];
+s83:p0 -> s81 [fontname="Times-Italic", label="&epsilon;"];
+s83:p1 -> s84 [fontname="Times-Italic", label="&epsilon;"];
+s81 -> s79 [fontname="Times-Italic", label="&epsilon;"];
+s84 -> s86 [fontname="Times-Italic", label="&epsilon;"];
+s79 -> s80 [fontsize=11, fontname="Courier", arrowsize=.7, label = "','", arrowhead = normal];
+s86 -> s87 [fontsize=11, fontname="Courier", arrowsize=.7, label = "')'", arrowhead = normal];
+s80 -> s82 [fontsize=11, fontname="Courier", arrowsize=.7, label = "<expression>", arrowhead = normal];
+s87 -> s19 [fontname="Times-Italic", label="&epsilon;"];
+s82 -> s85 [fontname="Times-Italic", label="&epsilon;"];
+s85 -> s83 [fontname="Times-Italic", label="&epsilon;", style="dashed"];
+}
