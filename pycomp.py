@@ -90,8 +90,9 @@ def parsefile(strx):
             else:
                 print(aa, end = " ")
         print()
-    if lpg.lex_only:
-        exit(0)
+    if lpg.show_lexer > 1:  # Only show lexer
+        #exit(0)
+        return
 
     if lx.state != lexdef.ST.INI_STATE.value:
         sss = lexdef.state2str(lx.state)
@@ -136,7 +137,7 @@ if __name__ == "__main__":
 
     opts = []; args = []
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "thvVfpesxLl:d:o:")
+        opts, args = getopt.getopt(sys.argv[1:], "thvVfpesxXLl:d:o:")
     except getopt.GetoptError as err:
         print ("Invalid option(s) on command line:", err)
         sys.exit(1)
@@ -147,6 +148,7 @@ if __name__ == "__main__":
         elif aa[0] == "-o": lpg.outfile = aa[1]
         elif aa[0] == "-v": lpg.verbose += 1
         elif aa[0] == "-x": lpg.show_lexer = True
+        elif aa[0] == "-X": lpg.show_lexer = 2  # True for lexer, 2 for only lexer
         elif aa[0] == "-t": lpg.show_timing = True
         elif aa[0] == "-e": lpg.emit = True
         elif aa[0] == "-p": lpg.show_parse  = True
@@ -156,13 +158,22 @@ if __name__ == "__main__":
         elif aa[0] == "-h": help();  exit(1)
         elif aa[0] == "-V": print("Version 0.9"); exit(0)
 
-    try:     strx = args[0]
-    except:  help(); exit(1)
+    #print(args)
 
-    lstack = stack.pStack()
+    if not args[0]:
+        help();  exit(0);
 
-    fullpath = os.path.abspath(strx);
-    lpg.docroot = os.path.dirname(fullpath)
-    parsefile(strx)
+    cnt = 0
+    while True:
+        try:
+            strx = args[cnt]
+            print("Compiling: %s" % strx)
+        except:
+            pass ; #exit(1)
+        lstack = stack.pStack()
+        fullpath = os.path.abspath(strx);
+        lpg.docroot = os.path.dirname(fullpath)
+        parsefile(strx)
+        cnt+=1
 
 # EOF

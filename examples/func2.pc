@@ -1,4 +1,5 @@
-func hello (type : name = defval)
-{
-    return val
-}
+#func hello (type : name = defval)
+#{
+#    return val
+#}
+

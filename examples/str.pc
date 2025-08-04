@@ -1,1 +1,1 @@
-strvar = "Hello World"  intvar
+# strvar = "Hello World"  intvar

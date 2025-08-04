@@ -1,5 +1,5 @@
-func hello {
-    enter {}
-    leave {}
-    :label:
-}
+#func hello {
+    #enter {}
+    #leave {}
+    #:label:
+#}

@@ -22,7 +22,6 @@ See pangparser.py for documentation and examples.
 #_show_default_action = False
 _show_default_action = True
 
-
 # May be redefined, included here for required initial states:
 
 STA_ANY         = [punique(), "anystate"]

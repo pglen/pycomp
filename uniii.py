@@ -7,7 +7,7 @@ import sys, os, re, time
 
 def yint(strx, defx = 0):
 
-    ''' Convert to integer without fault.
+    ''' Convert to integer without execption raised.
             Return defx if it is an invalid integer. '''
 
     ret = defx
