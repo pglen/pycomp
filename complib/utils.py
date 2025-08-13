@@ -2,67 +2,6 @@
 
 import sys, os, re, time, stat
 
-class lpg():
-
-    ''' Some class globals. (For both Lexer and Parser) '''
-    buf = None; xstack = None;
-    options = "" ; currline = 0; lstack = None;
-
-    ''' Program flags. Start with letter 'a' for inclusion '''
-
-    opt_quiet = False
-    opt_flag = False;
-    opt_timing_show = False;
-    opt_parse_show = False;
-    opt_state_show = False;
-    opt_emit = False;
-    opt_help = False;
-    opt_only_lex = False
-    opt_Ver = False;
-    opt_verbose = False;
-    opt_Xer_show = False;
-    opt_xshow_lexer = False;
-
-    opt_debug = 0;
-    opt_lxdebug = 0;
-    opt_got_clock = 0;
-
-    opt_workdir = "./tmp"
-
-    def warnif(aa, options):
-        #print("adding:", aa)
-        if aa[4] in options:
-            print("Warn, already has option with:", aa[4], "=>", aa)
-
-    def auto_opt():
-        options = ""
-        for aa in dir(lpg):
-            if aa[:4] != "opt_":
-                continue
-            bb = getattr(lpg, aa)
-            if isinstance(bb, str):
-                lpg.warnif(aa, options)
-                options += aa[4] + ":"
-            elif isinstance(bb, bool):
-                lpg.warnif(aa, options)
-                options += aa[4]
-            elif isinstance(bb, int):
-                lpg.warnif(aa, options)
-                options += aa[4] + ":"
-            else:
-                pass
-                #print("Unk type")
-        #print("\noptions:", options)
-        lpg.options = options
-
-    #options = "qthvVfpesxXLl:d:o:"
-
-    def print():
-        for aa in dir(lpg):
-            if aa[:2] != "__" and aa[:4] == "opt_":
-                print("[", aa, "=", getattr(lpg, aa), end = " ] ")
-        print()
-
 # ------------------------------------------------------------------------
 # Pretty Print
 
@@ -78,18 +17,6 @@ def prarr(xarr, pre = "", all = False):
 def pp(strx):
     str2 = cesc(strx)
     return "'" + str(str2) + "'"
-
-def xint(strx, defx = 0):
-
-    ''' Convert to integer without fault.
-            Return defx if it is an invalid integer. '''
-
-    ret = defx
-    try:
-        ret = int(strx)
-    except ValueError:      pass
-    except: print(sys.exc_info())
-    return ret
 
 def prclass(lpgx):
     for aa in dir(lpgx):
@@ -382,13 +309,6 @@ def test_true():
     assert False == isTrue("xrue")
     assert False == isTrue("False")
     assert False == isTrue("")
-
-def test_xint():
-
-    assert 0 == xint(0);
-    assert 1 == xint(1);
-    assert 0 == xint("a");
-    assert 1 == xint("b", 1);
 
 def test_oct2():
 

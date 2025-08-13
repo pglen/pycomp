@@ -57,6 +57,7 @@ class LinParse():
     def itemx(self, idx, tprog, endd, call):
 
         '''  Compare items. Return end of scan point '''
+
         currstamp = self.stamps[idx][1];
 
         if self.pvg.opt_debug > 6:

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import sys, os, re, time
-import getopt
 
 # Our modules
 
+import  complib.args as args
 import  complib.linparse as linparse
 import  complib.stack as stack
 import  complib.lexer as lexer
@@ -36,7 +36,7 @@ def parsefile(strx):
 
     global buf, lpg
 
-    got_clock =  time.process_time()
+    start_time =  time.process_time()
 
     if lpg.opt_verbose > 1:
         print ("Showing file:", strx)
@@ -58,7 +58,7 @@ def parsefile(strx):
     fh.close()
 
     if lpg.opt_timing_show:
-        print("loader:", time.process_time() - got_clock)
+        print("loader:", time.process_time() - start_time)
 
     if lpg.opt_debug > 5: print (buf)
     #lstack.push(strx)
@@ -70,7 +70,7 @@ def parsefile(strx):
         buf += "\n"
     lx.feed(buf, res)
     if lpg.opt_timing_show:
-        print  ("lexer:", time.process_time() - got_clock)
+        print  ("lexer:", time.process_time() - start_time)
 
     if lpg.opt_debug > 5:
         prarr(res, "lex res: ")
@@ -95,74 +95,63 @@ def parsefile(strx):
 
     prarr(par.arrx, "result:", lpg.opt_verbose)
 
-    if lpg.opt_timing_show: print  ("parser:", time.process_time() - got_clock)
+    if lpg.opt_timing_show: print  ("parser:", time.process_time() - start_time)
     # Output results
     if lpg.opt_emit:
         show_emit()
 
 # ------------------------------------------------------------------------
 
-def help():
-    myname = os.path.basename(sys.argv[0])
-    print ("PCOMP parallel compiler.")
-    print ("Usage: " + myname + " [options] filename [ filename ] ... ")
-    print ("Options:    -d level  - Parser debug level (1-10) default: 0")
-    print ("            -l level  - Lexer debug level (1-10) default: 0")
-    print ("            -o file   - Outfile name")
-    print ("            -e        - Emit parse string")
-    print ("            -V        - Print version")
-    print ("            -v        - Verbose (add -v for more details)")
-    print ("            -s        - Show parser states"    )
-    print ("            -t        - Show timing of compile")
-    print ("            -T        - Temp dir for work related files")
-    print ("            -L        - Lex only")
-    print ("            -x        - Show lexer output")
-    print ("            -p        - Show parser messages")
-    print ("            -h        - Help (this screen)")
-
-# ------------------------------------------------------------------------
-
 if __name__ == "__main__":
 
+    global lpg
+
     #sys.setrecursionlimit(25)
-    #opts = []; args = []
 
-    lpg.auto_opt()
+    #    ("Undefine", "", "Un-define variable."),
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], lpg.options)
-    except getopt.GetoptError as err:
-        print ("Invalid option(s) on command line:", err)
-        sys.exit(1)
-    #print ("opts", opts, "args", args)
-    for aa in opts:
-        if   aa[0] == "-d": lpg.opt_debug = xint(aa[1], 1)
-        elif aa[0] == "-l": lpg.opt_lxdebug = xint(aa[1], 1)
-        elif aa[0] == "-o": lpg.opt_outfile = aa[1]
-        elif aa[0] == "-v": lpg.opt_verbose += 1
-        elif aa[0] == "-x": lpg.opt_xshow_lexer = True
-        elif aa[0] == "-X": lpg.opt_show_lexer = 2  # True for lexer, 2 for only lexer
-        elif aa[0] == "-t": lpg.opt_timing_show = True
-        elif aa[0] == "-e": lpg.opt_emit = True
-        elif aa[0] == "-q": lpg.opt_quiet = True
-        elif aa[0] == "-p": lpg.opt_show_parse  = True
-        elif aa[0] == "-s": lpg.opt_show_state  = True
-        elif aa[0] == "-L": lpg.opt_lex_only  = True
-        elif aa[0] == "-T": lpg.opt_temp  = aa[1]
-        elif aa[0] == "-h": help();  exit(1)
-        elif aa[0] == "-V": print("Version 0.9"); exit(0)
-        else: pass
+    opts =  (     ("Define", "", "Define variable."),
+                  ("emit", False, "Emit Parse string."),
+                  ("Target", "x86_64", "Select target. Currently x86_64 only."),
+            )
+
+    lpg = args.Lpg(opts, sys.argv)
+    #print(lpg.helpdict)
+
+    if lpg.opt_help:
+        lpg.help()
+        sys.exit(0)
+
+    #print( lpg.opt_debug, type(lpg.opt_debug))
+    if lpg.opt_debug > 1:
+        lpg.printme()
+
+    # Check for reasonable flags:
+    if lpg.opt_verbose and lpg.opt_quiet:
+        print("Warning: both verbose and quiet is set")
+
+    if lpg.opt_Target != "x86_64":
+        print("Only x86_64 is supported (for now)")
+        sys.exit(0)
+
+    sys.exit(0)
 
     if lpg.opt_verbose > 1:
         print("Calc options:", lpg.options, lpg.opt_verbose)
 
-    if not args:
-        help();  exit(0);
+    if lpg.opt_verbose > 3:
+        lpg.printme()
 
-    if lpg.opt_verbose > 3: print(args)
-    if lpg.opt_verbose > 2: lpg.print()
+    if lpg.opt_verbose > 2:
+        print("opts:", opts)
+        print("args", args)
+
+    if not args:
+        args.help();
+        exit(0);
 
     cnt = 0
+    strx = "None"
     while True:
         try:
             if cnt >= len(args):
