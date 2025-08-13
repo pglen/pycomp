@@ -3,7 +3,6 @@
 ''' Definitions for the linear parser '''
 
 from complib.utils import *
-
 from complib.linfunc  import *
 
 N   =   0     # _No_ flag

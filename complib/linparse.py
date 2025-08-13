@@ -43,7 +43,7 @@ class LinParse():
     def feed(self, arrx, buf):
         self.buf = buf
         self.arrx = arrx
-        if self.pvg.verbose > 1:
+        if self.pvg.opt_verbose > 1:
             print("stamps len =", len(self.stamps), "arrx len =", len(self.arrx))
 
         #if self.pvg.lxdebug:
@@ -59,14 +59,14 @@ class LinParse():
         '''  Compare items. Return end of scan point '''
         currstamp = self.stamps[idx][1];
 
-        if self.pvg.pgdebug > 6:
+        if self.pvg.opt_debug > 6:
             print("  itemx", "tprog =", tprog, "endd =", endd)
 
         match = miss = istamp = iprog = 0
         skiplen = self.skiplen(currstamp)
         while True:
             if istamp >= len(currstamp):
-                if self.pvg.pgdebug: print("break on end of stamp")
+                if self.pvg.opt_debug: print("break on end of stamp")
                 break
             # Skip already calculated values and skip markers
             while True:
@@ -74,11 +74,11 @@ class LinParse():
                     break
                 if self.arrx[tprog + iprog].flag == 0:
                     break
-                if self.pvg.pgdebug > 6:
+                if self.pvg.opt_debug > 6:
                     print("skip",  tprog, iprog, self.arrx[tprog + iprog])
                 iprog += 1
             if tprog + iprog >= endd:
-                if  self.pvg.pgdebug > 5:
+                if  self.pvg.opt_debug > 5:
                     print("break on end of buffer", "tprog =", tprog, "iprog =", iprog)
                 break
             #print("scan:", "'", self.arrx[tprog + iprog].mstr, "'", end = " ")
@@ -115,15 +115,15 @@ class LinParse():
                     iprog += 1
                 #print()
                 #iprog += 1
-                if  self.pvg.pgdebug > 6:
+                if  self.pvg.opt_debug > 6:
                     prarr(self.arrx[tprog : iprog+1], "stamp A opt:")
             #print("before: istamp =", istamp, "iprog =", iprog, "tprog =", tprog)
             if tprog + iprog >= endd:
-                if  self.pvg.pgdebug > 5:
+                if  self.pvg.opt_debug > 5:
                     print("break on end of buffer", "tprog =", tprog, "iprog =", iprog)
                 break
 
-            if  self.pvg.pgdebug > 5:
+            if  self.pvg.opt_debug > 5:
                 sss = self.arrx[tprog + iprog].mstr
                 print(" cmp: idx=%d tprog=%d iprog=%d istamp=%d"  % \
                                     (idx, tprog, iprog, istamp),
@@ -133,7 +133,7 @@ class LinParse():
 
             if currstamp[istamp][0] != self.arrx[tprog + iprog].stamp[1]:
                 miss = True
-                if  self.pvg.pgdebug > 7:
+                if  self.pvg.opt_debug > 7:
                     print("    miss:", "'" + self.arrx[tprog + iprog].mstr + "'")
                 break
             # Complete?
@@ -141,12 +141,12 @@ class LinParse():
             iprog += 1    # step forward
             if istamp >= skiplen:
                 if not miss:
-                    if self.pvg.pgdebug > 5:
+                    if self.pvg.opt_debug > 5:
                         #print("stamp match:", "tprog =", tprog, "iprog =", iprog)
                         #print( " curr =", currstamp);
                         prarr(self.arrx[tprog:tprog+iprog], " match idx=%d arrx = " % idx)
                     call(self, tprog, iprog )
-                    if self.pvg.pgdebug > 6:
+                    if self.pvg.opt_debug > 6:
                         #prarr(self.arrx[tprog:tprog+iprog], " post arrx = ", True)
                         prarr(self.arrx, " post arrx = ", True)
                     match = True
@@ -157,12 +157,12 @@ class LinParse():
     def stampx(self, idx, start, endd):
         tprog = start
         if  self.stamps[idx][0] != self.state:
-            if self.pvg.pgdebug > 0:
+            if self.pvg.opt_debug > 0:
                 print("Out of state:", self.state, "idx = ", idx)
             return False
         stamp = self.stamps[idx][1];
         call  = self.stamps[idx][2];
-        if self.pvg.pgdebug > 6:
+        if self.pvg.opt_debug > 6:
             print("stampx idx =", idx, "start =", start, "endd =", endd)
         matchx = 0
         while True:
@@ -170,7 +170,7 @@ class LinParse():
             if tprog >= endd:
                 #print("stampx: End of data")
                 break;
-            if self.pvg.pgdebug > 6:
+            if self.pvg.opt_debug > 6:
                 print("\n stamps:\t",  tprog, end=" " )
                 for bb in range(len(stamp)):
                     print(stamp[bb][0], end = " ")
@@ -188,9 +188,9 @@ class LinParse():
         return  matchx
 
     def _feed(self, start, endd):
-        if self.pvg.pgdebug > 5:
+        if self.pvg.opt_debug > 5:
             print("_feed: ", start, endd)
-        if self.pvg.pgdebug > 6:
+        if self.pvg.opt_debug > 6:
             prarr(self.arrx[start : endd], "recu")
         sprog = start
         self.restart = False;
@@ -204,7 +204,7 @@ class LinParse():
                 idx = 0
                 self.restart = False
                 sprog = 0
-                if self.pvg.pgdebug:
+                if self.pvg.opt_debug:
                     print("restarted at", start)
 
             #print("stampx", idx, sprog, endd)
@@ -213,7 +213,7 @@ class LinParse():
             if redo:
                 idx = 0
                 sprog = 0
-                if self.pvg.pgdebug > 6:
+                if self.pvg.opt_debug > 6:
                     print("redo, sprog =", sprog)
             else:
                 idx += 1

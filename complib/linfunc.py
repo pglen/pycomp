@@ -13,17 +13,17 @@ def funcpvg(xpvg):
 # Functions to call on stamp match
 
 def func_dummy(self2, idx, tprog, iprog):
-    if pvg.pgdebug > 0:
+    if pvg.opt_debug > 0:
         print("match dummy idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
 
 def func_str(self2, idx, tprog, iprog):
     print("match str idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
-    if pvg.pgdebug > 3:
+    if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx str pre: ")
     sys.exit(0)
 
 def func_func(self2, tprog, iprog):
-    if pvg.pgdebug > 3:
+    if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx func pre: ", True)
     #sys.exit(0)
     self2.arrx[tprog].flag = 1
@@ -31,25 +31,25 @@ def func_func(self2, tprog, iprog):
 
 def func_brace(self2, tprog, iprog):
 
-    #if pvg.pgdebug > 5:
+    #if pvg.opt_debug > 5:
     #    print("match brack tprog =", tprog, "iprog=", iprog)
 
-    if pvg.pgdebug > 3:
+    if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx brace pre: ")
 
     # Done with parentheses
     self2.arrx[tprog].flag = 1
     self2.arrx[tprog + iprog - 1].flag = 1
 
-    if pvg.pgdebug > 5:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx, "arrx pre brace feed:", True)
 
     self2._feed(tprog + 1, tprog+iprog - 1)
 
-    if pvg.pgdebug > 5:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog+1], "arrx post brace feed:")
 
-    if pvg.pgdebug > 6:
+    if pvg.opt_debug > 6:
         prarr(self2.arrx, "arrx brace post:", True)
 
     # Force rescan
@@ -57,25 +57,25 @@ def func_brace(self2, tprog, iprog):
 
 def func_paren(self2, tprog, iprog):
 
-    #if pvg.pgdebug > 5:
+    #if pvg.opt_debug > 5:
     #    print("match paren tprog =", tprog, "iprog=", iprog)
 
-    if pvg.pgdebug > 3:
+    if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx paren pre: ")
 
     # Done with parentheses
     self2.arrx[tprog].flag = 1
     self2.arrx[tprog + iprog - 1].flag = 1
 
-    if pvg.pgdebug > 5:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx, "arrx pre par feed:", True)
 
     self2._feed(tprog + 1, tprog+iprog - 1)
 
-    if pvg.pgdebug > 5:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog+1], "arrx post par feed:")
 
-    if pvg.pgdebug > 6:
+    if pvg.opt_debug > 6:
         prarr(self2.arrx, "arrx paren post:", True)
 
     # Force rescan
@@ -133,21 +133,21 @@ def _func_arith(self2, opstr, tprog, iprog):
     #    #self2.arrx[ss].flag = 1
 
 def func_mul(self2, tprog, iprog):
-    if pvg.pgdebug > 5:
+    if pvg.opt_debug > 5:
         print("match mul tprog =", tprog, "iprog=", iprog)
-    if pvg.pgdebug > 3:
+    if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx mul pre: ")
     _func_arith(self2, "*", tprog, iprog)
-    if pvg.pgdebug > 3:
+    if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx mul post: ")
 
 def func_add(self2, tprog, iprog):
-    if pvg.pgdebug > 6:
+    if pvg.opt_debug > 6:
         print("match add tprog =", tprog, "iprog=", iprog)
-    if pvg.pgdebug > 6:
+    if pvg.opt_debug > 6:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx add pre: ")
     _func_arith(self2, "+", tprog, iprog)
-    if pvg.pgdebug > 6:
+    if pvg.opt_debug > 6:
         prarr(self2.arrx[tprog:tprog+iprog], "arrx add post: ")
 
 # EOF

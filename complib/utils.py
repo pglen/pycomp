@@ -4,19 +4,62 @@ import sys, os, re, time, stat
 
 class lpg():
 
-    ''' Some class globals. Read: (Lexer and Parser Globals) '''
+    ''' Some class globals. (For both Lexer and Parser) '''
+    buf = None; xstack = None;
+    options = "" ; currline = 0; lstack = None;
 
-    buf = None; xstack = None; verbose = 0
-    lxdebug = 0; pgdebug = 0; show_lexer = False;
-    lstack = None;  fullpath = None; docroot = None
-    got_clock = 0; show_timing = False; second = ""
-    flag = False; show_parse = False
-    emit = False; show_state = False; lex_only = False
-    currline = 0;
+    ''' Program flags. Start with letter 'a' for inclusion '''
+
+    opt_quiet = False
+    opt_flag = False;
+    opt_timing_show = False;
+    opt_parse_show = False;
+    opt_state_show = False;
+    opt_emit = False;
+    opt_help = False;
+    opt_only_lex = False
+    opt_Ver = False;
+    opt_verbose = False;
+    opt_Xer_show = False;
+    opt_xshow_lexer = False;
+
+    opt_debug = 0;
+    opt_lxdebug = 0;
+    opt_got_clock = 0;
+
+    opt_workdir = "./tmp"
+
+    def warnif(aa, options):
+        #print("adding:", aa)
+        if aa[4] in options:
+            print("Warn, already has option with:", aa[4], "=>", aa)
+
+    def auto_opt():
+        options = ""
+        for aa in dir(lpg):
+            if aa[:4] != "opt_":
+                continue
+            bb = getattr(lpg, aa)
+            if isinstance(bb, str):
+                lpg.warnif(aa, options)
+                options += aa[4] + ":"
+            elif isinstance(bb, bool):
+                lpg.warnif(aa, options)
+                options += aa[4]
+            elif isinstance(bb, int):
+                lpg.warnif(aa, options)
+                options += aa[4] + ":"
+            else:
+                pass
+                #print("Unk type")
+        #print("\noptions:", options)
+        lpg.options = options
+
+    #options = "qthvVfpesxXLl:d:o:"
 
     def print():
         for aa in dir(lpg):
-            if aa[:2] != "__":
+            if aa[:2] != "__" and aa[:4] == "opt_":
                 print("[", aa, "=", getattr(lpg, aa), end = " ] ")
         print()
 
