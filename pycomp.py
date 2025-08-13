@@ -13,6 +13,9 @@ import  complib.lindef as lindef
 
 from complib.utils import *
 
+Version = "Version: 1.0.0; "
+Build   = "Build date: Aug 13 2025"
+
 # ------------------------------------------------------------------------
 # Accumulate output: (mostly for testing)
 _cummulate = ""
@@ -38,8 +41,8 @@ def parsefile(strx):
 
     start_time =  time.process_time()
 
-    if lpg.opt_verbose > 1:
-        print ("Showing file:", strx)
+    if lpg.opt_verbose:
+        print ("Processing file:", strx)
     try:
         fh = open(strx)
     except:
@@ -100,6 +103,21 @@ def parsefile(strx):
     if lpg.opt_emit:
         show_emit()
 
+opts =  (\
+    #   name      initval       Help string
+    # -------     -------       ----------------
+    ("Define",      [],         "Define variable. (multiple allowed)"),
+    ("emit",        False,      "Emit parse string."),
+    ("Target",      "x86_64",   "Select target. Currently x86_64 only."),
+    ("state_show",  False,      "Show parser states"),
+    ("xshow_lexer", False,      "Show lexer states"),
+    ("timing_show", False,      "Show timings for program execution"),
+    ("parse_show",  False,      "Show parser progress"),
+    ("just_lex",    False,      "Only execute lexer"),
+    ("emit",        False,      "Emit parse string"),
+    ("lxdebug",     0,          "Debug level for lexer. Def=0 0=none 9=noisy"),
+    )
+
 # ------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -110,18 +128,15 @@ if __name__ == "__main__":
 
     #    ("Undefine", "", "Un-define variable."),
 
-    opts =  (     ("Define", "", "Define variable."),
-                  ("emit", False, "Emit Parse string."),
-                  ("Target", "x86_64", "Select target. Currently x86_64 only."),
-            )
-
     lpg = args.Lpg(opts, sys.argv)
-    #print(lpg.helpdict)
+
+    if lpg.opt_Version:
+        print(lpg.myname, Version, Build)
+        sys.exit(0)
 
     if lpg.opt_help:
         lpg.help()
         sys.exit(0)
-
     #print( lpg.opt_debug, type(lpg.opt_debug))
     if lpg.opt_debug > 1:
         lpg.printme()
@@ -131,41 +146,39 @@ if __name__ == "__main__":
         print("Warning: both verbose and quiet is set")
 
     if lpg.opt_Target != "x86_64":
-        print("Only x86_64 is supported (for now)")
+        print("Error: only x86_64 is supported (for now)")
         sys.exit(0)
 
-    sys.exit(0)
-
-    if lpg.opt_verbose > 1:
+    if lpg.opt_verbose:
         print("Calc options:", lpg.options, lpg.opt_verbose)
 
-    if lpg.opt_verbose > 3:
+    if lpg.opt_verbose:
         lpg.printme()
 
-    if lpg.opt_verbose > 2:
+    if lpg.opt_verbose:
         print("opts:", opts)
         print("args", args)
 
-    if not args:
-        args.help();
+    if not lpg.args:
+        print("Missing file name(s). Use: -h option for help")
+        #lpg.help();
         exit(0);
 
-    cnt = 0
-    strx = "None"
+    #print("lpg args:", lpg.args)
+    #sys.exit(0)
+
+    cnt = 0 ; strx = "None"
     while True:
         try:
-            if cnt >= len(args):
+            if cnt >= len(lpg.args):
                 break
-            strx = args[cnt]
-
-            if lpg.opt_verbose:
-                print("Compiling: %s" % strx)
+            strx = lpg.args[cnt]
         except:
-            print("Error compiling:", strx)
-            pass ; #exit(1)
-        #lstack = stack.pStack()
+            print("Error compiling:", strx, sys.exc_info())
+            pass
         fullpath = os.path.abspath(strx);
-        lpg.docroot = os.path.dirname(fullpath)
+        docroot = os.path.dirname(fullpath)
+        #print("docroot", docroot)
         parsefile(strx)
         cnt += 1
 

@@ -24,19 +24,13 @@ class Lpg():
         # Adding it here allows a template like operation
 
         self.opt_quiet = False
-        self.opt_timing_show = False;
-        self.opt_parse_show = False;
-        self.opt_state_show = False;
-        self.opt_emit = False;
         self.opt_help = False;
         self.opt_outfile = ""
-        self.opt_just_lex = False
+        self.opt_debug = 0;
         self.opt_Version = False;
         self.opt_verbose = False;
         self.opt_xshow_lexer = False;
-        self.opt_debug = 0;
-        self.opt_lxdebug = 0;
-        #self.opt_got_clock = 0;
+
         self.opt_workdir = "./tmp"
 
         # Add recurring options / template help
@@ -45,15 +39,9 @@ class Lpg():
         self.helpdict["opt_verbose"]     = "Set verbosity"
         self.helpdict["opt_Version"]     = "Print Version number"
         self.helpdict["opt_debug"]       = "Debug level. Def=0 0=none 9=noisy"
-        self.helpdict["opt_lxdebug"]     = "Debug level for lexer. Def=0 0=none 9=noisy"
         self.helpdict["opt_workdir"]     = "Directory for temp files. Def=./tmp"
-        self.helpdict["opt_state_show"]  = "Show parser states"
-        self.helpdict["opt_timing_show"] = "Show timing for program execution"
-        self.helpdict["opt_parse_show"]  = "Show parse progress"
-        self.helpdict["opt_only_lex"]    = "Execute lexer only"
-        self.helpdict["opt_xshow_lexer"] = "Show lexer states"
-        self.helpdict["opt_just_lex"]    = "Only execute lexer"
         self.helpdict["opt_outfile"]     = "Name of output file"
+
         self.opt_xshow_lexer = False;
 
         # Options from user
@@ -61,6 +49,12 @@ class Lpg():
             oo = "opt_" + aa[0]
             setattr(self, oo, aa[1])
             self.helpdict[oo] = aa[2]
+
+        #for aa in dir(self):
+        #    if aa[:4] != "opt_":
+        #        continue
+        #    aaa = getattr(self, aa)
+        #    #print(aa, "=", aaa)
 
         #print("helpdict", self.helpdict)
         self._auto_opt()
@@ -91,15 +85,17 @@ class Lpg():
             bb = getattr(self, aa)
             #print("vars:", "--" + aa[4:].lower(), "=", bb)
 
-            if isinstance(bb, str):
+            if isinstance(bb, type([]) ):
                 self.warnif(aa)
                 self.options += aa[4] + ":"
                 self.loptions.append(aa[4:].lower() + "=")
-
+            elif isinstance(bb, str):
+                self.warnif(aa)
+                self.options += aa[4] + ":"
+                self.loptions.append(aa[4:].lower() + "=")
             elif isinstance(bb, bool):
                 self.warnif(aa)
                 self.options += aa[4]
-
             elif isinstance(bb, int):
                 self.warnif(aa)
                 self.options += aa[4] + ":"
@@ -146,7 +142,7 @@ class Lpg():
         self.myname = os.path.basename(argx[0])
         self.setpre() ; self.setpost()
         try:
-            opts, args = getopt.gnu_getopt(argx[1:], self.options, self.loptions)
+            opts, self.args = getopt.gnu_getopt(argx[1:], self.options, self.loptions)
         except getopt.GetoptError as err:
             print ("Invalid option(s) on command line:", err)
             sys.exit(1)
@@ -160,7 +156,9 @@ class Lpg():
                 if aaa[4] == aa[0][1] or aaa[4:].lower() == aa[0][2:]:
                     attr = getattr(self, aaa)
                     #print("deal", aaa, "=", attr,  aa[1], type(attr))
-                    if type(attr) == type(True):
+                    if type(attr) == type([]):
+                        getattr(self, aaa).append(aa[1])
+                    elif type(attr) == type(True):
                         setattr(self, aaa, True)
                     elif type(attr) == type(0):
                         setattr(self, aaa, self._xint(aa[1]))
@@ -195,22 +193,6 @@ def test_xint():
     assert 1 == lpg._xint(1);
     assert 0 == lpg._xint("a");
     assert 1 == lpg._xint("b", 1);
-
-'''  old help srings
- Parser debug level (1-10) default: 0")
- Lexer debug level (1-10) default: 0")
- Outfile name")
- Emit parse string")
- Print version")
- Verbose (add -v for more details)")
- Show parser states"    )
- Show timing of compile")
- Temp dir for work related files")
- Lex only")
- Show lexer output")
- Show parser messages")
- Help (this screen)")
-'''
 
 # EOF
 
