@@ -43,7 +43,7 @@ class LinParse():
     def feed(self, arrx, buf):
         self.buf = buf
         self.arrx = arrx
-        if self.pvg.opt_verbose:
+        if self.pvg.opt_verbose.cnt:
             print("stamps len =", len(self.stamps), "arrx len =", len(self.arrx))
 
         #if self.pvg.lxdebug:

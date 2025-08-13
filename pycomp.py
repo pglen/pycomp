@@ -41,7 +41,7 @@ def parsefile(strx):
 
     start_time =  time.process_time()
 
-    if lpg.opt_verbose:
+    if lpg.opt_verbose.cnt > 1:
         print ("Processing file:", strx)
     try:
         fh = open(strx)
@@ -80,7 +80,7 @@ def parsefile(strx):
 
     if lpg.opt_xshow_lexer:  # To show what the lexer did
         for aa in res:
-            if lpg.opt_verbose:
+            if lpg.opt_verbose.cnt:
                 print(aa.dump(), end = " ")
             else:
                 print(aa, end = " ")
@@ -96,7 +96,7 @@ def parsefile(strx):
     par = linparse.LinParse(lindef.stamps, lpg)
     par.feed(res, buf)
 
-    prarr(par.arrx, "result:", lpg.opt_verbose)
+    prarr(par.arrx, "result:", lpg.opt_verbose.cnt)
 
     if lpg.opt_timing_show: print  ("parser:", time.process_time() - start_time)
     # Output results
@@ -106,17 +106,19 @@ def parsefile(strx):
 opts =  (\
     #   name      initval       Help string
     # -------     -------       ----------------
-    ("Define",      [],         "Define variable. (multiple allowed)"),
+    ("Define",      [],         "Define variable. (multiple defines accepted)"),
     ("emit",        False,      "Emit parse string."),
-    ("Target",      "x86_64",   "Select target. Currently x86_64 only."),
-    ("state_show",  False,      "Show parser states"),
-    ("xshow_lexer", False,      "Show lexer states"),
-    ("timing_show", False,      "Show timings for program execution"),
-    ("parse_show",  False,      "Show parser progress"),
-    ("just_lex",    False,      "Only execute lexer"),
-    ("emit",        False,      "Emit parse string"),
-    ("lxdebug",     0,          "Debug level for lexer. Def=0 0=none 9=noisy"),
+    ("Target",      "x86_64",   "Select target. Def: x86_64 (no other targets)"),
+    ("state_show",  False,      "Show parser states."),
+    ("xshow_lexer", False,      "Show lexer states."),
+    ("timing_show", False,      "Show timings for program execution."),
+    ("parse_show",  False,      "Show parser progress."),
+    ("just_lex",    False,      "Only execute lexer."),
+    ("emit",        False,      "Emit parse string."),
+    ("lxdebug",     0,          "Debug level for lexer. Def=0 0=>none 9=>noisy."),
     )
+
+    #    ("Undefine", "", "Un-define variable."),
 
 # ------------------------------------------------------------------------
 
@@ -126,46 +128,21 @@ if __name__ == "__main__":
 
     #sys.setrecursionlimit(25)
 
-    #    ("Undefine", "", "Un-define variable."),
-
     lpg = args.Lpg(opts, sys.argv)
-
     if lpg.opt_Version:
         print(lpg.myname, Version, Build)
         sys.exit(0)
-
     if lpg.opt_help:
         lpg.help()
         sys.exit(0)
-    #print( lpg.opt_debug, type(lpg.opt_debug))
-    if lpg.opt_debug > 1:
-        lpg.printme()
-
-    # Check for reasonable flags:
-    if lpg.opt_verbose and lpg.opt_quiet:
-        print("Warning: both verbose and quiet is set")
-
     if lpg.opt_Target != "x86_64":
         print("Error: only x86_64 is supported (for now)")
         sys.exit(0)
-
-    if lpg.opt_verbose:
-        print("Calc options:", lpg.options, lpg.opt_verbose)
-
-    if lpg.opt_verbose:
+    if lpg.opt_verbose.cnt > 2:
         lpg.printme()
-
-    if lpg.opt_verbose:
-        print("opts:", opts)
-        print("args", args)
-
     if not lpg.args:
         print("Missing file name(s). Use: -h option for help")
-        #lpg.help();
         exit(0);
-
-    #print("lpg args:", lpg.args)
-    #sys.exit(0)
 
     cnt = 0 ; strx = "None"
     while True:
@@ -174,7 +151,7 @@ if __name__ == "__main__":
                 break
             strx = lpg.args[cnt]
         except:
-            print("Error compiling:", strx, sys.exc_info())
+            #print("Error compiling:", strx, sys.exc_info())
             pass
         fullpath = os.path.abspath(strx);
         docroot = os.path.dirname(fullpath)

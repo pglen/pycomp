@@ -2,6 +2,40 @@
 
 import getopt, sys, os.path
 
+# Class for incremented variable
+
+class cntx:
+
+    def __init__(self, cnt = 0):
+        self.cnt = cnt
+
+    def __add__(self, what):
+        #print("add:", what)
+        self.cnt += what
+        return self
+
+    def __repr__(self):
+        #print("repr:", self.cnt)
+        return self.cnt
+
+    def __int__(self):
+        #print("int:", self.cnt)
+        return self.cnt
+
+    def __str__(self):
+        return str(self.cnt)
+
+builtins = ( \
+    ("componly", False, "Compile only."),
+    ("help", False, "Show help (this screen)."),
+    ("outfile", "", "Name of output file."),
+    ("debug", 0, "Debug level. Def=0 0=>none 9=>noisy."),
+    ("Version", False, "Print Version number."),
+    ("verbose", cntx(), "Set verbosity."),
+    ("xshow_lexer", False, "Show lexer output"),
+    ("workdir", "./tmp", "Directory for temp files. Def=./tmp"),
+    )
+
 class Lpg():
 
     ''' Program control flags and arguments. Vars with the letters
@@ -20,41 +54,18 @@ class Lpg():
         self.poststr = "End Help"
         self.pad = 32                   # How far to padd comment
 
-        # May add options here or in the command invocation
         # Adding it here allows a template like operation
+        for aa in builtins:
+            oo = "opt_" + aa[0]
+            setattr(self, oo, aa[1])
+            self.helpdict[oo] = aa[2]
 
-        self.opt_quiet = False
-        self.opt_help = False;
-        self.opt_outfile = ""
-        self.opt_debug = 0;
-        self.opt_Version = False;
-        self.opt_verbose = False;
-        self.opt_xshow_lexer = False;
-
-        self.opt_workdir = "./tmp"
-
-        # Add recurring options / template help
-        self.helpdict["opt_help"]        = "Show help (this screen)"
-        self.helpdict["opt_quiet"]       = "Set quiet, minimize output"
-        self.helpdict["opt_verbose"]     = "Set verbosity"
-        self.helpdict["opt_Version"]     = "Print Version number"
-        self.helpdict["opt_debug"]       = "Debug level. Def=0 0=none 9=noisy"
-        self.helpdict["opt_workdir"]     = "Directory for temp files. Def=./tmp"
-        self.helpdict["opt_outfile"]     = "Name of output file"
-
-        self.opt_xshow_lexer = False;
-
+        # May add options here or in the command invocation
         # Options from user
         for aa in optlist:
             oo = "opt_" + aa[0]
             setattr(self, oo, aa[1])
             self.helpdict[oo] = aa[2]
-
-        #for aa in dir(self):
-        #    if aa[:4] != "opt_":
-        #        continue
-        #    aaa = getattr(self, aa)
-        #    #print(aa, "=", aaa)
 
         #print("helpdict", self.helpdict)
         self._auto_opt()
@@ -85,24 +96,30 @@ class Lpg():
             bb = getattr(self, aa)
             #print("vars:", "--" + aa[4:].lower(), "=", bb)
 
-            if isinstance(bb, type([]) ):
-                self.warnif(aa)
+            self.warnif(aa)
+
+            # Put bool as first, as it is derived from integer
+            if isinstance(bb, bool):
+                #print("bool", aa)
+                self.options += aa[4]
+            elif isinstance(bb, type([]) ):
                 self.options += aa[4] + ":"
                 self.loptions.append(aa[4:].lower() + "=")
             elif isinstance(bb, str):
-                self.warnif(aa)
+                #print("str", aa)
                 self.options += aa[4] + ":"
                 self.loptions.append(aa[4:].lower() + "=")
-            elif isinstance(bb, bool):
-                self.warnif(aa)
-                self.options += aa[4]
             elif isinstance(bb, int):
-                self.warnif(aa)
+                #print("int", aa)
                 self.options += aa[4] + ":"
                 self.loptions.append(aa[4:].lower() + "=")
+            elif isinstance(bb, cntx ):
+                #print("counter", aa)
+                self.options += aa[4]
+                self.loptions.append(aa[4:].lower())
             else:
                 pass
-                print("Unkown type", type(aa))
+                print("Err: Unkown type", type(aa))
 
         #print("options:", self.options)
         #print("loptions:", self.loptions)
@@ -131,9 +148,14 @@ class Lpg():
             except KeyError:
                 pass
             except:
-                #print("err helpstr", sys.exc_info())
+                print("err helpstr", sys.exc_info())
                 pass
-            head = "        -" + str(aa[4]) + "  --" + str(aa[4:])
+
+            arg = " val"
+            if type(getattr(self, aa)) == type(False):
+                #print("bool", aa)
+                arg = "    "
+            head = "    -" + str(aa[4]) + arg + "  --" + str(aa[4:]).lower() + arg
             strx += head + " " * (self.pad - len(head)) + str(bb) + "\n"
         return strx
 
@@ -141,10 +163,12 @@ class Lpg():
 
         self.myname = os.path.basename(argx[0])
         self.setpre() ; self.setpost()
+
         try:
             opts, self.args = getopt.gnu_getopt(argx[1:], self.options, self.loptions)
         except getopt.GetoptError as err:
-            print ("Invalid option(s) on command line:", err)
+            print("Invalid option(s) on command line:", err)
+            print("Use:", self.myname, "-h option for help.")
             sys.exit(1)
         #print("opts =", opts)
 
@@ -156,11 +180,14 @@ class Lpg():
                 if aaa[4] == aa[0][1] or aaa[4:].lower() == aa[0][2:]:
                     attr = getattr(self, aaa)
                     #print("deal", aaa, "=", attr,  aa[1], type(attr))
-                    if type(attr) == type([]):
+                    if isinstance(attr, cntx):
+                        attr += 1
+                        #print("increment", attr.cnt)
+                    elif isinstance(attr, type([]) ):
                         getattr(self, aaa).append(aa[1])
-                    elif type(attr) == type(True):
+                    elif isinstance(attr, type(True) ):
                         setattr(self, aaa, True)
-                    elif type(attr) == type(0):
+                    elif isinstance(attr, type(0) ):
                         setattr(self, aaa, self._xint(aa[1]))
                     else:
                         setattr(self, aaa, aa[1])
@@ -175,15 +202,17 @@ class Lpg():
         else:
             self.prestr = "PCOMP parallel compiler.\n"
             self.prestr += "Usage: " + self.myname + \
-                            " [options] filename [ filename ] ... \n"
+                            " [options] filename [filename(s)] ... [options]\n"
             self.prestr += "Available options:"
 
     def setpost(self, strx = None):
         if strx:
             self.poststr = strx
         else:
-            self.poststr  = "Option values are identical for short form and long form.\n"
-            self.poststr += "Def stands for 'default' value."
+            self.poststr  = \
+            "Argument values are identical for the short form and long form options.\n"
+            self.poststr += \
+            "Def: stands for 'default' value. Options after file names are interpreted."
 
 def test_xint():
 
@@ -194,16 +223,11 @@ def test_xint():
     assert 0 == lpg._xint("a");
     assert 1 == lpg._xint("b", 1);
 
+if __name__ == "__main__":
+
+    ccc = cntx(1)
+    print(ccc, int(ccc), type(ccc))
+    ccc += 2
+    print(ccc, int(ccc), type(ccc))
+
 # EOF
-
-
-
-
-
-
-
-
-
-
-
-
