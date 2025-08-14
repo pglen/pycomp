@@ -21,10 +21,11 @@ class Cntx:
 # Adding default options here allows a template like operation
 
 builtins = ( \
-    ("help",    False,  "Show help. (this screen)"),
-    ("debug",   0,      "Debug level. Def=0 0=>none 9=>noisy."),
-    ("Version", False,  "Print version number and build date."),
-    ("verbose", Cntx(), "Set verbosity level."),
+    ("help",     False,  "Show help. (this screen)"),
+    ("Help2",    False,  "Show advanced help. (placeholder for now)"),
+    ("debug",    0,      "Debug level. Def=0 0=>none 9=>noisy."),
+    ("Version",  False,  "Print version number and build date."),
+    ("verbose",  Cntx(), "Set verbosity level."),
     )
 
 class Lpg():
@@ -51,20 +52,18 @@ class Lpg():
             oo = "opt_" + aa[0]
             setattr(self, oo, aa[1])
             self.helpdict[oo] = aa[2]
-
         # Add options from the command invocation
         for aa in optlist:
             oo = "opt_" + aa[0]
             setattr(self, oo, aa[1])
             self.helpdict[oo] = aa[2]
-
+        #print("help", dir(self))
         #print("helpdict", self.helpdict)
         self._auto_opt()
         if argv:
             self.parse(argv)
-
-        #for aa in self.iter_vars():
-        #    print("aa", aa)
+        for aa in self.iter_vars():
+            print(aa, end = " ")
 
     def _xint(self, strx, defx = 0):
         ''' Convert to integer without exception.
@@ -188,6 +187,11 @@ class Lpg():
         print(self.prestr)
         print(self.helpstr(), end = "")
         print(self.poststr)
+
+    def Help(self):
+        print("Advanced help placeholder.")
+        print("Under construction.")
+
 
     def setpre(self, strx = None):
         if strx:

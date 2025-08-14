@@ -151,14 +151,21 @@ if __name__ == "__main__":
     if lpg.opt_Version:
         print(lpg.myname, Version, Build)
         sys.exit(0)
+
     if lpg.opt_help:
         lpg.help()
         sys.exit(0)
+
+    if lpg.opt_Help2:
+        lpg.Help()
+        sys.exit(0)
+
     if lpg.opt_Target != "x86_64":
         print("Error: only x86_64 is supported (for now)")
         sys.exit(0)
     if lpg.opt_verbose.cnt > 2:
         lpg.printme()
+
     if not lpg.args:
         print("Missing file name(s). Use: -h option for help")
         sys.exit(0);
