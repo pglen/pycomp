@@ -116,7 +116,7 @@ def parsefile(strx):
     par.feed(res, buf)
     if lpg.opt_timing_show: print  ("parse time:", time_ms(start_time))
 
-    prarr(res, "result: %s" % strx, lpg.opt_verbose.cnt)
+    prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
 
     # Output results
     if lpg.opt_emit:

@@ -4,7 +4,11 @@
 
 import operator
 
-from complib.utils import *
+try:
+    from complib.utils import *
+except:
+    #print(__file__, ":import local")
+    from utils import *
 
 def funcpvg(xpvg):
     global pvg

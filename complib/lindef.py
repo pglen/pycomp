@@ -2,8 +2,13 @@
 
 ''' Definitions for the linear parser '''
 
-from complib.utils import *
-from complib.linfunc  import *
+try:
+    from complib.utils import *
+    from complib.linfunc  import *
+except:
+    #print(__file__, ":import local")
+    from linfunc  import *
+    from utils import *
 
 N   =   0     # _No_ flag
 P   =   1     # Op_P_ional
@@ -16,27 +21,11 @@ def defpvg(xpvg):
 
 SP = ("sp", M)
 
-from enum import Enum
-
-class SL(Enum):
-    INI = 0; FUNC=2; ARGS=2; DECL=3
-
-class CO(Enum):
-    INI = 0; FUNC=2; ARGS=2; DECL=3
-
-class Stmp():
-
-    ''' Our parser stamp '''
-    def __init__(self):
-        self.state = SL.INI
-        self.scan = ()
-        self.callf = None
-
-    def call(self):
-        ret = None
-        if self.callf:
-             ret = self.callf()
-        return ret
+lut = Lut()
+# The short version of add / lookup, returning the num only
+def pl(strx):
+    aa = lut.lookup(strx)
+    return aa[0]
 
 # Short hand for some items
 SPC =  ("sp",M)
@@ -53,15 +42,15 @@ MULX    = ("num",N), ("sp",M), ("*",N), ("sp",M), ("num",N)
 ADDX    = ("num",N), ("sp",P|M), ("+",N), ("sp",P|M), ("num",N)
 
 # There are the entries to be matched agains the parse array.
-#    state      (parse items,flags) ...         function
-#    -----      --------------------            ----------
+#    state      (parse items,flags) ...    new_state     function
+#    -----      --------------------       ---------     ----------
 
 stamps =  (
-#    (SL.INI.value,  FUNCD,  func_func),
-    (SL.INI.value,  BRACEX, func_brace),
-    (SL.INI.value,  PARENX, func_paren),
-    (SL.INI.value,  MULX,   func_mul),
-    (SL.INI.value,  ADDX,   func_add),
+    (0,  FUNCD,  func_func),
+    (0,  BRACEX, func_brace),
+    (0,  PARENX, func_paren),
+    (0,  MULX,   func_mul),
+    (0,  ADDX,   func_add),
 
     #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("num",N)), func_dummy),
     #(SL.INI.value,  (("ident",N),("=",N),  ("strx",N)), func_dummy),
@@ -69,5 +58,11 @@ stamps =  (
   )
 
 #print(stamps)
+
+if __name__ == "__main__":
+    print ("This module was not meant to operate as main.")
+    #pl("aaaaa") ;    pl("bbbbbb") ;  pl("cvvvvv");
+    #pl("dcccccc") ;  pl("eeeeeee")
+    #print(lut.dump(), end = " ")
 
 # EOF

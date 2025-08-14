@@ -4,10 +4,11 @@
         This file defines the tokens and parser states
 '''
 
-#from __future__ import absolute_import
-from __future__ import print_function
-
-from complib.utils import *
+try:
+    from complib.utils import *
+except:
+    print(__file__, ":local import:")
+    from utils import *
 
 '''
 # We initialize parser variables in the context of the parser module.

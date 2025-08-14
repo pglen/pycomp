@@ -17,8 +17,8 @@ class LinParse():
         defpvg(pvg)
         funcpvg(pvg)
         self.stamps = stamps
-        self.state = SL.INI.value
-        self.context = CO.INI.value
+        self.state = 0
+        self.context = 0
         # Check integrity
         #for ss in range(len(self.stamps)):
         #    pass

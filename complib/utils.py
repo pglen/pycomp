@@ -2,6 +2,66 @@
 
 import sys, os, re, time, stat
 
+_gl_cnt = 0
+def unique():             # create a unique temporary number
+    global _gl_cnt; _gl_cnt += 1
+    return _gl_cnt
+
+#_gl_cnt2 = 0
+#def unique2():             # create a unique temporary number
+#    global _gl_cnt2; _gl_cnt2 += 1
+#    return _gl_cnt2
+
+# Connect parser token to lexer item. This way the definitions are synced
+# without the need for double definition
+# Look up, create if not found
+
+class Lut:
+
+    def __init__(self):
+        self.tokdef = []
+
+    def lookup(self, strx):
+        ret = None
+        for aa in self.tokdef:
+            if strx == aa[1]:
+                #print "found", aa
+                ret = aa
+                break
+        if ret == None:
+            #print ("Token '" + strx + "' not found, adding ... ", end = " " )
+            self.tokdef.append((unique(), strx))
+            for aa in  self.tokdef:
+                if strx == aa[1]:
+                    #print(aa)
+                    ret = aa
+                    break
+            if ret == None:
+                print ("Token '" + strx + "' not found, please correct it.")
+        return aa
+
+    def rlookup(self, idn):
+        ret =  "none"
+        for aa in  self.tokdef:
+            #print("idx =", idn, "aa =", aa)
+            if idn == aa[0]:
+                ret = aa[1]
+                break
+        return ret
+
+    def dump(self, pad = 15, perline = 5):
+        res = ""
+        cnt = 0
+        for aa in  self.tokdef:
+            strx = str(aa[0]) + " = " + "'" + aa[1] + "'"
+            xlen = pad - len(strx)
+            res += "%s%s" % (strx, " " * xlen)
+            cnt += 1
+            if cnt % perline == 0:
+                res += "\n"
+        #res += "\n"
+        return res
+
 class Tree:
     def __init__(self, data = None):
         self.left = None
@@ -160,8 +220,8 @@ def cesc(strx):
             retx += '\\f'
         elif(chh == '\v'):
             retx += '\\v'
-        elif(chh == '\e'):
-            retx += '\\e'
+        #elif(chh == '\e'):
+        #    retx += '\\e'
         elif(chh == '\\'):
             retx += '\\\\'
         else:
@@ -172,13 +232,12 @@ def cesc(strx):
 # ------------------------------------------------------------------------
 # Unescape unicode into displayable sequence
 
-xtab = []; xtablen = 0
-
 def unescape(strx):
 
+    xtab = []; xtablen = 0
     #print (" x[" + strx + "]x ")
 
-    global xtab, xtablen
+    #global xtab, xtablen
     retx = u""; pos = 0; lenx = len(strx)
 
     while True:
@@ -189,6 +248,7 @@ def unescape(strx):
 
         if(chh == '\\'):
             #print ("backslash", strx[pos:])
+
             pos2 = pos + 1; strx2 = ""
             while True:
                 if pos2 >= lenx:
@@ -200,7 +260,7 @@ def unescape(strx):
                         if xtablen == len(xtab):
                             retx += uni(xtab)
                             xtab = []; xtablen = 0
-                    pos = pos2 - 1
+                    pos2 += 1
                     break
                 chh2 = strx[pos2]
                 if chh2  >= "0" and chh2 <= "7":
@@ -257,13 +317,24 @@ def unescape(strx):
     #print ("y[" + retx + "]y")
     return retx
 
+#try:
+#    cccc = strx[pos+1]
+#    print("second backslash", cccc)
+#    if cccc == '\\':
+#        retx += "\\"
+#        pos += 1
+#        continue
+#except:
+#    pass
+
 # ------------------------------------------------------------------------
 # Give the user the usual options for true / false - 1 / 0 - y / n
 
 def isTrue(strx, defx = False):
-    if strx == "1": return True
-    if strx == "0": return False
-    uuu = strx.upper()
+    sss = strx.strip()
+    if sss == "1": return True
+    if sss == "0": return False
+    uuu = sss.upper()
     if uuu == "OK": return True
     if uuu == "TRUE": return True
     if uuu == "FALSE": return False
@@ -311,14 +382,20 @@ def test_hd():
 def test_true():
 
     assert True == isTrue("Yes")
+    assert True == isTrue(" Yes ")
     assert True == isTrue("YES")
     assert True == isTrue("OK")
     assert True == isTrue("True")
+    assert True == isTrue(" True ")
     assert True == isTrue("Y")
+    assert True == isTrue(" Y ")
     assert True == isTrue("1")
+    assert True == isTrue(" 1 ")
 
     assert False == isTrue("xrue")
     assert False == isTrue("False")
+    assert False == isTrue(" NO ")
+    assert False == isTrue("0")
     assert False == isTrue("")
 
 def test_oct2():
@@ -330,8 +407,25 @@ def test_oct2():
     uuu = oct2int("888")
     assert uuu == 0
 
-def test_hd():
-    pass
-    #print(hd("hello"))
+def test_unescape():
+
+    ret = unescape("a\"\'\r\nb")
+    assert ret ==  "a\"\'\r\nb"
+
+    ret = unescape("\x41\x42")
+    assert ret == "AB"
+
+    ret = unescape("\061\062")
+    assert ret == "12"
+
+    #print("\x263A")
+    #print("\x1f60a")
+    #ret = unescape("\x263A")
+    #print(ret)
+    #ret = unescape("\x1f60a")
+    #print(ret)
+    #assert ret == "a\\b"
+    #ret = unescape("\0")
+    #assert ret == ""
 
 # EOF

@@ -357,5 +357,4 @@ def test_oper():
     #assert 0
     assert str(res) == res2
 
-
 # EOF
