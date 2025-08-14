@@ -4,11 +4,7 @@
         This file defines the tokens and parser states
 '''
 
-try:
-    from complib.utils import *
-except:
-    print(__file__, ":local import:")
-    from utils import *
+from complib.utils import *
 
 '''
 # We initialize parser variables in the context of the parser module.
@@ -45,18 +41,35 @@ tok2 = {}; tok3 = {}
 #   language itself.
 # The punique() routine will let the token receive a new value with
 #   every iteration
-# Some tokens have no pase entries, these are used on summary output
+# Some tokens have no phase entries, these are used on summary output
 
-from enum import Enum
-
-class ST(Enum):
-    INI_STATE = 0; STR_STATE = 1; STR2_STATE = 2;
-    COMM_STATE = 3; ESC_STATE = 4; HEX_STATE = 5;
-    UNI_STATE = 6
-
+#from enum import Enum
+#class ST(Enum):
+#    INI_STATE = 0; STR_STATE = 1; STR2_STATE = 2;
+#    COMM_STATE = 3; ESC_STATE = 4; HEX_STATE = 5;
+#    UNI_STATE = 6
 #print(dir(ST.INI_STATE))
 
-STATEX, TOKENX, REGEX, STATEX = range(4)
+(STATEX, TOKENX, REGEX, STATEX2, ) = range(4)
+(INI_STATE, STR_STATE, STR2_STATE, COMM_STATE, ESC_STATE, HEX_STATE,
+UNI_STATE, ) =  range(7)
+
+def state2str(state):
+
+    ''' Convert state to string '''
+    strx = "None"
+    if state == STATEX:        strx = "STATEX"
+    if state == TOKENX:        strx = "TOKENX"
+    if state == REGEX:         strx = "REGEX"
+    if state == STATEX2:       strx = "STATEX2"
+    if state == INI_STATE:     strx = "INI_STATE"
+    if state == STR_STATE:     strx = "STR_STATE"
+    if state == STR2_STATE:    strx = "STR2_STATE"
+    if state == COMM_STATE:    strx = "COMM_STATE"
+    if state == ESC_STATE:     strx = "ESC_STATE"
+    if state == HEX_STATE:     strx = "HEX_STATE"
+    if state == UNI_STATE:     strx = "UNI_STAT"
+    return strx
 
 IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
 HEX2    = "0x[0-9a-fA-F]+"
@@ -64,8 +77,10 @@ NOIDEN  = "[^a-zA-Z0-9_]"
 WSPC    = "[ \t\n]"
 
 def tok(name):
+
     '''  Create token on the fly, if there is one already, return it.
     '''
+
     #print("adding:", name)
     if name in tok2.keys():
         print("Warn: dup token", name)
@@ -90,141 +105,141 @@ def tok(name):
 
 try:
     xtokens =  (
-    # State    # Token          # Regex              # Notes
-    (ST.INI_STATE.value, "eolnl",        "\\\\\n"            ),
-    (ST.INI_STATE.value, "bsla",         "\\\\"              ),
+    # State     # Token          # Regex              # Notes
+    (INI_STATE, "eolnl",        r"\\\\\n"            ),
+    (INI_STATE, "bsla",         r"\\\\"              ),
 
-    (ST.INI_STATE.value, "ifdef2",       "%ifdef" + WSPC     ),
-    (ST.INI_STATE.value, "elifdef2",     "%elifdef" + WSPC   ),
-    (ST.INI_STATE.value, "define2",      "%define" + WSPC    ),
-    (ST.INI_STATE.value, "else2",        "%else" + WSPC      ),
-    (ST.INI_STATE.value, "endif2",       "%endif" + WSPC     ),
+    (INI_STATE, "ifdef2",       r"%ifdef" + WSPC     ),
+    (INI_STATE, "elifdef2",     r"%elifdef" + WSPC   ),
+    (INI_STATE, "define2",      r"%define" + WSPC    ),
+    (INI_STATE, "else2",        r"%else" + WSPC      ),
+    (INI_STATE, "endif2",       r"%endif" + WSPC     ),
 
-    (ST.INI_STATE.value, "if",           "if" + WSPC         ),
-    (ST.INI_STATE.value, "elif",         "elif" + WSPC       ),
-    (ST.INI_STATE.value, "else",         "else" + WSPC       ),
-    #ST.(INI_STATE.value, "endif",       "endif" + WSPC      ),
+    (INI_STATE, "if",           r"if" + WSPC         ),
+    (INI_STATE, "elif",         r"elif" + WSPC       ),
+    (INI_STATE, "else",         r"else" + WSPC       ),
+    #(INI_STATE, "endif",       r"endif" + WSPC      ),
 
-    (ST.INI_STATE.value, "func",         "func" + WSPC       ),
-    (ST.INI_STATE.value, "enter",        "enter" + WSPC      ),
-    (ST.INI_STATE.value, "leave",        "leave" + WSPC      ),
-    (ST.INI_STATE.value, "return",       "return" + WSPC     ),
-    (ST.INI_STATE.value, "loop",         "loop" + WSPC       ),
+    (INI_STATE, "func",         r"func" + WSPC       ),
+    (INI_STATE, "enter",        r"enter" + WSPC      ),
+    (INI_STATE, "leave",        r"leave" + WSPC      ),
+    (INI_STATE, "return",       r"return" + WSPC     ),
+    (INI_STATE, "loop",         r"loop" + WSPC       ),
 
-    (ST.INI_STATE.value, "type",         "type" + WSPC       ),
-    (ST.INI_STATE.value, "aggr",         "aggr" + WSPC       ),
-    (ST.INI_STATE.value, "enum",         "enum" + WSPC       ),
+    (INI_STATE, "type",         r"type" + WSPC       ),
+    (INI_STATE, "aggr",         r"aggr" + WSPC       ),
+    (INI_STATE, "enum",         r"enum" + WSPC       ),
 
-    (ST.INI_STATE.value, "S8" ,          "S8"                ),
-    (ST.INI_STATE.value, "S16",          "S16"               ),
-    (ST.INI_STATE.value, "S32",          "S32"               ),
-    (ST.INI_STATE.value, "S64",          "S64"               ),
-    (ST.INI_STATE.value, "S128",         "S128"              ),
-    (ST.INI_STATE.value, "U8" ,          "U8"                ),
-    (ST.INI_STATE.value, "U16",          "U16"               ),
-    (ST.INI_STATE.value, "U32",          "U32"               ),
-    (ST.INI_STATE.value, "U64",          "U64"               ),
-    (ST.INI_STATE.value, "U128",         "U128"              ),
+    (INI_STATE, "S8" ,          r"S8"                ),
+    (INI_STATE, "S16",          r"S16"               ),
+    (INI_STATE, "S32",          r"S32"               ),
+    (INI_STATE, "S64",          r"S64"               ),
+    (INI_STATE, "S128",         r"S128"              ),
+    (INI_STATE, "U8" ,          r"U8"                ),
+    (INI_STATE, "U16",          r"U16"               ),
+    (INI_STATE, "U32",          r"U32"               ),
+    (INI_STATE, "U64",          r"U64"               ),
+    (INI_STATE, "U128",         r"U128"              ),
 
-    (ST.INI_STATE.value, "hex",          HEX2                ),
-    (ST.INI_STATE.value, "oct",          "0o[0-7]+"          ),
-    (ST.INI_STATE.value, "bin",          "0b[0-1]+"          ),
-    (ST.INI_STATE.value, "oct2",         "0y[0-17]+"         ),
-    (ST.INI_STATE.value, "bin2",         "0z[0-1]+"          ),
+    (INI_STATE, "hex",          HEX2                ),
+    (INI_STATE, "oct",          r"0o[0-7]+"          ),
+    (INI_STATE, "bin",          r"0b[0-1]+"          ),
+    (INI_STATE, "oct2",         r"0y[0-17]+"         ),
+    (INI_STATE, "bin2",         r"0z[0-1]+"          ),
 
-    (ST.INI_STATE.value, "comm2d",       "\#\#.*\n"          ),
-    (ST.INI_STATE.value, "comm2d",       "\/\/\/.*\n"        ),
-    (ST.INI_STATE.value, "comm2",        "\#.*\n"            ),
-    (ST.INI_STATE.value, "comm2",        "\/\/.*\n"          ),
+    (INI_STATE, "comm2d",       r"\#\#.*\n"          ),
+    (INI_STATE, "comm2d",       r"\/\/\/.*\n"        ),
+    (INI_STATE, "comm2",        r"\#.*\n"            ),
+    (INI_STATE, "comm2",        r"\/\/.*\n"          ),
 
-    (ST.INI_STATE.value, "num",          "[0-9]+"            ),
+    (INI_STATE, "num",          r"[0-9]+"            ),
 
-    (ST.INI_STATE.value, "bs",           "\b"                ),
-    (ST.INI_STATE.value, "quote",        "\""                ),
-    (ST.INI_STATE.value, "squote",       "\'"                ),
-    (ST.INI_STATE.value, "ident",        IDEN2               ),
+    (INI_STATE, "bs",           "\b"                ),
+    (INI_STATE, "quote",        r"\""                ),
+    (INI_STATE, "squote",       r"\'"                ),
+    (INI_STATE, "ident",        IDEN2               ),
 
-    (ST.INI_STATE.value, "peq",          "\+="               ),  # Add to
-    (ST.INI_STATE.value, "meq",          "\-="               ),  # Sub from
-    (ST.INI_STATE.value, "deq",          "=="                ),  # Equal
-    (ST.INI_STATE.value, "ndeq",         "!="                ),  # Not Equal
-    (ST.INI_STATE.value, "teq",          "==="               ),  # Identical
-    (ST.INI_STATE.value, "tneq",         "!=="               ),  # Not Identical
-    (ST.INI_STATE.value, "put",          "=>"                ),  # Put into
-    (ST.INI_STATE.value, "gett",         "<="                ),  # Get from
-    (ST.INI_STATE.value, "dref",         "->"                ),  # Reference
-    (ST.INI_STATE.value, "aref",         "<-"                ),  # De ref
-    (ST.INI_STATE.value, "idev",         "\/\%"              ),  # Int divide
-    (ST.INI_STATE.value, "and",          "\&\&"              ),  # Logical and
-    (ST.INI_STATE.value, "or",           "\|\|"              ),  # Logical or
-    (ST.INI_STATE.value, "xor",          "\^\^"              ),  # Logical or
+    (INI_STATE, "peq",          r"\+="               ),  # Add to
+    (INI_STATE, "meq",          r"\-="               ),  # Sub from
+    (INI_STATE, "deq",          r"=="                ),  # Equal
+    (INI_STATE, "ndeq",         r"!="                ),  # Not Equal
+    (INI_STATE, "teq",          r"==="               ),  # Identical
+    (INI_STATE, "tneq",         r"!=="               ),  # Not Identical
+    (INI_STATE, "put",          r"=>"                ),  # Put into
+    (INI_STATE, "gett",         r"<="                ),  # Get from
+    (INI_STATE, "dref",         r"->"                ),  # Reference
+    (INI_STATE, "aref",         r"<-"                ),  # De ref
+    (INI_STATE, "idev",         r"\/\%"              ),  # Int divide
+    (INI_STATE, "and",          r"\&\&"              ),  # Logical and
+    (INI_STATE, "or",           r"\|\|"              ),  # Logical or
+    (INI_STATE, "xor",          r"\^\^"              ),  # Logical or
 
-    (ST.INI_STATE.value, "at",           "@"                 ),
-    (ST.INI_STATE.value, "excl",         "!"                 ),
-    (ST.INI_STATE.value, "tilde",        "~"                 ),
-    (ST.INI_STATE.value, "under",        "_"                 ),
+    (INI_STATE, "at",           r"@"                 ),
+    (INI_STATE, "excl",         r"!"                 ),
+    (INI_STATE, "tilde",        r"~"                 ),
+    (INI_STATE, "under",        r"_"                 ),
 
-    (ST.INI_STATE.value, "comm3",        "\/\*"              ),
+    (INI_STATE, "comm3",        r"\/\*"              ),
 
-    (ST.INI_STATE.value, "(",            "\("                ),
-    (ST.INI_STATE.value, ")",            "\)"                ),
-    (ST.INI_STATE.value, "=",            "="                 ),
-    (ST.INI_STATE.value, "<",            "<"                 ),
-    (ST.INI_STATE.value, ">",            ">"                 ),
-    (ST.INI_STATE.value, "&",            "&"                 ),
-    (ST.INI_STATE.value, "*",            "\*"                ),
-    (ST.INI_STATE.value, "+",            "\+"                ),
-    (ST.INI_STATE.value, "-",            "\-"                ),
-    (ST.INI_STATE.value, "/",            "/"                 ),
-    (ST.INI_STATE.value, "[",            "\["                ),
-    (ST.INI_STATE.value, "]",            "\]"                ),
-    (ST.INI_STATE.value, "{",            "\{"                ),
-    (ST.INI_STATE.value, "}",            "\}"                ),
-    (ST.INI_STATE.value, "semi",         ";"                 ),
-    (ST.INI_STATE.value, "colon",        ":"                 ),
-    (ST.INI_STATE.value, "::",           "::"                ),  # Double colon
-    (ST.INI_STATE.value, "dot",          "\."                ),
+    (INI_STATE, "(",            r"\("                ),
+    (INI_STATE, ")",            r"\)"                ),
+    (INI_STATE, "=",            r"="                 ),
+    (INI_STATE, "<",            r"<"                 ),
+    (INI_STATE, ">",            r">"                 ),
+    (INI_STATE, "&",            r"&"                 ),
+    (INI_STATE, "*",            r"\*"                ),
+    (INI_STATE, "+",            r"\+"                ),
+    (INI_STATE, "-",            r"\-"                ),
+    (INI_STATE, "/",            r"/"                 ),
+    (INI_STATE, "[",            r"\["                ),
+    (INI_STATE, "]",            r"\]"                ),
+    (INI_STATE, "{",            r"\{"                ),
+    (INI_STATE, "}",            r"\}"                ),
+    (INI_STATE, "semi",         r";"                 ),
+    (INI_STATE, "colon",        r":"                 ),
+    (INI_STATE, "::",           r"::"                ),  # Double colon
+    (INI_STATE, "dot",          r"\."                ),
 
-    (ST.INI_STATE.value, "<<",           "<<"                ),  # Shift <
-    (ST.INI_STATE.value, ">>",           ">>"                ),
-    (ST.INI_STATE.value, "<<<",          "<<<"               ),  # Rotate <
-    (ST.INI_STATE.value, ">>>",          ">>>"               ),  # Rotate >
-    (ST.INI_STATE.value, "++",           "\+\+"              ),
-    (ST.INI_STATE.value, "--",           "\-\-"              ),
+    (INI_STATE, "<<",           r"<<"                ),  # Shift <
+    (INI_STATE, ">>",           r">>"                ),
+    (INI_STATE, "<<<",          r"<<<"               ),  # Rotate <
+    (INI_STATE, ">>>",          r">>>"               ),  # Rotate >
+    (INI_STATE, "++",           r"\+\+"              ),
+    (INI_STATE, "--",           r"\-\-"              ),
 
-    (ST.INI_STATE.value, "caret",        "\^"                ),
-    (ST.INI_STATE.value, "cent",         "%"                 ),
-    (ST.INI_STATE.value, "sp",           " "                 ),
-    (ST.INI_STATE.value, "tab",          "\t"                ),
-    (ST.INI_STATE.value, "nl",           "\n"                ),
-    (ST.INI_STATE.value, "comma",        ","                 ),
+    (INI_STATE, "caret",        r"\^"                ),
+    (INI_STATE, "cent",         r"%"                 ),
+    (INI_STATE, "sp",           r" "                 ),
+    (INI_STATE, "tab",          r"\t"                ),
+    (INI_STATE, "nl",           r"\n"                ),
+    (INI_STATE, "comma",        r","                 ),
 
-    # Fallback here
-    (ST.INI_STATE.value, "any",          "."                 ),
+    #callback here
+    (INI_STATE, "any",          r"."                 ),
 
-    # String states
-    (ST.STR_STATE.value, "sbsla",        "\\\\"              ),
-    (ST.STR_STATE.value, "dquote",       "\""                ),
-    (ST.STR_STATE.value, "sany",         "."                 ),
+    #string state
+    (STR_STATE, "sbsla",        r"\\\\"              ),
+    (STR_STATE, "dquote",       r"\""                ),
+    (STR_STATE, "sany",         r"."                 ),
 
-    # String states2
-    (ST.STR2_STATE.value, "sbsla2",     "\\\\"               ),
-    (ST.STR2_STATE.value, "dquote2",    "\'"                 ),
-    (ST.STR2_STATE.value, "sany2",      "."                  ),
+    #string state
+    (STR2_STATE, "sbsla2",     r"\\\\"               ),
+    (STR2_STATE, "dquote2",    r"\'"                 ),
+    (STR2_STATE, "sany2",      r"."                  ),
 
-    # Comm states
-    #ST.(COMM_STATE.value, "cbsla",     "\\\\"               ),
-    (ST.COMM_STATE.value, "ecomm3",     "\*\/"               ),
-    (ST.COMM_STATE.value, "cany",       "."                  ),
+    #comm states
+    #(COMM_STATE, "cbsla",     r"\\\\"               ),
+    (COMM_STATE, "ecomm3",     r"\*\/"               ),
+    (COMM_STATE, "cany",       r"."                  ),
 
-    # Escape states
-    (ST.ESC_STATE.value, "anyx",        "."                  ),
+    #escape state
+    (ESC_STATE, "anyx",        r"."                  ),
 
-    (ST.UNI_STATE.value, "unihex",      "[0-9A-Fa-f]{4,8}"   ),
-    (ST.UNI_STATE.value, "anyu",        "."                  ),
+    (UNI_STATE, "unihex",      r"[0-9A-Fa-f]{4,8}"   ),
+    (UNI_STATE, "anyu",        r"."                  ),
 
-    (ST.HEX_STATE.value, "eschex",      "[0-9A-Fa-f]{1,2}"   ),
-    (ST.HEX_STATE.value, "anyh",        "."                  ),
+    (HEX_STATE, "eschex",      r"[0-9A-Fa-f]{1,2}"   ),
+    (HEX_STATE, "anyh",        r"."                  ),
     )
 
 except KeyError as err:

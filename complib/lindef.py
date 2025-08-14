@@ -2,13 +2,9 @@
 
 ''' Definitions for the linear parser '''
 
-try:
-    from complib.utils import *
-    from complib.linfunc  import *
-except:
-    #print(__file__, ":import local")
-    from linfunc  import *
-    from utils import *
+from complib.utils import *
+from complib.linfunc  import *
+import complib.lexdef  as lexdef
 
 N   =   0     # _No_ flag
 P   =   1     # Op_P_ional
@@ -40,25 +36,24 @@ FUNCD   = ("func",N), ("sp",M), ("ident",N), ("sp",M), *PARENX, ("sp",M), *BRACE
 MULX    = ("num",N), ("sp",M), ("*",N), ("sp",M), ("num",N)
 ADDX    = ("num",N), ("sp",P|M), ("+",N), ("sp",P|M), ("num",N)
 
-STATE0   = pl("state_0")
-STATEANY = pl("state_any")
+(STATEINI, STATEANY) = range(2)
 
 # These are the entries to be matched agains the parse array.
 #    state      (items,flags)       new_state       function
 #    -----      ----------------    ---------       ----------
 stamps =  (
-    (STATE0,    FUNCD,              STATEANY,      func_func),
-    (STATE0,    BRACEX,             STATEANY,      func_brace),
-    (STATE0,    PARENX,             STATEANY,      func_paren),
-    (STATE0,    MULX,               STATEANY,      func_mul),
-    (STATE0,    ADDX,               STATEANY,      func_add),
+    (STATEINI,    FUNCD,              STATEANY,      func_func),
+    (STATEINI,    BRACEX,             STATEANY,      func_brace),
+    (STATEINI,    PARENX,             STATEANY,      func_paren),
+    (STATEINI,    MULX,               STATEANY,      func_mul),
+    (STATEINI,    ADDX,               STATEANY,      func_add),
 
     #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("num",N)), func_dummy),
     #(SL.INI.value,  (("ident",N),("=",N),  ("strx",N)), func_dummy),
     #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("strx",N)), func_str),
   )
 
-pvar(stamps)
+#pvar(stamps)
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

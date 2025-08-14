@@ -83,7 +83,8 @@ def parsefile(strx):
 
     if lpg.opt_debug > 5: print (buf)
 
-    start_time =  time.process_time()
+    if lpg.opt_timing_show:
+        start_time =  time.process_time()
     lx = lexer.Lexer(lexdef.xtokens, lpg)
 
     # This is a convenience matter
@@ -99,7 +100,7 @@ def parsefile(strx):
     if lpg.opt_xlexer_show:  # To show what the lexer did
         for aa in res:
             if lpg.opt_verbose.cnt:
-                print(aa.dump(), end = " ")
+                print(aa.dump())
             else:
                 print(aa, end = " ")
         print()
@@ -107,7 +108,7 @@ def parsefile(strx):
     if lpg.opt_just_lex:  # Only do lexer
         return
 
-    if lx.state != lexdef.ST.INI_STATE.value:
+    if lx.state != lexdef.INI_STATE:
         sss = lexdef.state2str(lx.state)
         print("Warning on lexer state: unterminated state", sss,
                         "line:", lx.linenum + 1, "col:", lx.lastpos - lx.lastline + 1)

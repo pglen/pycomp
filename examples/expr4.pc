@@ -1,0 +1,64 @@
+// Expressions  (uncomment parts as you need it)
+
+    u32 pp; u32 qq; u32 hh; u32 ff; u32 gg;
+
+    //u16 aa = 0, bb = 0, cc = 0;
+    //u16 aa, bb, cc;
+	// Arithmetic
+	oo = pp + qq;
+	//cc = cc - dd;
+	//cc = ee * ff;
+	//ff = gg / hh;
+	//ff = gg % hh;
+
+	//ii = (jj + kk) * ll + aa;
+
+	//qq = *ww;
+	//ss = &rr;
+
+	//oo = pp + 2;
+	//cc = cc - 3;
+	//cc = ee * 4;
+	//ff = gg / 5;
+
+	// Binary
+    //xxx =  yyy | zzz;
+    //aaa =  bbb & sss;
+    //ccc = ddd ^ eee;
+
+	// Logical
+    //xxx =  yyy || zzz;
+    //aaa =  bbb && sss;
+    //ccc = ddd ^^ eee;
+
+    // Relational
+    //ccc = aaa >= ddd;
+    //ccc = aaa <= ddd;
+    //ccc = aaa != ddd;
+    //ccc = aaa == ddd;
+
+	// Unary
+   	//qqq = !!ddd;
+   	//rrr = !rrr;
+   	//sss = -www;
+   	//xxx = ^zzz;
+
+	// Compund
+	//uuu = aaa = xxx * ee;
+
+	// Function call
+    //xxx =  yyyy(zzz, uuu + sss);
+
+	// Mixed
+   	//qqq = www == !!ddd || xxx ;
+	//ccc = aaa & ddd != eee | ff;
+
+	// Complex
+	//iii = ii + (jj - kk) / mm;
+	//iii = (jj + kk) * (ww + zz);
+	//vvv = eee | fff  +  (ggg & hhh) * -iii;
+    //uuu = www || eee + fff ^^ rrrr;
+	//zz = aa + bb * cc - dd;
+	//aa = zz + jj * cc ^ kk * cc;
+
+

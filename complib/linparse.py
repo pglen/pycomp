@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#import re, sys
-
 from complib.utils  import *
 from complib.linfunc import *
 from complib.lindef import *
@@ -12,12 +10,12 @@ from complib.lindef import *
 class LinParse():
 
     def __init__(self, stamps, pvg = None):
-        print("linparse init", pvg)
+        #print("linparse init", pvg)
         self.pvg = pvg
         defpvg(pvg)
         funcpvg(pvg)
         self.stamps = stamps
-        self.state = 0
+        self.state = STATEINI
         self.context = 0
         # Check integrity
         #for ss in range(len(self.stamps)):

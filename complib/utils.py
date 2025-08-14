@@ -10,7 +10,7 @@ def pvar(var):
     for aa in callers_local_vars:
         if aa[1] is var:
             if isinstance(aa[1], (type(()), type([])) ):
-                print(aa[0], "->", end = " "    )
+                print(aa[0], "->")
                 for bb in aa[1]:
                     print(bb)
             else:
@@ -113,12 +113,12 @@ def prclass(lpgx):
 
 # ------------------------------------------------------------------------
 # Give a new integer value with every iteration
-
-_gl_pcnt = 0
-def punique():                       # create a unique temporary number
-    global _gl_pcnt;
-    _gl_pcnt += 10
-    return _gl_pcnt
+#
+#_gl_pcnt = 0
+#def punique():                       # create a unique temporary number
+#    global _gl_pcnt;
+#    _gl_pcnt += 10
+#    return _gl_pcnt
 
 # ------------------------------------------------------------------------
 # Convert octal string to integer
