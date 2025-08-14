@@ -18,6 +18,7 @@ A   =   4     # _A_ccumulate
 def defpvg(xpvg):
     global pvg
     pvg = xpvg
+    #print("got pvg", pvg)
 
 SP = ("sp", M)
 
@@ -31,33 +32,33 @@ def pl(strx):
 SPC =  ("sp",M)
 
 # Short hand for major items
-
 BRACEX  = ("{",M), SPC, ("num",A), ("sp",M), ("}",N)
 PARENX  = ("(",N), SPC, ("num",A), ("sp",M), (")",N)
 
 # Short hand for language components
-
 FUNCD   = ("func",N), ("sp",M), ("ident",N), ("sp",M), *PARENX, ("sp",M), *BRACEX, ("sp",M)
 MULX    = ("num",N), ("sp",M), ("*",N), ("sp",M), ("num",N)
 ADDX    = ("num",N), ("sp",P|M), ("+",N), ("sp",P|M), ("num",N)
 
-# There are the entries to be matched agains the parse array.
-#    state      (parse items,flags) ...    new_state     function
-#    -----      --------------------       ---------     ----------
+STATE0   = pl("state_0")
+STATEANY = pl("state_any")
 
+# These are the entries to be matched agains the parse array.
+#    state      (items,flags)       new_state       function
+#    -----      ----------------    ---------       ----------
 stamps =  (
-    (0,  FUNCD,  func_func),
-    (0,  BRACEX, func_brace),
-    (0,  PARENX, func_paren),
-    (0,  MULX,   func_mul),
-    (0,  ADDX,   func_add),
+    (STATE0,    FUNCD,              STATEANY,      func_func),
+    (STATE0,    BRACEX,             STATEANY,      func_brace),
+    (STATE0,    PARENX,             STATEANY,      func_paren),
+    (STATE0,    MULX,               STATEANY,      func_mul),
+    (STATE0,    ADDX,               STATEANY,      func_add),
 
     #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("num",N)), func_dummy),
     #(SL.INI.value,  (("ident",N),("=",N),  ("strx",N)), func_dummy),
     #(SL.INI.value,  (("ident",N),("sp",P|M),("=",N),  ("sp",P|M),("strx",N)), func_str),
   )
 
-#print(stamps)
+pvar(stamps)
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

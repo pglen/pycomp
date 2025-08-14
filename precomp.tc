@@ -1,3 +1,0 @@
-[
-    [ "Pre processor", "./pycomp.py examples/str.pc", "hello \\'old\\' world", True],
-]

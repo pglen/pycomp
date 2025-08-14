@@ -12,7 +12,7 @@ from complib.lindef import *
 class LinParse():
 
     def __init__(self, stamps, pvg = None):
-        #print("linparse init")
+        print("linparse init", pvg)
         self.pvg = pvg
         defpvg(pvg)
         funcpvg(pvg)

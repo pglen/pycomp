@@ -2,15 +2,31 @@
 
 import sys, os, re, time, stat
 
-_gl_cnt = 0
-def unique():             # create a unique temporary number
-    global _gl_cnt; _gl_cnt += 1
-    return _gl_cnt
+import inspect
+import threading
 
-#_gl_cnt2 = 0
-#def unique2():             # create a unique temporary number
-#    global _gl_cnt2; _gl_cnt2 += 1
-#    return _gl_cnt2
+def pvar(var):
+    callers_local_vars = inspect.currentframe().f_back.f_locals.items()
+    for aa in callers_local_vars:
+        if aa[1] is var:
+            if isinstance(aa[1], (type(()), type([])) ):
+                print(aa[0], "->", end = " "    )
+                for bb in aa[1]:
+                    print(bb)
+            else:
+                print(aa[0], "=>", aa[1])
+
+    #print(str([k for k, v in callers_local_vars \
+    #  if v is var][0])+' => '+str(var))
+
+_gl_cnt = 0
+sema = threading.Semaphore()
+def unique():             # create a unique temporary number
+    global _gl_cnt;
+    sema.acquire()
+    _gl_cnt += 1
+    sema.release()
+    return _gl_cnt
 
 # Connect parser token to lexer item. This way the definitions are synced
 # without the need for double definition
