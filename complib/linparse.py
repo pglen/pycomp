@@ -43,16 +43,19 @@ class LinParse():
     def feed(self, arrx, buf):
         self.buf = buf
         self.arrx = arrx
-        if self.pvg.opt_verbose.cnt:
+
+        if self.pvg.opt_verbose.cnt > 2:
             print("stamps len =", len(self.stamps), "arrx len =", len(self.arrx))
 
-        #if self.pvg.lxdebug:
+        #if self.pvg.debug:
         #    for aa in arrx:
         #        print(" [", aa.stamp[1], pp(aa.mstr), aa.flag, " ]", end = " ")
         #        #print(" [", aa, "] ", end = " ")
         #    print()
 
-        self._feed(0, len(arrx))
+        self._feed(0, len(self.arrx))
+
+        #return self.arrx
 
     def itemx(self, idx, tprog, endd, call):
 

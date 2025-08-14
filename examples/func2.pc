@@ -1,5 +1,14 @@
-#func hello (type : name = defval)
-#{
-#    return val
-#}
+
+	//u32 aaaa; u32 ddd;
+	//u32 ccc =  aaaa; // + ddd;
+
+function declfunc ()
+
+{
+	u32 aa; u32 dddd;
+
+	aaaa = ddd + ccc;
+	ddd = aaaa + ddd;
+}
+
 

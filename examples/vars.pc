@@ -1,0 +1,19 @@
+// Variable declarations
+
+	u8 	var1 ;
+	u32 var2 = 200;
+	//u16 var3 = 500;
+	//u16 var4 = 200 + 200;
+	//u32 var5 = var1;
+
+    //
+    u32 var3 = var1 + var2;
+    //
+	//u32 qqq , ccc, vvv, www;
+	//u16 qqq2, ccc2, vvv2, www2;
+    //
+    //
+	//u32 var6 = var2 + var3;
+	//u32 aaaa = qqq + ccc, bbbb = ccc + www;
+
+

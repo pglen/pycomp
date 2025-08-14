@@ -1,6 +1,13 @@
-func hello ()
+
+function declfunc2(u32 var, u16 var2, u8 var3, s32 var4)
+
 {
-enter {}
-leave {}
-return val
+	u32 aa = 100;
+
+	aa = ee + ff;
+	//xx = callfunc(gg, hh, ii);
+	return qq + vv;
 }
+
+
+

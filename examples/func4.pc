@@ -1,0 +1,16 @@
+
+	u32 aa; u32 bb; u8 cc;
+
+	aa = (u32) cc + 12;
+  	aa = func1();
+
+function func1()
+{
+	u32 dd = 10;
+
+	return *cc + 2;
+}
+
+
+
+

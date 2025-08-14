@@ -1,0 +1,13 @@
+// Test operators
+
+//debug 10
+u16 ee = 200; u16 ff = 100; u16 xx;
+
+function zz()
+{
+  //xx = aa + bb;
+  xx = ee + ff;
+ //gg * hh;
+ // yy = cc + dd + ee * qq;
+
+}

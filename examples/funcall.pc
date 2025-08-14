@@ -1,0 +1,57 @@
+// Test all functions
+
+u32 	aa;  u32  	bb;
+u32 cc; u32 ee; 	u32 ff;
+
+function emptyfunc()
+{
+}
+
+function emptyfunc2(u32 var)
+{
+	u32 gg;
+}
+
+	u32 var1; u32 var3;
+	u8 	var2 = 32;
+
+function exprfunc()
+{
+	//u32 var5;
+	var1 = 10;
+	var3 = var1 + var2 * var3;
+
+	 //comment in func
+	 //vv = ee + ff;
+}
+
+	u32 var4;
+
+function declfuncarg(u32 vvv)
+{
+	aa = bb + cc;
+	dd = ee * ff;
+}
+
+function declfunc3(u32 var)
+{
+	aa = bb + cc;
+}
+
+function declfunc4(u32 var, u16 var2, u8 var3)
+
+{
+	u32 aa = 100;
+	u32 aa = ee + ff;
+	bb = callfunc(gg, hh, ii);
+	return bb + aa;
+}
+
+	u32 aaa;
+
+function heaven3a(u32 var, u16 var2)
+{
+	cc = ee + ff;
+}
+
+

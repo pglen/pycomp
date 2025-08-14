@@ -1,0 +1,13 @@
+
+// test file for simple cases
+
+//  zz = ff + gg;
+
+function aaa(u32 arg1, s32 arg2, u16 arg3, u8 arg4)
+{
+	u32 xx = 10;  
+	u16 yy = aa || bb;
+
+	xx = cc + bb;
+	cc = dd + ee;
+}

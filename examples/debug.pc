@@ -1,0 +1,7 @@
+// Test 'C' line comment
+debug 10
+debug 20
+
+
+
+

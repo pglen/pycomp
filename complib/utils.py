@@ -2,6 +2,17 @@
 
 import sys, os, re, time, stat
 
+class Tree:
+    def __init__(self, data = None):
+        self.left = None
+        self.right = None
+        self.children = []
+        self.data = data
+
+def time_ms(start_time):
+    ttt = time.process_time() - start_time
+    return "%.2f ms" % (ttt * 1000)
+
 # ------------------------------------------------------------------------
 # Pretty Print
 

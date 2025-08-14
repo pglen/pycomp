@@ -22,7 +22,6 @@ See pangparser.py for documentation and examples.
 #_show_default_action = False
 _show_default_action = True
 
-
 # May be redefined, included here for required initial states:
 
 STA_ANY         = [punique(), "anystate"]
@@ -81,8 +80,7 @@ class Parse():
             if not tt:
                 break
             #print(tt[0], pp(tt[2]))
-            #print(tt)
-            #self.parse_item2(buf, tt)
+            self.parse_item2(buf, tt)
 
     def add_class(self, dd, pt):
         for aa in pt[3]:

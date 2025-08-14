@@ -10,11 +10,33 @@ import  complib.stack as stack
 import  complib.lexer as lexer
 import  complib.lexdef as lexdef
 import  complib.lindef as lindef
+import  complib.ptree as ptree
 
 from complib.utils import *
 
 Version = "Version: 1.0.0; "
 Build   = "Build date: Aug 13 2025"
+
+opts =  (\
+    #   name        initval     Help string
+    # -------       -------     ----------------
+    ("Define",      [],         "Define variable. (multiple defines accepted)"),
+    ("outfile",     "",         "Name of output file."),
+    ("xlexer_show", False,      "Show lexer output"),
+    ("comp_only",   False,      "Compile only."),
+    ("emit",        False,      "Emit parse string."),
+    ("Target",      "x86_64",   "Select target. Def: x86_64 (no other targets)"),
+    ("state_show",  False,      "Show parser states."),
+    ("timing_show", False,      "Show timings for program execution."),
+    ("pre_only",    False,      "Pre-process only."),
+    ("just_lex",    False,      "Only execute lexer."),
+    ("emit",        False,      "Emit parse string."),
+    ("ldebug",      0,          "Lexer debug level. Def=0 0=>none 9=>noisy."),
+    ("workdir",     "./tmp",    "Directory for temp files. Def=./tmp"),
+    )
+
+troot = ptree.Tree()
+#print(troot)
 
 # ------------------------------------------------------------------------
 # Accumulate output: (mostly for testing)
@@ -28,21 +50,17 @@ def show_emit():
     global _cummulate;
     print (_cummulate)
 
-# ------------------------------------------------------------------------
-# Parser functions that are called on parser events. Note the 'e' prefix
-# for the 'end' function -> bold() -> ebold()  (end bold)
-# The trivial functions are extracted to pungfunc.py
-
-# ------------------------------------------------------------------------
-
 def parsefile(strx):
+
+    ''' Parse file '''
 
     global buf, lpg
 
-    start_time =  time.process_time()
-
     if lpg.opt_verbose.cnt > 1:
         print ("Processing file:", strx)
+
+    start_time =  time.process_time()
+
     try:
         fh = open(strx)
     except:
@@ -61,74 +79,74 @@ def parsefile(strx):
     fh.close()
 
     if lpg.opt_timing_show:
-        print("loader:", time.process_time() - start_time)
+        print("load  time:", time_ms(start_time) )
 
     if lpg.opt_debug > 5: print (buf)
-    #lstack.push(strx)
+
+    start_time =  time.process_time()
     lx = lexer.Lexer(lexdef.xtokens, lpg)
-    res = []
 
     # This is a convenience matter
     if buf[len(buf)-1] != "\n":
         buf += "\n"
-    lx.feed(buf, res)
+    res = lx.feed(buf)
     if lpg.opt_timing_show:
-        print  ("lexer:", time.process_time() - start_time)
+        print  ("lexer time:", time_ms(start_time) )
 
     if lpg.opt_debug > 5:
         prarr(res, "lex res: ")
 
-    if lpg.opt_xshow_lexer:  # To show what the lexer did
+    if lpg.opt_xlexer_show:  # To show what the lexer did
         for aa in res:
             if lpg.opt_verbose.cnt:
                 print(aa.dump(), end = " ")
             else:
                 print(aa, end = " ")
         print()
-    if lpg.opt_xshow_lexer > 1:  # Only show lexer
-        #exit(0)
+
+    if lpg.opt_just_lex:  # Only do lexer
         return
 
     if lx.state != lexdef.ST.INI_STATE.value:
         sss = lexdef.state2str(lx.state)
         print("Warning on lexer state: unterminated state", sss,
                         "line:", lx.linenum + 1, "col:", lx.lastpos - lx.lastline + 1)
+    start_time =  time.process_time()
     par = linparse.LinParse(lindef.stamps, lpg)
     par.feed(res, buf)
+    if lpg.opt_timing_show: print  ("parse time:", time_ms(start_time))
 
-    prarr(par.arrx, "result:", lpg.opt_verbose.cnt)
+    prarr(res, "result: %s" % strx, lpg.opt_verbose.cnt)
 
-    if lpg.opt_timing_show: print  ("parser:", time.process_time() - start_time)
     # Output results
     if lpg.opt_emit:
         show_emit()
 
-opts =  (\
-    #   name      initval       Help string
-    # -------     -------       ----------------
-    ("Define",      [],         "Define variable. (multiple defines accepted)"),
-    ("emit",        False,      "Emit parse string."),
-    ("Target",      "x86_64",   "Select target. Def: x86_64 (no other targets)"),
-    ("state_show",  False,      "Show parser states."),
-    ("xshow_lexer", False,      "Show lexer states."),
-    ("timing_show", False,      "Show timings for program execution."),
-    ("parse_show",  False,      "Show parser progress."),
-    ("just_lex",    False,      "Only execute lexer."),
-    ("emit",        False,      "Emit parse string."),
-    ("lxdebug",     0,          "Debug level for lexer. Def=0 0=>none 9=>noisy."),
-    )
+def setheads(lpg):
+    prestr =    "PCOMP parallel compiler.\n" \
+                "Usage: " + lpg.myname + \
+                " [options] filename [filename(s)] ... [options]\n" \
+                "Available options:"
 
-    #    ("Undefine", "", "Un-define variable."),
+    poststr  =  "Argument values are identical for the short " \
+                "form and long form options.\n"  \
+                "Def: stands for default value. " \
+                "Options after file names are also interpreted."
+
+    lpg.setpre(prestr)
+    lpg.setpost(poststr)
 
 # ------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
-    global lpg
+    #global lpg
 
     #sys.setrecursionlimit(25)
 
     lpg = args.Lpg(opts, sys.argv)
+    setheads(lpg)
+
     if lpg.opt_Version:
         print(lpg.myname, Version, Build)
         sys.exit(0)
@@ -142,7 +160,7 @@ if __name__ == "__main__":
         lpg.printme()
     if not lpg.args:
         print("Missing file name(s). Use: -h option for help")
-        exit(0);
+        sys.exit(0);
 
     cnt = 0 ; strx = "None"
     while True:

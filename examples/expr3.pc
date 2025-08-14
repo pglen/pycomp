@@ -1,0 +1,7 @@
+// Expressions
+
+    u32 ccc; u32 ddd; u32 eee; u32 fff; u32 ggg;
+
+	ccc = (ddd + eee) * (fff + ggg);
+
+

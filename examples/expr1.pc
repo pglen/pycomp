@@ -1,0 +1,20 @@
+// Expressions
+
+    u32 ccc; u32 ddd; u32 eee;
+
+	// Arithmetic +
+	ccc = ddd + eee;
+
+	// Arithmetic -
+	ccc =  ddd - eee;
+
+	// Arithmetic *
+	ccc =  ddd * eee;
+
+	// Arithmetic /
+	ccc =  ddd / eee;
+
+	// Arithmetic %
+	ccc =  ddd % eee;
+
+

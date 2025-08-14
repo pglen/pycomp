@@ -1,0 +1,15 @@
+// Test empty functions
+
+//debug 13
+
+function emptyfunc()
+
+{
+}
+
+function emptyfunc2(u32 aa)
+
+{
+}
+
+

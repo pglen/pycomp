@@ -1,1 +1,7 @@
- U32 : name = 12
+// Declarations
+
+    u32 aaa; u16 bbb; u8 ccc;
+    s32 ddd; s16 eee; s8 fff;
+    float ggg; double hhh;
+
+
