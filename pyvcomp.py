@@ -17,9 +17,11 @@ from complib.utils import *
 Version = "Version: 1.0.0; "
 Build   = "Build date: Aug 13 2025"
 
+# Name is prepened opt_ and name's first letter is the option letter
+
 opts =  (\
     #   name        initval     Help string
-    # -------       -------     ----------------
+    #   ----        -------     ----------------
     ("Define",      [],         "Define variable. (multiple defines accepted)"),
     ("outfile",     "",         "Name of output file."),
     ("xlexer_show", False,      "Show lexer output"),
@@ -31,6 +33,7 @@ opts =  (\
     ("pre_only",    False,      "Pre-process only."),
     ("just_lex",    False,      "Only execute lexer."),
     ("emit",        False,      "Emit parse string."),
+    ("animate",     False,      "Animate (slow) output."),
     ("ldebug",      0,          "Lexer debug level. Def=0 0=>none 9=>noisy."),
     ("workdir",     "./tmp",    "Directory for temp files. Def=./tmp"),
     )
@@ -38,17 +41,8 @@ opts =  (\
 troot = ptree.Tree()
 #print(troot)
 
-# ------------------------------------------------------------------------
-# Accumulate output: (mostly for testing)
-_cummulate = ""
-
-def emit(strx):
-    global _cummulate;
-    _cummulate += " '" + strx + "' "
-
 def show_emit():
-    global _cummulate;
-    print (_cummulate)
+    print("emit", cummulate)
 
 def parsefile(strx):
 
@@ -119,6 +113,8 @@ def parsefile(strx):
 
     prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
 
+    emit("hello")
+
     # Output results
     if lpg.opt_emit:
         show_emit()
@@ -151,21 +147,17 @@ if __name__ == "__main__":
     if lpg.opt_Version:
         print(lpg.myname, Version, Build)
         sys.exit(0)
-
     if lpg.opt_help:
         lpg.help()
         sys.exit(0)
-
     if lpg.opt_Help2:
         lpg.Help()
         sys.exit(0)
-
     if lpg.opt_Target != "x86_64":
         print("Error: only x86_64 is supported (for now)")
         sys.exit(0)
     if lpg.opt_verbose.cnt > 2:
         lpg.printme()
-
     if not lpg.args:
         print("Missing file name(s). Use: -h option for help")
         sys.exit(0);

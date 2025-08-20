@@ -72,9 +72,11 @@ def state2str(state):
     return strx
 
 IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
+IDEN3   = "[A-Za-z0-9_]+"
 HEX2    = "0x[0-9a-fA-F]+"
 NOIDEN  = "[^a-zA-Z0-9_]"
-WSPC    = "[ \t\n]"
+#WSPC    = "[ \t\n]"
+WSPC    = ""
 
 def tok(name):
 
@@ -109,43 +111,55 @@ try:
     (INI_STATE, "eolnl",        r"\\\\\n"            ),
     (INI_STATE, "bsla",         r"\\\\"              ),
 
-    (INI_STATE, "ifdef2",       r"%ifdef" + WSPC     ),
-    (INI_STATE, "elifdef2",     r"%elifdef" + WSPC   ),
-    (INI_STATE, "define2",      r"%define" + WSPC    ),
-    (INI_STATE, "else2",        r"%else" + WSPC      ),
-    (INI_STATE, "endif2",       r"%endif" + WSPC     ),
+    (INI_STATE, "ifdef2",       r"%ifdef"     ),
+    (INI_STATE, "elifdef2",     r"%elifdef"   ),
+    (INI_STATE, "define2",      r"%define"    ),
+    (INI_STATE, "else2",        r"%else"      ),
+    (INI_STATE, "endif2",       r"%endif"     ),
 
-    (INI_STATE, "if",           r"if" + WSPC         ),
-    (INI_STATE, "elif",         r"elif" + WSPC       ),
-    (INI_STATE, "else",         r"else" + WSPC       ),
-    #(INI_STATE, "endif",       r"endif" + WSPC      ),
+    (INI_STATE, "if",           r"if"  + IDEN3      ),
+    (INI_STATE, "if",           r"if"               ),
+    (INI_STATE, "elif",         r"elif"  + IDEN3    ),
+    (INI_STATE, "elif",         r"elif"             ),
+    (INI_STATE, "else",         r"else"   + IDEN3   ),
+    (INI_STATE, "else",         r"else"             ),
+    (INI_STATE, "endif",        r"endif"   + IDEN3  ),
+    (INI_STATE, "endif",        r"endif"            ),
 
-    (INI_STATE, "func",         r"func" + WSPC       ),
-    (INI_STATE, "enter",        r"enter" + WSPC      ),
-    (INI_STATE, "leave",        r"leave" + WSPC      ),
-    (INI_STATE, "return",       r"return" + WSPC     ),
-    (INI_STATE, "loop",         r"loop" + WSPC       ),
+    (INI_STATE, "ident",        r"func" + IDEN3     ),
+    (INI_STATE, "func",         r"func"             ),
+    (INI_STATE, "enter",        r"enter" + IDEN3    ),
+    (INI_STATE, "enter",        r"enter"            ),
+    (INI_STATE, "leave",        r"leave" + IDEN3    ),
+    (INI_STATE, "leave",        r"leave"            ),
+    (INI_STATE, "return",       r"return" + IDEN3   ),
+    (INI_STATE, "return",       r"return"           ),
+    (INI_STATE, "loop",         r"loop"  + IDEN3    ),
+    (INI_STATE, "loop",         r"loop"             ),
 
-    (INI_STATE, "type",         r"type" + WSPC       ),
-    (INI_STATE, "aggr",         r"aggr" + WSPC       ),
-    (INI_STATE, "enum",         r"enum" + WSPC       ),
+    (INI_STATE, "type",         r"type"  + IDEN3    ),
+    (INI_STATE, "type",         r"type"             ),
+    (INI_STATE, "aggr",         r"aggr"  + IDEN3    ),
+    (INI_STATE, "aggr",         r"aggr"             ),
+    (INI_STATE, "enum",         r"enum"   + IDEN3   ),
+    (INI_STATE, "enum",         r"enum"             ),
 
-    (INI_STATE, "S8" ,          r"S8"                ),
-    (INI_STATE, "S16",          r"S16"               ),
-    (INI_STATE, "S32",          r"S32"               ),
-    (INI_STATE, "S64",          r"S64"               ),
-    (INI_STATE, "S128",         r"S128"              ),
-    (INI_STATE, "U8" ,          r"U8"                ),
-    (INI_STATE, "U16",          r"U16"               ),
-    (INI_STATE, "U32",          r"U32"               ),
-    (INI_STATE, "U64",          r"U64"               ),
-    (INI_STATE, "U128",         r"U128"              ),
+    (INI_STATE, "S8" ,          r"S8"               ),
+    (INI_STATE, "S16",          r"S16"              ),
+    (INI_STATE, "S32",          r"S32"              ),
+    (INI_STATE, "S64",          r"S64"              ),
+    (INI_STATE, "S128",         r"S128"             ),
+    (INI_STATE, "U8" ,          r"U8"               ),
+    (INI_STATE, "U16",          r"U16"              ),
+    (INI_STATE, "U32",          r"U32"              ),
+    (INI_STATE, "U64",          r"U64"              ),
+    (INI_STATE, "U128",         r"U128"             ),
 
     (INI_STATE, "hex",          HEX2                ),
-    (INI_STATE, "oct",          r"0o[0-7]+"          ),
-    (INI_STATE, "bin",          r"0b[0-1]+"          ),
-    (INI_STATE, "oct2",         r"0y[0-17]+"         ),
-    (INI_STATE, "bin2",         r"0z[0-1]+"          ),
+    (INI_STATE, "oct",          r"0o[0-7]+"         ),
+    (INI_STATE, "bin",          r"0b[0-1]+"         ),
+    (INI_STATE, "oct2",         r"0y[0-17]+"        ),
+    (INI_STATE, "bin2",         r"0z[0-1]+"         ),
 
     (INI_STATE, "comm2d",       r"\#\#.*\n"          ),
     (INI_STATE, "comm2d",       r"\/\/\/.*\n"        ),

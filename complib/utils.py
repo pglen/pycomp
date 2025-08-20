@@ -2,22 +2,25 @@
 
 import sys, os, re, time, stat
 
-import inspect
 import threading
 
 def pvar(var):
+
+    ''' return variable description string as name => val '''
+
+    import inspect
     callers_local_vars = inspect.currentframe().f_back.f_locals.items()
+    strx = ""
     for aa in callers_local_vars:
         if aa[1] is var:
             if isinstance(aa[1], (type(()), type([])) ):
-                print(aa[0], "->")
+                strx += aa[0] + " -> "
                 for bb in aa[1]:
-                    print(bb)
+                    strx += str(bb)
             else:
-                print(aa[0], "=>", aa[1])
-
-    #print(str([k for k, v in callers_local_vars \
-    #  if v is var][0])+' => '+str(var))
+                strx += str(aa[0]) + " => " + str(aa[1]) + " "
+            #break
+    return strx
 
 _gl_cnt = 0
 sema = threading.Semaphore()
@@ -27,6 +30,14 @@ def unique():             # create a unique temporary number
     _gl_cnt += 1
     sema.release()
     return _gl_cnt
+
+cummulate = ""
+def emit(strx):
+
+    ''' Accumulate output '''
+
+    global cummulate;
+    cummulate += " '" + strx + "' "
 
 # Connect parser token to lexer item. This way the definitions are synced
 # without the need for double definition
@@ -90,12 +101,11 @@ def time_ms(start_time):
     return "%.2f ms" % (ttt * 1000)
 
 # ------------------------------------------------------------------------
-# Pretty Print
+# Pretty Print array
 
 def prarr(xarr, pre = "", all = False):
     if pre:
         print(pre, end = "")
-
     for aa in xarr:
         if all or not aa.flag:
             print( " [" + pp(aa.stamp[1]) + " " + pp(aa.mstr), aa.flag, end = "]")
@@ -113,7 +123,6 @@ def prclass(lpgx):
 
 # ------------------------------------------------------------------------
 # Give a new integer value with every iteration
-#
 #_gl_pcnt = 0
 #def punique():                       # create a unique temporary number
 #    global _gl_pcnt;
@@ -176,7 +185,7 @@ def uni(xtab):
 
 def rcesc(strx):
 
-    ''' reverse 'C' escape sequences \\n '''
+    ''' Reverse 'C' escape sequences \\n '''
 
     retx = ""; pos = 0; lenx = len(strx)
     while True:
@@ -214,9 +223,7 @@ def rcesc(strx):
 
 def cesc(strx):
 
-    ''' convert like 'C' like: \n \\n '''
-
-    #print (" x[" + strx + "]x ")
+    ''' Expand 'C' sequences like: \n \\n '''
 
     retx = u""; pos = 0; lenx = len(strx)
 
@@ -344,7 +351,7 @@ def unescape(strx):
 #    pass
 
 # ------------------------------------------------------------------------
-# Give the user the usual options for true / false - 1 / 0 - y / n
+# Give the user the usual options for true / false - 1 / 0 - y / n ...
 
 def isTrue(strx, defx = False):
     sss = strx.strip()
@@ -359,8 +366,6 @@ def isTrue(strx, defx = False):
     if uuu == "Y": return True
     if uuu == "N": return False
     return defx
-
-# ------------------------------------------------------------------------
 
 def isfile(fname):
     ''' # Return True if file exists '''
@@ -380,8 +385,47 @@ def hd(varx):
     strx += "\n"
     return strx
 
+class   xenum():
+
+    def __init__(self, name = None):
+        self.name = name
+        self.arr = []
+        pass
+
+    def add(self, *val):
+        for aa in val:
+            self.arr.append(aa)
+
+    def dump(self):
+        #print(self.name)
+        strx = ""
+        for cnt, aa in enumerate(self.arr):
+            #print(cnt, aa)
+            strx += str(cnt) + " = " + str(aa) + "\n"
+        return strx
+
+    def get(self, cnt):
+        return self.arr[cnt]
+
+    def byname(self, name):
+        ret = None
+        for cnt, aa in enumerate(self.arr):
+            if aa == name:
+                ret = cnt
+                break
+        if ret == None: raise ValueError
+        return ret
+
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
+
+    #eee = xenum("hello")
+    #eee.add("no", "yes", "maybe")
+    #print(eee.dump(), end = "")
+    #print(eee.get(1))
+    #print(eee.byname("no"))
+    #print(eee.byname("yes"))
+    ##print(eee.byname("no2"))
 
 def test_cesc():
     org = "12345678\r\n\a\tabcdef"

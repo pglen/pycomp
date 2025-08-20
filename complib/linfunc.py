@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-''' functions for the linear parser '''
+''' functions for the lin parser '''
 
-import operator
+#import operator
 
 try:
     from complib.utils import *
@@ -17,18 +17,18 @@ def funcpvg(xpvg):
 # Functions to call on stamp match
 
 def func_dummy(self2, idx, tprog, iprog):
-    if pvg.opt_debug > 0:
+    if pvg.opt_debug > 2:
         print("match dummy idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
 
 def func_str(self2, idx, tprog, iprog):
     print("match str idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx str pre: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "func_str pre: ")
     sys.exit(0)
 
 def func_func(self2, tprog, iprog):
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx func pre: ", True)
+        prarr(self2.arrx[tprog:tprog+iprog], "func_func pre: ", True)
     #sys.exit(0)
     self2.arrx[tprog].flag = 1
     self2._feed(tprog + 1, tprog+iprog - 1)
@@ -39,22 +39,22 @@ def func_brace(self2, tprog, iprog):
     #    print("match brack tprog =", tprog, "iprog=", iprog)
 
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx brace pre: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "func brace pre: ")
 
     # Done with parentheses
     self2.arrx[tprog].flag = 1
     self2.arrx[tprog + iprog - 1].flag = 1
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx, "arrx pre brace feed:", True)
+        prarr(self2.arrx, "pre func brace feed:", True)
 
     self2._feed(tprog + 1, tprog+iprog - 1)
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog+1], "arrx post brace feed:")
+        prarr(self2.arrx[tprog:tprog+iprog+1], "post func brace feed:")
 
     if pvg.opt_debug > 6:
-        prarr(self2.arrx, "arrx brace post:", True)
+        prarr(self2.arrx, "func brace post:", True)
 
     # Force rescan
     return True
@@ -65,22 +65,22 @@ def func_paren(self2, tprog, iprog):
     #    print("match paren tprog =", tprog, "iprog=", iprog)
 
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx paren pre: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "func paren pre: ")
 
     # Done with parentheses
     self2.arrx[tprog].flag = 1
     self2.arrx[tprog + iprog - 1].flag = 1
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx, "arrx pre par feed:", True)
+        prarr(self2.arrx, "func pre par feed:", True)
 
     self2._feed(tprog + 1, tprog+iprog - 1)
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog+1], "arrx post par feed:")
+        prarr(self2.arrx[tprog:tprog+iprog+1], "func post par feed:")
 
     if pvg.opt_debug > 6:
-        prarr(self2.arrx, "arrx paren post:", True)
+        prarr(self2.arrx, "func paren post:", True)
 
     # Force rescan
     return True
@@ -138,20 +138,20 @@ def _func_arith(self2, opstr, tprog, iprog):
 
 def func_mul(self2, tprog, iprog):
     if pvg.opt_debug > 5:
-        print("match mul tprog =", tprog, "iprog=", iprog)
+        print("match func  mul tprog =", tprog, "iprog=", iprog)
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx mul pre: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "mul pre: ")
     _func_arith(self2, "*", tprog, iprog)
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx mul post: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "mul post: ")
 
 def func_add(self2, tprog, iprog):
     if pvg.opt_debug > 6:
-        print("match add tprog =", tprog, "iprog=", iprog)
+        print("match func add tprog =", tprog, "iprog=", iprog)
     if pvg.opt_debug > 6:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx add pre: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "add pre: ")
     _func_arith(self2, "+", tprog, iprog)
     if pvg.opt_debug > 6:
-        prarr(self2.arrx[tprog:tprog+iprog], "arrx add post: ")
+        prarr(self2.arrx[tprog:tprog+iprog], "add post: ")
 
 # EOF

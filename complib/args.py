@@ -62,8 +62,8 @@ class Lpg():
         self._auto_opt()
         if argv:
             self.parse(argv)
-        for aa in self.iter_vars():
-            print(aa, end = " ")
+        #for aa in self.iter_vars():
+        #    print(aa, end = " ")
 
     def _xint(self, strx, defx = 0):
         ''' Convert to integer without exception.
@@ -97,6 +97,7 @@ class Lpg():
             if isinstance(bb, bool):
                 #print("bool", aa)
                 self.options += aa[4]
+                self.loptions.append(aa[4:].lower())
             elif isinstance(bb, type([]) ):
                 self.options += aa[4] + ":"
                 self.loptions.append(aa[4:].lower() + "=")
@@ -191,7 +192,6 @@ class Lpg():
     def Help(self):
         print("Advanced help placeholder.")
         print("Under construction.")
-
 
     def setpre(self, strx = None):
         if strx:

@@ -78,6 +78,7 @@ class Lexer():
         self.state =  lexdef.INI_STATE
         self.statstack = stack.pStack()
         self.startstack = stack.pStack()
+        self.linestart = 0
         self.linenum = 0
         self.lastline = 0
         self.start_tt = None
@@ -106,6 +107,8 @@ class Lexer():
                         "tok:", "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
                 tt = Lex(ttt, mstr, mmm.start(), mmm.end())
+                tt.linenum = self.linenum
+                tt.linestart = self.linestart
                 ret = tt
                 break
             else:
@@ -160,6 +163,7 @@ class Lexer():
 
             # Global actions
             if  tt.stamp[1] == "nl":
+                self.linestart = pos
                 self.linenum += 1
                 if self.pvg.opt_ldebug > 2:
                     print("Newline at pos:", tt.start)
