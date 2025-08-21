@@ -71,7 +71,11 @@ class pStack():
         while cnt >= 0:
             print (self._store[cnt]);  cnt -= 1
 
-    def __repr__(self):
+    #def __repr__(self):
+    #    strx = self.dump()
+    #    return strx
+
+    def __str__(self):
         strx = self.dump()
         return strx
 

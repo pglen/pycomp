@@ -41,9 +41,6 @@ opts =  (\
 troot = ptree.Tree()
 #print(troot)
 
-def show_emit():
-    print("emit", cummulate)
-
 def parsefile(strx):
 
     ''' Parse file '''
@@ -111,9 +108,8 @@ def parsefile(strx):
     par.feed(res, buf)
     if lpg.opt_timing_show: print  ("parse time:", time_ms(start_time))
 
-    prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
-
-    emit("hello")
+    #prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
+    #emit("hello")
 
     # Output results
     if lpg.opt_emit:

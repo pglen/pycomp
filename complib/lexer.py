@@ -6,51 +6,6 @@ from . import lexdef, stack
 
 from complib.utils import *
 
-def padx(strx, lenx = 4):
-    lenz = len(strx)
-    if  lenz < lenx:
-        strx = strx + " " * (lenx - lenz)
-    #print("[[" + strx + "]]")
-    return strx;
-
-class Lex():
-
-    def __init__(self, stampx = [], mstr = "", startx = 0, endx = 0):
-        self.state = lexdef.INI_STATE
-        self.stamp = stampx
-        self.mstr = mstr        # Main payload
-        self.start = startx
-        self.end = endx
-        self.flag = 0           # state information
-        self.val = 0.0
-        self.ival = 0
-
-    def copy(self, other):
-        other.state = self.state
-        other.stamp = self.stamp
-        other.mstr = self.mstr
-        other.start = self.start
-        other.end = self.end
-        other.flag = self.flag
-        other.val = self.val
-        other.ival = self.ival
-
-    def __repr__(self):
-        return  "[" + str(self.stamp[1]) + " = '" +  \
-                        cesc(self.mstr) + "', " + str(self.flag) + "]"
-    #def __str__(self):
-    #    return(self.__repr__())
-
-    def dump(self):
-        strx = "[ " + padx("'" + str(self.stamp[1]) + "' = '" + \
-                        cesc(self.mstr) + "'", 20)  + \
-                        "flag = " + padx("%d" % (self.flag)) + \
-                        "pos = "  + padx("%d:%d" % (self.start, self.end), 8) +  \
-                        "val = "  + padx("%d" % (self.val)) + \
-                        "ival = " + padx("%d" % (self.ival)) + \
-                        "]"
-        return strx
-
 # ------------------------------------------------------------------------
 # Construct lexer, precompile regex, fill into array
 
@@ -85,10 +40,6 @@ class Lexer():
         self.backslash = 0
         self.accum = {}
 
-        #for aa in lexdef.:
-        #    #print("init:", aa.value)
-        #    self.accum.append("")
-
     def _lexiter(self, pos, strx):
 
         '''  Call this for every token '''
@@ -106,7 +57,7 @@ class Lexer():
                     print("match pos:", mmm.end(), mmm.start(),
                         "tok:", "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
-                tt = Lex(ttt, mstr, mmm.start(), mmm.end())
+                tt = lexdef.Lex(ttt, mstr, mmm.start(), mmm.end())
                 tt.linenum = self.linenum
                 tt.linestart = self.linestart
                 ret = tt

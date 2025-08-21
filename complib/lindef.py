@@ -17,23 +17,21 @@ def pl(strx):
     aa = lut.lookup(strx)
     return aa[0]
 
-(GROUPANY,) = range(1)
-(STATEANY, STATEINI, SFUNC, SFUNCARG) = range(4)
+GR = xenum("GROUPANY")
+ST = xenum("STATEANY", "STATEINI", "SFUNC", "SFUNCARG")
 
 # These flags determine the handling of a token. The ptional
 # is meant to be skipped if not present, the multiple is meant
-# to eat up more than one occurances.
+# to eat up more than one occurances. (obsolete)
+# N  =_No flag  O = O_P ional  M  = _Multiple A = _Accumulate
 
-N   =   0     # _No flag
-P   =   1     # O_P ional
-M   =   2     # _Multiple
-A   =   4     # _Accumulate
+FL = xenum("N", "P", "M", "A")
 
 class Stamp:
 
     def __init__(self, state, token, nstate, call, group = None, flags = None):
         self.state  = state
-        self.tokem  = token
+        self.token  = token
         self.nstate = nstate
         self.call   = call
         self.group  = group
@@ -43,7 +41,12 @@ class Stamp:
         strx  =  str.self.state
         strx +=  str.self.token
         strx +=  str.self.nstate
+        return strx
 
+    def __str__(self):
+        strx = "State: " + str(ST.get(self.state)) + " " + \
+            str(self.token) + " nState: " + str(ST.get(self.nstate)) + \
+                " " + str(self.call.__name__)
         return strx
 
 # These are the entries to be matched agains the parse array.
@@ -51,7 +54,15 @@ class Stamp:
 #    -----       ---------   ----------  --------   -----
 
 stamps =  (  \
-        Stamp(STATEINI, "func",   SFUNC,  func_func),
+        Stamp(ST.val("STATEINI"), "func",   ST.val("SFUNC"),        func_func),
+        Stamp(ST.val("STATEINI"), "(",      ST.val("STATEANY"),     func_dummy),
+        Stamp(ST.val("STATEINI"), ")",      ST.val("STATEANY"),     func_dummy),
+        Stamp(ST.val("STATEINI"), "{",      ST.val("STATEANY"),     func_dummy),
+        Stamp(ST.val("STATEINI"), "}",      ST.val("STATEANY"),     func_dummy),
+
+        # This will ignore white spaces
+        Stamp(ST.val("STATEINI"), "sp",      ST.val("STATEANY"),    func_dummy),
+        Stamp(ST.val("STATEINI"), "nl",      ST.val("STATEANY"),    func_dummy),
   )
 
 pvar(stamps)

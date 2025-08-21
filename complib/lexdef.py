@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ''' This is a parser skeleton for language development
-        This file defines the tokens and parser states
+        This file defines the tokens and token states
 '''
 
 from complib.utils import *
@@ -22,46 +22,66 @@ from complib.utils import *
 # successfully digested. For more info see lex / yacc literature.
 '''
 
-tok2 = {}; tok3 = {}
-
-# ------------------------------------------------------------------------
-# Token definitions:
+# The order of the definitions only matters as lexing priority. Longer
+# tokens should be at the top, fallback alternates at the buttom.
 #
-# [ Use textual context nn[idx][1] for development, numeric nn[idx][0]
-# for production.]
-#
-# The order of the definitions do not matter.
-#
-# To add a new syntactic element, search for an existing feature (like 'wrap')
+# To add a new syntactic element, search for an existing feature (like 'func')
 # Add the new element into the a.) definition, b.) regex defintion,
-# c.) state definition, d.) state table, e.) action function. (ouch)
+# c.) state definition, d.) state table, e.) action function.
 #
 # The script is self checking, will report on missing defintions. However,
-#   it can not (will not) report on syntactic anomalies of the target
-#   language itself.
-# The punique() routine will let the token receive a new value with
-#   every iteration
-# Some tokens have no phase entries, these are used on summary output
+# it can not (will not) report on syntactic anomalies of the target
+# language itself.
 
-#from enum import Enum
-#class ST(Enum):
-#    INI_STATE = 0; STR_STATE = 1; STR2_STATE = 2;
-#    COMM_STATE = 3; ESC_STATE = 4; HEX_STATE = 5;
-#    UNI_STATE = 6
-#print(dir(ST.INI_STATE))
+class Lex():
 
-(STATEX, TOKENX, REGEX, STATEX2, ) = range(4)
+    ''' Store one lexed item (used to be a list, but got out of hand)
+    '''
+
+    def __init__(self, stampx = [], mstr = "", startx = 0, endx = 0):
+        self.state = INI_STATE
+        self.stamp = stampx
+        self.mstr = mstr        # Main payload
+        self.start = startx
+        self.end = endx
+        self.flag = 0           # State information
+        self.val = 0.0
+        self.ival = 0
+
+    def copy(self, other):
+        other.state = self.state
+        other.stamp = self.stamp
+        other.mstr = self.mstr
+        other.start = self.start
+        other.end = self.end
+        other.flag = self.flag
+        other.val = self.val
+        other.ival = self.ival
+
+    def __str__(self):
+        '''   Deliver it in an easy to see format  '''
+        return  "[ " + pp(self.stamp[1]) + " = " + pp(self.mstr) + ", " + \
+                        pp(str(self.flag)) + " ] "
+
+    def dump(self):
+        strx = "[ " + padx("'" + str(self.stamp[1]) + "' = '" + \
+                        cesc(self.mstr) + "'", 20)  + \
+                        "flag = " + padx("%d" % (self.flag)) + \
+                        "pos = "  + padx("%d:%d" % (self.start, self.end), 8) +  \
+                        "val = "  + padx("%d" % (self.val)) + \
+                        "ival = " + padx("%d" % (self.ival)) + \
+                        "]"
+        return strx
+
+# Lexer states
 (INI_STATE, STR_STATE, STR2_STATE, COMM_STATE, ESC_STATE, HEX_STATE,
-UNI_STATE, ) =  range(7)
+    UNI_STATE, ) =  range(7)
 
 def state2str(state):
 
     ''' Convert state to string '''
+
     strx = "None"
-    if state == STATEX:        strx = "STATEX"
-    if state == TOKENX:        strx = "TOKENX"
-    if state == REGEX:         strx = "REGEX"
-    if state == STATEX2:       strx = "STATEX2"
     if state == INI_STATE:     strx = "INI_STATE"
     if state == STR_STATE:     strx = "STR_STATE"
     if state == STR2_STATE:    strx = "STR2_STATE"
@@ -71,51 +91,41 @@ def state2str(state):
     if state == UNI_STATE:     strx = "UNI_STAT"
     return strx
 
+# Regex shortcuts
 IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
-IDEN3   = "[A-Za-z0-9_]+"
 HEX2    = "0x[0-9a-fA-F]+"
 NOIDEN  = "[^a-zA-Z0-9_]"
-#WSPC    = "[ \t\n]"
-WSPC    = ""
 
-def tok(name):
-
-    '''  Create token on the fly, if there is one already, return it.
-    '''
-
-    #print("adding:", name)
-    if name in tok2.keys():
-        print("Warn: dup token", name)
-        pass
-    else:
-        pass
-        uni = punique()
-        tok2[name] = uni
-        tok3[uni] = name
-    return name
+# Tokens that start with a keyword is still valid  like: func_hello
+IDEN3   = "[A-Za-z0-9_]+"
 
 # ------------------------------------------------------------------------
 # Lexer tokens. The lexer will search for the next token match.
 #
-# The order of the definitions matter. First token match is returned.
-# List high prioty items first. List longer items befors short ones.
+# The order of the definitions matter. First token match is returned
+# before later match. List high prioty items first, and list longer
+# items befors short ones.
 #
-# Elements:
-#  ---| parsertate | tok | token regex | compiled regex | state change |---
-#
-# When editing this table, update tok and tokens together.
+# Elements of the list:
+#       parser state | token | token regex
+# Filled in automatically:
+#       compiled regex | state change
+
+# The token (name) is an approximate texttual representation of
+# the token. This way it is eazy to see the kind of token in the parser.
 
 try:
     xtokens =  (
-    # State     # Token          # Regex              # Notes
-    (INI_STATE, "eolnl",        r"\\\\\n"            ),
-    (INI_STATE, "bsla",         r"\\\\"              ),
+    # State     # Token         # Regex             # OPT Notes
+    # --------  -------         -------             ------------
+    (INI_STATE, "eolnl",        r"\\\\\n"           ),
+    (INI_STATE, "bsla",         r"\\\\"             ),
 
-    (INI_STATE, "ifdef2",       r"%ifdef"     ),
-    (INI_STATE, "elifdef2",     r"%elifdef"   ),
-    (INI_STATE, "define2",      r"%define"    ),
-    (INI_STATE, "else2",        r"%else"      ),
-    (INI_STATE, "endif2",       r"%endif"     ),
+    (INI_STATE, "ifdef2",       r"%ifdef"           ),
+    (INI_STATE, "elifdef2",     r"%elifdef"         ),
+    (INI_STATE, "define2",      r"%define"          ),
+    (INI_STATE, "else2",        r"%else"            ),
+    (INI_STATE, "endif2",       r"%endif"           ),
 
     (INI_STATE, "if",           r"if"  + IDEN3      ),
     (INI_STATE, "if",           r"if"               ),
@@ -161,111 +171,104 @@ try:
     (INI_STATE, "oct2",         r"0y[0-17]+"        ),
     (INI_STATE, "bin2",         r"0z[0-1]+"         ),
 
-    (INI_STATE, "comm2d",       r"\#\#.*\n"          ),
-    (INI_STATE, "comm2d",       r"\/\/\/.*\n"        ),
-    (INI_STATE, "comm2",        r"\#.*\n"            ),
-    (INI_STATE, "comm2",        r"\/\/.*\n"          ),
+    (INI_STATE, "comm2d",       r"\#\#.*\n"         ),
+    (INI_STATE, "comm2d",       r"\/\/\/.*\n"       ),
+    (INI_STATE, "comm2",        r"\#.*\n"           ),
+    (INI_STATE, "comm2",        r"\/\/.*\n"         ),
 
-    (INI_STATE, "num",          r"[0-9]+"            ),
+    (INI_STATE, "num",          r"[0-9]+"           ),
 
     (INI_STATE, "bs",           "\b"                ),
-    (INI_STATE, "quote",        r"\""                ),
-    (INI_STATE, "squote",       r"\'"                ),
+    (INI_STATE, "quote",        r"\""               ),
+    (INI_STATE, "squote",       r"\'"               ),
     (INI_STATE, "ident",        IDEN2               ),
 
-    (INI_STATE, "peq",          r"\+="               ),  # Add to
-    (INI_STATE, "meq",          r"\-="               ),  # Sub from
-    (INI_STATE, "deq",          r"=="                ),  # Equal
-    (INI_STATE, "ndeq",         r"!="                ),  # Not Equal
-    (INI_STATE, "teq",          r"==="               ),  # Identical
-    (INI_STATE, "tneq",         r"!=="               ),  # Not Identical
-    (INI_STATE, "put",          r"=>"                ),  # Put into
-    (INI_STATE, "gett",         r"<="                ),  # Get from
-    (INI_STATE, "dref",         r"->"                ),  # Reference
-    (INI_STATE, "aref",         r"<-"                ),  # De ref
-    (INI_STATE, "idev",         r"\/\%"              ),  # Int divide
-    (INI_STATE, "and",          r"\&\&"              ),  # Logical and
-    (INI_STATE, "or",           r"\|\|"              ),  # Logical or
-    (INI_STATE, "xor",          r"\^\^"              ),  # Logical or
+    (INI_STATE, "peq",          r"\+="              ),  # Add to
+    (INI_STATE, "meq",          r"\-="              ),  # Sub from
+    (INI_STATE, "deq",          r"=="               ),  # Equal
+    (INI_STATE, "ndeq",         r"!="               ),  # Not Equal
+    (INI_STATE, "teq",          r"==="              ),  # Identical
+    (INI_STATE, "tneq",         r"!=="              ),  # Not Identical
+    (INI_STATE, "put",          r"=>"               ),  # Put into
+    (INI_STATE, "gett",         r"<="               ),  # Get from
+    (INI_STATE, "dref",         r"->"               ),  # Reference
+    (INI_STATE, "aref",         r"<-"               ),  # De ref
+    (INI_STATE, "idev",         r"\/\%"             ),  # Int divide
+    (INI_STATE, "and",          r"\&\&"             ),  # Logical and
+    (INI_STATE, "or",           r"\|\|"             ),  # Logical or
+    (INI_STATE, "xor",          r"\^\^"             ),  # Logical or
 
-    (INI_STATE, "at",           r"@"                 ),
-    (INI_STATE, "excl",         r"!"                 ),
-    (INI_STATE, "tilde",        r"~"                 ),
-    (INI_STATE, "under",        r"_"                 ),
+    (INI_STATE, "at",           r"@"                ),
+    (INI_STATE, "excl",         r"!"                ),
+    (INI_STATE, "tilde",        r"~"                ),
+    (INI_STATE, "under",        r"_"                ),
 
-    (INI_STATE, "comm3",        r"\/\*"              ),
+    (INI_STATE, "comm3",        r"\/\*"             ),
 
-    (INI_STATE, "(",            r"\("                ),
-    (INI_STATE, ")",            r"\)"                ),
-    (INI_STATE, "=",            r"="                 ),
-    (INI_STATE, "<",            r"<"                 ),
-    (INI_STATE, ">",            r">"                 ),
-    (INI_STATE, "&",            r"&"                 ),
-    (INI_STATE, "*",            r"\*"                ),
-    (INI_STATE, "+",            r"\+"                ),
-    (INI_STATE, "-",            r"\-"                ),
-    (INI_STATE, "/",            r"/"                 ),
-    (INI_STATE, "[",            r"\["                ),
-    (INI_STATE, "]",            r"\]"                ),
-    (INI_STATE, "{",            r"\{"                ),
-    (INI_STATE, "}",            r"\}"                ),
-    (INI_STATE, "semi",         r";"                 ),
-    (INI_STATE, "colon",        r":"                 ),
-    (INI_STATE, "::",           r"::"                ),  # Double colon
-    (INI_STATE, "dot",          r"\."                ),
+    (INI_STATE, "(",            r"\("               ),
+    (INI_STATE, ")",            r"\)"               ),
+    (INI_STATE, "=",            r"="                ),
+    (INI_STATE, "<",            r"<"                ),
+    (INI_STATE, ">",            r">"                ),
+    (INI_STATE, "&",            r"&"                ),
+    (INI_STATE, "*",            r"\*"               ),
+    (INI_STATE, "+",            r"\+"               ),
+    (INI_STATE, "-",            r"\-"               ),
+    (INI_STATE, "/",            r"/"                ),
+    (INI_STATE, "[",            r"\["               ),
+    (INI_STATE, "]",            r"\]"               ),
+    (INI_STATE, "{",            r"\{"               ),
+    (INI_STATE, "}",            r"\}"               ),
+    (INI_STATE, "semi",         r";"                ),
+    (INI_STATE, "colon",        r":"                ),
+    (INI_STATE, "::",           r"::"               ),  # Double colon
+    (INI_STATE, "dot",          r"\."               ),
 
-    (INI_STATE, "<<",           r"<<"                ),  # Shift <
-    (INI_STATE, ">>",           r">>"                ),
-    (INI_STATE, "<<<",          r"<<<"               ),  # Rotate <
-    (INI_STATE, ">>>",          r">>>"               ),  # Rotate >
-    (INI_STATE, "++",           r"\+\+"              ),
-    (INI_STATE, "--",           r"\-\-"              ),
+    (INI_STATE, "<<",           r"<<"               ),  # Shift <
+    (INI_STATE, ">>",           r">>"               ),
+    (INI_STATE, "<<<",          r"<<<"              ),  # Rotate <
+    (INI_STATE, ">>>",          r">>>"              ),  # Rotate >
+    (INI_STATE, "++",           r"\+\+"             ),
+    (INI_STATE, "--",           r"\-\-"             ),
 
-    (INI_STATE, "caret",        r"\^"                ),
-    (INI_STATE, "cent",         r"%"                 ),
-    (INI_STATE, "sp",           r" "                 ),
-    (INI_STATE, "tab",          r"\t"                ),
-    (INI_STATE, "nl",           r"\n"                ),
-    (INI_STATE, "comma",        r","                 ),
+    (INI_STATE, "caret",        r"\^"               ),
+    (INI_STATE, "cent",         r"%"                ),
+    # We parse white spaces, let the parser deal with it
+    (INI_STATE, "sp",           r" "                ),
+    (INI_STATE, "tab",          r"\t"               ),
+    (INI_STATE, "nl",           r"\n"               ),
+    (INI_STATE, "comma",        r","                ),
 
     #callback here
-    (INI_STATE, "any",          r"."                 ),
+    (INI_STATE, "any",          r"."                ),
 
     #string state
-    (STR_STATE, "sbsla",        r"\\\\"              ),
-    (STR_STATE, "dquote",       r"\""                ),
-    (STR_STATE, "sany",         r"."                 ),
+    (STR_STATE, "sbsla",        r"\\\\"             ),
+    (STR_STATE, "dquote",       r"\""               ),
+    (STR_STATE, "sany",         r"."                ),
 
     #string state
-    (STR2_STATE, "sbsla2",     r"\\\\"               ),
-    (STR2_STATE, "dquote2",    r"\'"                 ),
-    (STR2_STATE, "sany2",      r"."                  ),
+    (STR2_STATE, "sbsla2",     r"\\\\"              ),
+    (STR2_STATE, "dquote2",    r"\'"                ),
+    (STR2_STATE, "sany2",      r"."                 ),
 
     #comm states
-    #(COMM_STATE, "cbsla",     r"\\\\"               ),
-    (COMM_STATE, "ecomm3",     r"\*\/"               ),
-    (COMM_STATE, "cany",       r"."                  ),
+    #(COMM_STATE, "cbsla",     r"\\\\"              ),
+    (COMM_STATE, "ecomm3",     r"\*\/"              ),
+    (COMM_STATE, "cany",       r"."                 ),
 
     #escape state
-    (ESC_STATE, "anyx",        r"."                  ),
+    (ESC_STATE, "anyx",        r"."                 ),
 
-    (UNI_STATE, "unihex",      r"[0-9A-Fa-f]{4,8}"   ),
-    (UNI_STATE, "anyu",        r"."                  ),
+    (UNI_STATE, "unihex",      r"[0-9A-Fa-f]{4,8}"  ),
+    (UNI_STATE, "anyu",        r"."                 ),
 
-    (HEX_STATE, "eschex",      r"[0-9A-Fa-f]{1,2}"   ),
-    (HEX_STATE, "anyh",        r"."                  ),
+    (HEX_STATE, "eschex",      r"[0-9A-Fa-f]{1,2}"  ),
+    (HEX_STATE, "anyh",        r"."                 ),
     )
 
 except KeyError as err:
     print("Cannot precomp", err, sys.exc_info())
     raise
-
-#print("tok2", tok2)
-
-rtok =  {}
-for aa in tok2:
-    rtok[tok2[aa]] = aa
-
-#print("rtok", rtok)
 
 # EOF

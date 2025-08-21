@@ -16,9 +16,9 @@ def funcpvg(xpvg):
 
 # Functions to call on stamp match
 
-def func_dummy(self2, idx, tprog, iprog):
-    if pvg.opt_debug > 2:
-        print("match dummy idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
+def func_dummy(self2, tprog, iprog):
+    if pvg.opt_debug > 4:
+        print("match dummy", "tprog =", tprog, "iprog=", iprog)
 
 def func_str(self2, idx, tprog, iprog):
     print("match str idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
@@ -31,7 +31,7 @@ def func_func(self2, tprog, iprog):
         prarr(self2.arrx[tprog:tprog+iprog], "func_func pre: ", True)
     #sys.exit(0)
     self2.arrx[tprog].flag = 1
-    self2._feed(tprog + 1, tprog+iprog - 1)
+    #self2._feed(tprog + 1, tprog+iprog - 1)
 
 def func_brace(self2, tprog, iprog):
 
@@ -48,7 +48,7 @@ def func_brace(self2, tprog, iprog):
     if pvg.opt_debug > 5:
         prarr(self2.arrx, "pre func brace feed:", True)
 
-    self2._feed(tprog + 1, tprog+iprog - 1)
+    #self2._feed(tprog + 1, tprog+iprog - 1)
 
     if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog+1], "post func brace feed:")
@@ -74,7 +74,7 @@ def func_paren(self2, tprog, iprog):
     if pvg.opt_debug > 5:
         prarr(self2.arrx, "func pre par feed:", True)
 
-    self2._feed(tprog + 1, tprog+iprog - 1)
+    #self2._feed(tprog + 1, tprog+iprog - 1)
 
     if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog+1], "func post par feed:")

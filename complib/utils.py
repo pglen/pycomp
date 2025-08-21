@@ -6,15 +6,17 @@ import threading
 
 def pvar(var):
 
-    ''' return variable description string as name => val '''
-
+    ''' return variable description string as name => val
+        this is near USELESS
+    '''
+    #print("pvar =", var)
     import inspect
     callers_local_vars = inspect.currentframe().f_back.f_locals.items()
     strx = ""
     for aa in callers_local_vars:
         if aa[1] is var:
             if isinstance(aa[1], (type(()), type([])) ):
-                strx += aa[0] + " -> "
+                strx += str(aa[0]) + " -> "
                 for bb in aa[1]:
                     strx += str(bb)
             else:
@@ -32,12 +34,20 @@ def unique():             # create a unique temporary number
     return _gl_cnt
 
 cummulate = ""
-def emit(strx):
+
+def emit(*argx):
 
     ''' Accumulate output '''
 
     global cummulate;
-    cummulate += " '" + strx + "' "
+
+    for strx in argx:
+        cummulate += " '" + strx + "' "
+    cummulate += "\n"
+
+def show_emit():
+    print("emit:")
+    print(cummulate)
 
 # Connect parser token to lexer item. This way the definitions are synced
 # without the need for double definition
@@ -223,9 +233,18 @@ def rcesc(strx):
 
 def cesc(strx):
 
-    ''' Expand 'C' sequences like: \n \\n '''
+    ''' Expand 'C' sequences like: \n \\n
+        Thu 21.Aug.2025 added class is now stringized before processing
+    '''
 
-    retx = u""; pos = 0; lenx = len(strx)
+    retx = u""; pos = 0;
+
+    try:
+        lenx = len(strx)
+    except:
+        # Class does not have length
+        strx = str(strx)
+        lenx = len(strx)
 
     while True:
         if pos >= lenx:
@@ -385,19 +404,27 @@ def hd(varx):
     strx += "\n"
     return strx
 
+def padx(strx, lenx = 4):
+    lenz = len(strx)
+    if  lenz < lenx:
+        strx = strx + " " * (lenx - lenz)
+    #print("[[" + strx + "]]")
+    return strx;
+
 class   xenum():
 
-    def __init__(self, name = None):
-        self.name = name
-        self.arr = []
-        pass
+    ''' Simple enum to use in parser '''
+
+    def __init__(self, *val):
+        self.arr = [] ; self.narr = {}
+        self.add(*val)
 
     def add(self, *val):
         for aa in val:
+            self.narr[aa] = len(self.arr)
             self.arr.append(aa)
 
     def dump(self):
-        #print(self.name)
         strx = ""
         for cnt, aa in enumerate(self.arr):
             #print(cnt, aa)
@@ -407,25 +434,25 @@ class   xenum():
     def get(self, cnt):
         return self.arr[cnt]
 
-    def byname(self, name):
-        ret = None
-        for cnt, aa in enumerate(self.arr):
-            if aa == name:
-                ret = cnt
-                break
-        if ret == None: raise ValueError
-        return ret
+    def val(self, name):
+        return self.narr[name]
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
 
-    #eee = xenum("hello")
-    #eee.add("no", "yes", "maybe")
+def test_xenum():
+
+    eee = xenum("no", "yes",)
+    eee.add( "maybe")
+
     #print(eee.dump(), end = "")
-    #print(eee.get(1))
-    #print(eee.byname("no"))
-    #print(eee.byname("yes"))
-    ##print(eee.byname("no2"))
+    #print(eee.val("no"))
+    #print(eee.val("yes"))
+
+    assert eee.get(0) == "no"
+    assert eee.get(1) == "yes"
+    assert eee.val("no")  == 0
+    assert eee.val("yes") == 1
 
 def test_cesc():
     org = "12345678\r\n\a\tabcdef"
