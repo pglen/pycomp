@@ -21,11 +21,11 @@ def func_dummy(self2, tprog, iprog):
         print("match dummy", "tprog =", tprog, "iprog=", iprog)
 
 def func_comment(self2, tprog, iprog):
-    if pvg.opt_debug > 2:
+    if pvg.opt_debug > 5:
         print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
 
 def func_dcomment(self2, tprog, iprog):
-    if pvg.opt_debug > 2:
+    if pvg.opt_debug > 5:
         print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
     if pvg.opt_rdocstr:
         print(self2.arrx[tprog].mstr, end = "")

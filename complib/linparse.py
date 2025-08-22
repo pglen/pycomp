@@ -19,7 +19,7 @@ class LinParse():
         funcpvg(pvg)
         self.state = ST.val("STATEINI")
         self.context = 0
-        self.statestack = stack.pStack()
+        self.statestack = stack.pStack(True)
         self.statestack.push(ST.val("STATEINI"))
 
         # Print stamps:
@@ -136,35 +136,46 @@ class LinParse():
         # Compare current position to ONE stamp
 
         if currstamp.token == currtoken.stamp[1]:
-            if self.pvg.opt_debug > 2:
-                print("  Match:",  "tprog =", tprog, "stamp:", pp(currstamp.token),
-                            "token:", pp(currtoken.stamp[1]), "state:",
-                                ST.get(self.state))
             match = True
+            if self.pvg.opt_debug > 6:
+                if currstamp.nstate != ST.val("STATEIGN"):
+                    print(" sState;", ST.get(self.state))
+
+            if self.pvg.opt_debug > 2:
+                if  currtoken.stamp[1] != "sp":    # no sp display
+                    print(" Match:",
+                            #"tprog =", tprog,
+                            #"state:",  ST.get(self.state),
+                            #"stamp:", pp(currstamp.token),
+                            pp(currtoken.stamp[1]),
+                            "mstr:", pp(currtoken.mstr),
+                                )
             #iprog = len(self.arrx[tprog].mstr)
-            stamps[sidx].call(self, tprog, 0)
+            currstamp.call(self, tprog, 0)
 
             # Switch state as instructed
-            if stamps[sidx].nstate != ST.val("STATEANY") and \
-                 stamps[sidx].nstate != ST.val("STATEIGN"):
-                if stamps[sidx].nstate == ST.val("STATEBACK"):
+            if currstamp.nstate != ST.val("STATEANY") and \
+                    currstamp.nstate != ST.val("STATEIGN"):
+                if currstamp.nstate == ST.val("STPOP"):
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
                         print("pop state", ST.get(self.state))
-                elif stamps[sidx].nstate == ST.val("STATEBACK2"):
+                elif currstamp.nstate == ST.val("STPOP2"):
                     self.state = self.statestack.pop()
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
                         print("pop state2", ST.get(self.state))
                 else:
-                    self.statestack.push(self.state)
-                    self.state = stamps[sidx].nstate
+                    if  currstamp.push:
+                        self.statestack.push(self.state)
+                    self.state = currstamp.nstate
 
             if self.pvg.opt_debug > 4:
-                print("new state", ST.get(self.state))
+                if currstamp.nstate != ST.val("STATEIGN"):
+                    print(" eState;", ST.get(self.state))
 
             global lastnode
-            if stamps[sidx].nstate != ST.val("STATEIGN"):
+            if currstamp.nstate != ST.val("STATEIGN"):
                 lastnode = lastnode.add(TreeNode(currtoken.stamp[1]))
 
                 if self.pvg.opt_emit:
@@ -176,7 +187,7 @@ class LinParse():
         if self.pvg.opt_animate:
             time.sleep(0.01) # this case was for runaway display
 
-        if  self.pvg.opt_debug > 5:
+        if  self.pvg.opt_debug > 7:
             print("itemx return:", match, iprog)
 
         return match, iprog

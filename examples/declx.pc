@@ -1,1 +1,1 @@
- U32 : name = 12
+ S32 : name = 12 var = 00 ; u64 : aa = name

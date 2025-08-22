@@ -20,10 +20,11 @@ FL = xenum("N", "P", "M", "A")
 
 class Stamp:
 
-    def __init__(self, state, token, nstate, call, group = None, flags = None):
+    def __init__(self, state, token, nstate, pushx, call, group = None, flags = None):
         self.state  = state
         self.token  = token
         self.nstate = nstate
+        self.push   = pushx
         self.call   = call
         self.group  = group
         self.flags  = flags
@@ -41,29 +42,44 @@ class Stamp:
         return strx
 
 GR = xenum("GROUPANY")
-ST = xenum("STATEANY", "STATEINI", "STATEBACK", "STATEBACK2", "STATEIGN", "STATEFUNC",
-                "SFUNCARG", "SFUNCBODY")
+ST = xenum("STATEANY", "STATEINI", "STPOP", "STPOP2",
+                "STATEIGN", "STATEFUNC", "SFUNARG", "SFUNARG2", "SFUNARG3",
+                    "SFUNARG4", "SFUNBODY")
 
 # These are the entries to be matched agains the parse array.
 #    state       item        new_state   function   group
 #    -----       ---------   ----------  --------   -----
 
 stamps =  (  \
-        Stamp(ST.val("STATEINI"), "func",    ST.val("STATEFUNC"),   func_func),
-        Stamp(ST.val("STATEFUNC"), "(",      ST.val("SFUNCARG"),    func_dummy),
-        Stamp(ST.val("SFUNCARG"), ")",       ST.val("STATEBACK"),   func_dummy),
-        Stamp(ST.val("STATEFUNC"), "{",      ST.val("SFUNCBODY"),   func_dummy),
-        Stamp(ST.val("SFUNCBODY"), "}",      ST.val("STATEBACK2"),  func_dummy),
+        Stamp(ST.val("STATEINI"), "func",   ST.val("STATEFUNC"), False,  func_func),
+        Stamp(ST.val("STATEFUNC"), "(",     ST.val("SFUNARG"),   False, func_dummy),
+        Stamp(ST.val("SFUNARG"), "decl",    ST.val("SFUNARG2"), True,  func_dummy),
+
+        Stamp(ST.val("STATEINI"), "decl",   ST.val("SFUNARG2"), True,   func_dummy),
+        Stamp(ST.val("STATEINI"), "float",  ST.val("SFUNARG2"), True,   func_dummy),
+        Stamp(ST.val("STATEINI"), "double", ST.val("SFUNARG2"), True,   func_dummy),
+
+        Stamp(ST.val("SFUNARG2"), ":",      ST.val("SFUNARG3"), False,  func_dummy),
+        Stamp(ST.val("SFUNARG3"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
+        Stamp(ST.val("SFUNARG3"), "=",      ST.val("SFUNARG4"), False,  func_dummy),
+        Stamp(ST.val("SFUNARG4"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
+        Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  func_dummy),
+        Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),  False,  func_dummy),
+        Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),  False,  func_dummy),
+
+        Stamp(ST.val("SFUNARG"), ")",       ST.val("STATEIGN"),   False,  func_dummy),
+        Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
+        Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEIGN"),  False,  func_dummy),
 
         # This will ignore commants
-        Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"),    func_comment),
-        Stamp(ST.val("STATEANY"), "comm3",   ST.val("STATEIGN"),    func_comment),
-        Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STATEIGN"),    func_dcomment),
-        Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STATEIGN"),    func_dcomment),
+        Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"), False,   func_comment),
+        Stamp(ST.val("STATEANY"), "comm3",   ST.val("STATEIGN"), False,   func_comment),
+        Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STATEIGN"), False,   func_dcomment),
+        Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STATEIGN"), False,   func_dcomment),
 
         # This will ignore white spaces
-        Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"),    func_dummy),
-        Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"),    func_dummy),
+        Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"), False,   func_dummy),
+        Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"), False,   func_dummy),
   )
 
 if __name__ == "__main__":

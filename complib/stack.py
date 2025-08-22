@@ -2,11 +2,14 @@
 
 import sys
 
+class StackError(Exception):
+    pass
+
 class pStack():
 
-    def __init__(self):
+    def __init__(self, raisex = False):
         self._store = []
-        self.raisex = False
+        self.raisex = raisex   # Pass False if production code
         self.verbose = False
 
     def push(self, item):
@@ -31,13 +34,15 @@ class pStack():
         return item
 
     def pop(self):
-        if len(self._store) == 0: return None
+        if len(self._store) == 0:
+            if self.raisex: raise StackError("No data to pop")
+            return None
         item = None
         try:
             item = self._store.pop(len(self._store) - 1)
         except Exception as xxx:
             item = None
-            if self.raisex: raise
+            if self.raisex: raise ValueError
             else:
                 if self.verbose:
                     print ("exception:", xxx, sys.exc_info())
