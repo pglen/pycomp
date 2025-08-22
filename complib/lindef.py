@@ -11,15 +11,6 @@ def defpvg(xpvg):
     pvg = xpvg
     #print("got pvg", pvg)
 
-lut = Lut()
-# The short version of add / lookup, returning the num only
-def pl(strx):
-    aa = lut.lookup(strx)
-    return aa[0]
-
-GR = xenum("GROUPANY")
-ST = xenum("STATEANY", "STATEINI", "SFUNC", "SFUNCARG")
-
 # These flags determine the handling of a token. The ptional
 # is meant to be skipped if not present, the multiple is meant
 # to eat up more than one occurances. (obsolete)
@@ -49,28 +40,33 @@ class Stamp:
                 " " + str(self.call.__name__)
         return strx
 
+GR = xenum("GROUPANY")
+ST = xenum("STATEANY", "STATEINI", "STATEBACK", "STATEBACK2", "STATEIGN", "STATEFUNC",
+                "SFUNCARG", "SFUNCBODY")
+
 # These are the entries to be matched agains the parse array.
 #    state       item        new_state   function   group
 #    -----       ---------   ----------  --------   -----
 
 stamps =  (  \
-        Stamp(ST.val("STATEINI"), "func",   ST.val("SFUNC"),        func_func),
-        Stamp(ST.val("STATEINI"), "(",      ST.val("STATEANY"),     func_dummy),
-        Stamp(ST.val("STATEINI"), ")",      ST.val("STATEANY"),     func_dummy),
-        Stamp(ST.val("STATEINI"), "{",      ST.val("STATEANY"),     func_dummy),
-        Stamp(ST.val("STATEINI"), "}",      ST.val("STATEANY"),     func_dummy),
+        Stamp(ST.val("STATEINI"), "func",    ST.val("STATEFUNC"),   func_func),
+        Stamp(ST.val("STATEFUNC"), "(",      ST.val("SFUNCARG"),    func_dummy),
+        Stamp(ST.val("SFUNCARG"), ")",       ST.val("STATEBACK"),   func_dummy),
+        Stamp(ST.val("STATEFUNC"), "{",      ST.val("SFUNCBODY"),   func_dummy),
+        Stamp(ST.val("SFUNCBODY"), "}",      ST.val("STATEBACK2"),  func_dummy),
+
+        # This will ignore commants
+        Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"),    func_comment),
+        Stamp(ST.val("STATEANY"), "comm3",   ST.val("STATEIGN"),    func_comment),
+        Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STATEIGN"),    func_dcomment),
+        Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STATEIGN"),    func_dcomment),
 
         # This will ignore white spaces
-        Stamp(ST.val("STATEINI"), "sp",      ST.val("STATEANY"),    func_dummy),
-        Stamp(ST.val("STATEINI"), "nl",      ST.val("STATEANY"),    func_dummy),
+        Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"),    func_dummy),
+        Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"),    func_dummy),
   )
-
-pvar(stamps)
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
-    #pl("aaaaa") ;    pl("bbbbbb") ;  pl("cvvvvv");
-    #pl("dcccccc") ;  pl("eeeeeee")
-    #print(lut.dump(), end = " ")
 
 # EOF

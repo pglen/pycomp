@@ -4,26 +4,6 @@ import sys, os, re, time, stat
 
 import threading
 
-def pvar(var):
-
-    ''' return variable description string as name => val
-        this is near USELESS
-    '''
-    #print("pvar =", var)
-    import inspect
-    callers_local_vars = inspect.currentframe().f_back.f_locals.items()
-    strx = ""
-    for aa in callers_local_vars:
-        if aa[1] is var:
-            if isinstance(aa[1], (type(()), type([])) ):
-                strx += str(aa[0]) + " -> "
-                for bb in aa[1]:
-                    strx += str(bb)
-            else:
-                strx += str(aa[0]) + " => " + str(aa[1]) + " "
-            #break
-    return strx
-
 _gl_cnt = 0
 sema = threading.Semaphore()
 def unique():             # create a unique temporary number
@@ -46,65 +26,9 @@ def emit(*argx):
     cummulate += "\n"
 
 def show_emit():
-    print("emit:")
+    print("emit results:")
     print(cummulate)
 
-# Connect parser token to lexer item. This way the definitions are synced
-# without the need for double definition
-# Look up, create if not found
-
-class Lut:
-
-    def __init__(self):
-        self.tokdef = []
-
-    def lookup(self, strx):
-        ret = None
-        for aa in self.tokdef:
-            if strx == aa[1]:
-                #print "found", aa
-                ret = aa
-                break
-        if ret == None:
-            #print ("Token '" + strx + "' not found, adding ... ", end = " " )
-            self.tokdef.append((unique(), strx))
-            for aa in  self.tokdef:
-                if strx == aa[1]:
-                    #print(aa)
-                    ret = aa
-                    break
-            if ret == None:
-                print ("Token '" + strx + "' not found, please correct it.")
-        return aa
-
-    def rlookup(self, idn):
-        ret =  "none"
-        for aa in  self.tokdef:
-            #print("idx =", idn, "aa =", aa)
-            if idn == aa[0]:
-                ret = aa[1]
-                break
-        return ret
-
-    def dump(self, pad = 15, perline = 5):
-        res = ""
-        cnt = 0
-        for aa in  self.tokdef:
-            strx = str(aa[0]) + " = " + "'" + aa[1] + "'"
-            xlen = pad - len(strx)
-            res += "%s%s" % (strx, " " * xlen)
-            cnt += 1
-            if cnt % perline == 0:
-                res += "\n"
-        #res += "\n"
-        return res
-
-class Tree:
-    def __init__(self, data = None):
-        self.left = None
-        self.right = None
-        self.children = []
-        self.data = data
 
 def time_ms(start_time):
     ttt = time.process_time() - start_time

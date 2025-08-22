@@ -1,141 +1,79 @@
 #!/usr/bin/env python
 
-''' Simple tree for parser '''
+class TreeNode:
 
-class Node:
-    """
-    Class Node
-    """
-    def __init__(self, value):
-        self.left = None
-        self.data = value
-        self.right = None
+    def __init__(self, datax = None):
+        self.data = [] ;  self.subs = [] ; self.det = []
+        self.parent = None
+        self.data.append(datax)
 
-class Tree:
-    """
-    Class tree will provide a tree as well as utility functions.
-    """
+    def addata(self, datax):
+        ''' add Data '''
+        self.data.append(datax)
 
-    def createNode(self, data):
-        """
-        Utility function to create a node.
-        """
-        return Node(data)
+    def addet(self, datax):
+        ''' add detail '''
+        self.det.append(datax)
 
-    def insert(self, node , data):
-        """
-        Insert function will insert a node into tree.
-        Duplicate keys are not allowed.
-        """
-        #if tree is empty , return a root node
-        if node is None:
-            return self.createNode(data)
-        # if data is smaller than parent , insert it into left side
-        if data < node.data:
-            node.left = self.insert(node.left, data)
-        elif data > node.data:
-            node.right = self.insert(node.right, data)
+    def add(self, sub):
+        ''' add subtree level '''
+        sub.parent = self
+        self.subs.append(sub)
+        return sub
 
-        return node
+    def _level(self, res, res2):
+        ''' add result of level '''
+        res3 = self.data, self.det
+        res.append(res3)
+        if  self.parent:
+            res2.append(self.parent.data)
+        for aa in self.subs:
+            aa._level(res, res2)
 
-    def search(self, node, data):
-        """
-        Search function will search a node into tree.
-        """
-        # if root is None or root is the search data.
-        if node is None or node.data == data:
-            return node
+    def __str__(self):
+        res = [] ; res2 = []
+        self._level(res, res2)
+        return str(res)
+        #return str(res) + " par: " + str(res2)
 
-        if node.data < data:
-            return self.search(node.right, data)
-        else:
-            return self.search(node.left, data)
-
-    def deleteNode(self,node,data):
-        """
-        Delete function will delete a node into tree.
-        Not complete , may need some more scenarion that we can handle
-        Now it is handling only leaf.
-        """
-
-        # Check if tree is empty.
-        if node is None:
-            return None
-
-        # searching key into BST.
-        if data < node.data:
-            node.left = self.deleteNode(node.left, data)
-        elif data > node.data:
-            node.right = self.deleteNode(node.right, data)
-        else: # reach to the node that need to delete from BST.
-            if node.left is None and node.right is None:
-                del node
-            if node.left == None:
-                temp = node.right
-                del node
-                return  temp
-            elif node.right == None:
-                temp = node.left
-                del node
-                return temp
-
-        return node
-
-    def traverseInorder(self, root):
-        """
-        traverse function will print all the node in the tree.
-        """
-        if root is not None:
-            self.traverseInorder(root.left)
-            print(root.data, end = " ")
-            self.traverseInorder(root.right)
-        #print()
-
-    def traversePreorder(self, root):
-        """
-        traverse function will print all the node in the tree.
-        """
-        if root is not None:
-            print(root.data, end = " ")
-            self.traversePreorder(root.left)
-            self.traversePreorder(root.right)
-            #print()
-
-    def traversePostorder(self, root):
-        """
-        traverse function will print all the node in the tree.
-        """
-        if root is not None:
-            self.traversePostorder(root.left)
-            self.traversePostorder(root.right)
-            print(root.data, end = " ")
-            #print()
-
-def main():
-    root = None
-    tree = Tree()
-    root = tree.insert(root, 10)
-    #print(root)
-    tree.insert(root, 20)
-    tree.insert(root, 30)
-    tree.insert(root, 40)
-    tree.insert(root, 70)
-    tree.insert(root, 60)
-    tree.insert(root, 80)
-
-    print("Traverse Inorder:  ", end = " ")
-    tree.traverseInorder(root)
-    print()
-
-    print("Traverse Preorder: ", end = " ")
-    tree.traversePreorder(root)
-    print()
-
-    print("Traverse Postorder:", end = " ")
-    tree.traversePostorder(root)
-    print()
+treeroot = TreeNode("root")
+lastnode = treeroot
 
 if __name__ == "__main__":
-    main()
+    print ("This module was not meant to operate as main.")
 
- # EOF
+    #lastnode = treeroot.add(TreeNode("func"))
+    #lastnode.addet("name")
+    #lastnode = lastnode.add(TreeNode("args"))
+    #lastnode.addet("arg1")
+    #lastnode.addet("arg2")
+    #lastnode = lastnode.add(TreeNode("body"))
+    #lastnode.addet("statm1")
+    #lastnode.addet("statm2")
+    #print(treeroot)
+
+def test_tree():
+
+    lastnode = treeroot.add(TreeNode("func"))
+    #print(str(lastnode))
+    assert str(lastnode) == "[(['func'], [])] par: [['root']]"
+
+def test_fulltree():
+
+    lastnode = treeroot.add(TreeNode("func"))
+    lastnode.addet("name")
+    lastnode = lastnode.add(TreeNode("args"))
+    lastnode.addet("arg1")
+    lastnode.addet("arg2")
+    lastnode = lastnode.add(TreeNode("body"))
+    lastnode.addet("statm1")
+    lastnode.addet("statm2")
+
+    #print(treeroot)
+    res = "[(['root'], []), (['func'], []), (['func'], ['name']), " \
+            "(['args'], ['arg1', 'arg2']), (['body'], ['statm1', 'statm2'])] " \
+              "par: [['root'], ['root'], ['func'], ['args']]"
+
+    assert str(treeroot) == res
+
+# EOF

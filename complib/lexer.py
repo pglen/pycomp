@@ -139,6 +139,11 @@ class Lexer():
                         print("Changed to comm3 state with", tt,
                                     "state =", lexdef.COMM_STATE)
                     self._push_state(tt, lexdef.COMM_STATE)
+                elif tt.stamp[1] == "comm3d":
+                    if self.pvg.opt_ldebug > 2:
+                        print("Changed to comm3d state with", tt,
+                                    "state =", lexdef.COMM_STATED)
+                    self._push_state(tt, lexdef.COMM_STATED)
                 else:
                     #print("no state")
                     res.append(tt)
@@ -228,12 +233,19 @@ class Lexer():
                 self._pop_state(tt, "strx")
                 res.append(tt)    # Emit
 
-            elif tt.stamp[1] == "ecomm3": # self.state == lexdef.COMM_STATE:
+            elif tt.stamp[1] == "ecomm3":
                 self.accum[self.state] += "*/";
                 if self.pvg.opt_ldebug > 0:
                     print("Change comm state down:",
                                 self.accum[self.state], tt, lexdef.COMM_STATE)
                 self._pop_state(tt, "comm3")
+                res.append(tt)    # Emit
+            elif tt.stamp[1] == "ecomm3d":
+                self.accum[self.state] += "*/";
+                if self.pvg.opt_ldebug > 0:
+                    print("Change comm state down:",
+                                self.accum[self.state], tt, lexdef.COMM_STATED)
+                self._pop_state(tt, "comm3d")
                 res.append(tt)    # Emit
             else:
                 pass
@@ -246,6 +258,9 @@ class Lexer():
                 self.accum[self.state] += tt.mstr
 
             if  self.state == lexdef.COMM_STATE:
+                self.accum[self.state] += tt.mstr
+
+            if  self.state == lexdef.COMM_STATED:
                 self.accum[self.state] += tt.mstr
 
             #print(self.state, tt.stamp, lexdef.rtok[tt.stamp], "\t", tt[2])

@@ -17,17 +17,27 @@ def funcpvg(xpvg):
 # Functions to call on stamp match
 
 def func_dummy(self2, tprog, iprog):
-    if pvg.opt_debug > 4:
+    if pvg.opt_debug > 5:
         print("match dummy", "tprog =", tprog, "iprog=", iprog)
 
+def func_comment(self2, tprog, iprog):
+    if pvg.opt_debug > 2:
+        print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+
+def func_dcomment(self2, tprog, iprog):
+    if pvg.opt_debug > 2:
+        print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+    if pvg.opt_rdocstr:
+        print(self2.arrx[tprog].mstr, end = "")
+
 def func_str(self2, idx, tprog, iprog):
-    print("match str idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
-    if pvg.opt_debug > 3:
+    print("func_str() idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog], "func_str pre: ")
     sys.exit(0)
 
 def func_func(self2, tprog, iprog):
-    if pvg.opt_debug > 3:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog], "func_func pre: ", True)
     #sys.exit(0)
     self2.arrx[tprog].flag = 1
@@ -38,7 +48,7 @@ def func_brace(self2, tprog, iprog):
     #if pvg.opt_debug > 5:
     #    print("match brack tprog =", tprog, "iprog=", iprog)
 
-    if pvg.opt_debug > 3:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog], "func brace pre: ")
 
     # Done with parentheses
@@ -64,7 +74,7 @@ def func_paren(self2, tprog, iprog):
     #if pvg.opt_debug > 5:
     #    print("match paren tprog =", tprog, "iprog=", iprog)
 
-    if pvg.opt_debug > 3:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog], "func paren pre: ")
 
     # Done with parentheses
@@ -142,7 +152,7 @@ def func_mul(self2, tprog, iprog):
     if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog+iprog], "mul pre: ")
     _func_arith(self2, "*", tprog, iprog)
-    if pvg.opt_debug > 3:
+    if pvg.opt_debug > 5:
         prarr(self2.arrx[tprog:tprog+iprog], "mul post: ")
 
 def func_add(self2, tprog, iprog):

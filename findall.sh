@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$1" == "" ] ; then
-    echo use: findall.sh str_to_find
+    echo use: findall.sh strToFind
     exit
 fi
 
@@ -15,6 +15,5 @@ funcy() {
 find . -maxdepth 1 -type f -name "*.py" | funcy $1
 find complib -type f -name "*.py" | funcy $1
 find study -type f -name "*.py" | funcy $1
-
 
 # EOF

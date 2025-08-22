@@ -1,4 +1,12 @@
-# Comment
-## doc comment
-// Another
-/// Doc Comment
+// Another comment
+/// Doc comment
+# SH Comment
+## Doc comment
+/* multi line C comment
+ * Here we go
+*/
+/* C comment */
+/**
+ *   C doc comment
+ */
+///

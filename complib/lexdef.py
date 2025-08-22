@@ -74,8 +74,8 @@ class Lex():
         return strx
 
 # Lexer states
-(INI_STATE, STR_STATE, STR2_STATE, COMM_STATE, ESC_STATE, HEX_STATE,
-    UNI_STATE, ) =  range(7)
+(INI_STATE, STR_STATE, STR2_STATE, COMM_STATE, COMM_STATED, ESC_STATE, HEX_STATE,
+    UNI_STATE, ) =  range(8)
 
 def state2str(state):
 
@@ -86,6 +86,7 @@ def state2str(state):
     if state == STR_STATE:     strx = "STR_STATE"
     if state == STR2_STATE:    strx = "STR2_STATE"
     if state == COMM_STATE:    strx = "COMM_STATE"
+    if state == COMM_STATED:   strx = "COMM_STATED"
     if state == ESC_STATE:     strx = "ESC_STATE"
     if state == HEX_STATE:     strx = "HEX_STATE"
     if state == UNI_STATE:     strx = "UNI_STAT"
@@ -203,6 +204,7 @@ try:
     (INI_STATE, "tilde",        r"~"                ),
     (INI_STATE, "under",        r"_"                ),
 
+    (INI_STATE, "comm3d",       r"\/\*\*"           ),
     (INI_STATE, "comm3",        r"\/\*"             ),
 
     (INI_STATE, "(",            r"\("               ),
@@ -254,8 +256,10 @@ try:
 
     #comm states
     #(COMM_STATE, "cbsla",     r"\\\\"              ),
-    (COMM_STATE, "ecomm3",     r"\*\/"              ),
-    (COMM_STATE, "cany",       r"."                 ),
+    (COMM_STATE,  "ecomm3",     r"\*\/"              ),
+    (COMM_STATE,  "cany",       "(?s)."                 ),
+    (COMM_STATED, "ecomm3d",    r"\*\/"              ),
+    (COMM_STATED, "canyd",      r"(?s)."                 ),
 
     #escape state
     (ESC_STATE, "anyx",        r"."                 ),

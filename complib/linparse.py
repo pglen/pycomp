@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+import complib.stack as stack
+
 from complib.utils  import *
-from complib.linfunc import *
 from complib.lindef import *
+from complib.ptree import *
+from complib.linfunc import *
 
 # ------------------------------------------------------------------------
 # Construct lexer, precompile regex, fill into array
@@ -16,14 +19,12 @@ class LinParse():
         funcpvg(pvg)
         self.state = ST.val("STATEINI")
         self.context = 0
-        #stamps = stamps
+        self.statestack = stack.pStack()
+        self.statestack.push(ST.val("STATEINI"))
 
-        # Check integrity
-        #for ss in range(len(stamps)):
-        #    pass
         # Print stamps:
         #for ss in range(len(stamps)):
-        #    print(stamps[ss][1])
+        #    print("st", stamps[ss].token)
 
     def feed(self, arrx, buf):
 
@@ -77,17 +78,13 @@ class LinParse():
                 print("^")
                 #print("-" *  (pos - posx.end))
 
-
-
-
-
         #print("end scan")
 
     def stamps_iter(self, startx, endd):
 
         ''' Iterate all stamps at startx offset '''
 
-        if self.pvg.opt_debug > 3:
+        if self.pvg.opt_debug > 5:
             print("stamp_iter()", "startx =", startx, "endd =", endd)
 
         matchx = 0 ; xprog = 0; stidx = 0
@@ -115,31 +112,63 @@ class LinParse():
             if found.  Obey optional and multi items.
             Return end of scan point.
         '''
+        currstamp = stamps[sidx]
+        currtoken = self.arrx[tprog]
+
         match = False ; iprog = 1   # Always advance
 
-        if  stamps[sidx].state != self.state:
-            if self.pvg.opt_debug > 0:
-                print("Out of state:", self.state, "idx = ", idx)
-            return match, iprog
+        if stamps[sidx].state != ST.val("STATEANY"):
+            if  stamps[sidx].state != self.state:
+                if self.pvg.opt_debug > 7:
+                    print("Out of state:", ST.get(stamps[sidx].state), "state:",
+                            ST.get(self.state),
+                                "token:", stamps[sidx].token,
+                                    "tprog", tprog)
+                return match, iprog
+
         #breakpoint()
         #print("stamp", stamps[idx])
-        currstamp = stamps[sidx].token
-        currtoken = self.arrx[tprog].stamp[1]
 
         if self.pvg.opt_debug > 5:
-            print("    stamp:", pp(currstamp), "token:", pp(currtoken))
+            print("    stamp:", pp(currstamp.token), "token:", pp(currtoken.stamp[1]))
 
         # ----------------------------------------------------------------
         # Compare current position to ONE stamp
 
-        if currstamp == currtoken:
+        if currstamp.token == currtoken.stamp[1]:
             if self.pvg.opt_debug > 2:
-                print("  Match at:",  tprog, "stamp:", pp(currstamp), "token:", pp(currtoken))
+                print("  Match:",  "tprog =", tprog, "stamp:", pp(currstamp.token),
+                            "token:", pp(currtoken.stamp[1]), "state:",
+                                ST.get(self.state))
             match = True
-            iprog = len(self.arrx[tprog].mstr)
+            #iprog = len(self.arrx[tprog].mstr)
             stamps[sidx].call(self, tprog, 0)
-            if self.pvg.opt_emit:
-                emit("match:", currtoken)
+
+            # Switch state as instructed
+            if stamps[sidx].nstate != ST.val("STATEANY") and \
+                 stamps[sidx].nstate != ST.val("STATEIGN"):
+                if stamps[sidx].nstate == ST.val("STATEBACK"):
+                    self.state = self.statestack.pop()
+                    if self.pvg.opt_debug > 4:
+                        print("pop state", ST.get(self.state))
+                elif stamps[sidx].nstate == ST.val("STATEBACK2"):
+                    self.state = self.statestack.pop()
+                    self.state = self.statestack.pop()
+                    if self.pvg.opt_debug > 4:
+                        print("pop state2", ST.get(self.state))
+                else:
+                    self.statestack.push(self.state)
+                    self.state = stamps[sidx].nstate
+
+            if self.pvg.opt_debug > 4:
+                print("new state", ST.get(self.state))
+
+            global lastnode
+            if stamps[sidx].nstate != ST.val("STATEIGN"):
+                lastnode = lastnode.add(TreeNode(currtoken.stamp[1]))
+
+                if self.pvg.opt_emit:
+                    emit("match:", currtoken.stamp[1])
         else:
             #print("misMatch")
             pass
@@ -147,8 +176,8 @@ class LinParse():
         if self.pvg.opt_animate:
             time.sleep(0.01) # this case was for runaway display
 
-        #if  self.pvg.opt_debug > 2:
-        #    print("itemx return:", match, iprog)
+        if  self.pvg.opt_debug > 5:
+            print("itemx return:", match, iprog)
 
         return match, iprog
 

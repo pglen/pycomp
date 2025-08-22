@@ -10,8 +10,9 @@ import  complib.stack as stack
 import  complib.lexer as lexer
 import  complib.lexdef as lexdef
 import  complib.lindef as lindef
-import  complib.ptree as ptree
+#import  complib.ptree as ptree
 
+from complib.ptree import *
 from complib.utils import *
 
 Version = "Version: 1.0.0; "
@@ -34,12 +35,10 @@ opts =  (\
     ("just_lex",    False,      "Only execute lexer."),
     ("emit",        False,      "Emit parse string."),
     ("animate",     False,      "Animate (slow) output."),
+    ("rdocstr",     False,          "Show document strings"),
     ("ldebug",      0,          "Lexer debug level. Def=0 0=>none 9=>noisy."),
     ("workdir",     "./tmp",    "Directory for temp files. Def=./tmp"),
     )
-
-troot = ptree.Tree()
-#print(troot)
 
 def parsefile(strx):
 
@@ -79,8 +78,10 @@ def parsefile(strx):
     lx = lexer.Lexer(lexdef.xtokens, lpg)
 
     # This is a convenience matter
-    if buf[len(buf)-1] != "\n":
-        buf += "\n"
+    if buf:
+        if buf[len(buf)-1] != "\n":
+            buf += "\n"
+
     res = lx.feed(buf)
     if lpg.opt_timing_show:
         print  ("lexer time:", time_ms(start_time) )
@@ -114,6 +115,8 @@ def parsefile(strx):
     # Output results
     if lpg.opt_emit:
         show_emit()
+
+    print(treeroot)
 
 def setheads(lpg):
     prestr =    "PCOMP parallel compiler.\n" \
