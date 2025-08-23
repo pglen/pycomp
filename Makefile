@@ -13,9 +13,9 @@ all:
 	@echo "Targetes: clean check git"
 
 clean:
-	rm -f *.pyc
-	rm -rf __pycache__
-	rm err
+	@rm -f *.pyc
+	@rm -rf __pycache__
+	@rm -f err
 
 git:
 	git add .
@@ -28,44 +28,47 @@ ERR=/dev/null
 
 # This is a simple send / expect for quick checking parser
 
+PYVCOMP=./pyvcomp.py
 check:
-	@echo -n "Checking parser "
-	@./pycomp.py examples/add.pc       | grep "'num' '3' 0" >${ERR}
+	@echo  "Checking parser with" \'${PYVCOMP}\' :
+	@${PYVCOMP} -d 4 examples/decl.pc      | grep "decl" >${ERR}
 	@echo -n "."
-	@./pycomp.py examples/add2.pc      | grep "'num' '10' 0" >>${ERR}
+
+test:
+	@${PYVCOMP} examples/add2.pc      | grep "'num' '10' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py examples/mul.pc       | grep "'num' '6' 0" >>${ERR}
+	@${PYVCOMP} examples/mul.pc       | grep "'num' '6' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py examples/mul2.pc      | grep "'num' '24' 0" >>${ERR}
+	@${PYVCOMP} examples/mul2.pc      | grep "'num' '24' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py  examples/expr.pc     | grep "'num' '7' 0" >>${ERR}
+	@${PYVCOMP}  examples/expr.pc     | grep "'num' '7' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py  examples/expr2.pc    | grep "'num' '11' 0" >>${ERR}
+	@${PYVCOMP}  examples/expr2.pc    | grep "'num' '11' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py examples/paren.pc     | grep "'num' '15' 0" >>${ERR}
+	@${PYVCOMP} examples/paren.pc     | grep "'num' '15' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py examples/paren2.pc    | grep "'num' '25' 0" >>${ERR}
+	@${PYVCOMP} examples/paren2.pc    | grep "'num' '25' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py  examples/paren3.pc   | grep "'num' '15' 0" >>${ERR}
+	@${PYVCOMP}  examples/paren3.pc   | grep "'num' '15' 0" >>${ERR}
 	@echo -n "."
-	@./pycomp.py  examples/paren4.pc   | grep "'num' '11' 0" >>${ERR}
+	@${PYVCOMP}  examples/paren4.pc   | grep "'num' '11' 0" >>${ERR}
 	@echo " OK"
 
 lexcheck:
 	@echo -n "."
-	@./pycomp.py -x examples/comm2.pc  | grep "Another"  >>${ERR}
+	@${PYVCOMP} -x examples/comm2.pc  | grep "Another"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/comm3.pc  | grep "comment \"here\""  >>${ERR}
+	@${PYVCOMP} -x examples/comm3.pc  | grep "comment \"here\""  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/comm4.pc  | grep "Doc Comment"  >>${ERR}
+	@${PYVCOMP} -x examples/comm4.pc  | grep "Doc Comment"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str.pc    | grep "Hello World"  >>${ERR}
+	@${PYVCOMP} -x examples/str.pc    | grep "Hello World"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str2.pc   | grep "hello 'old' world"  >>${ERR}
+	@${PYVCOMP} -x examples/str2.pc   | grep "hello 'old' world"  >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str3.pc   | grep "hello world" >>${ERR}
+	@${PYVCOMP} -x examples/str3.pc   | grep "hello world" >>${ERR}
 	@echo -n "."
-	@./pycomp.py -x examples/str5.pc   | grep "hello world: 1234 AB :; again " >>${ERR}
+	@${PYVCOMP} -x examples/str5.pc   | grep "hello world: 1234 AB :; again " >>${ERR}
 
 	@echo " OK"
 

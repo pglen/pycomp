@@ -7,6 +7,8 @@ from complib.lindef import *
 from complib.ptree import *
 from complib.linfunc import *
 
+row = 0
+
 # ------------------------------------------------------------------------
 # Construct lexer, precompile regex, fill into array
 
@@ -64,7 +66,7 @@ class LinParse():
             if not match:
                 posx = self.arrx[startx]
                 print("Parse error:", "line:", posx.linenum + 1,
-                                "col:", posx.start - posx.linestart + 1 )
+                                "col:", posx.start - posx.linestart )
                 pos = 0
                 # Till end of this line
                 for aa in range(posx.linestart, len(self.buf)):
@@ -74,7 +76,7 @@ class LinParse():
 
                 #print("aa", self.buf[posx.linestart:pos])
                 print(self.buf[posx.linestart:pos])
-                print("-" *  (posx.end - posx.linestart), end = "" )
+                print("-" *  (posx.end - posx.linestart - 1), end = "" )
                 print("^")
                 #print("-" *  (pos - posx.end))
 
@@ -143,15 +145,19 @@ class LinParse():
 
             if self.pvg.opt_debug > 2:
                 if  currtoken.stamp[1] != "sp":    # no sp display
-                    print(" Match:",
-                            #"tprog =", tprog,
+                    xprintf(#"tprog =", tprog,
                             #"state:",  ST.get(self.state),
                             #"stamp:", pp(currstamp.token),
-                            pp(currtoken.stamp[1]),
-                            "mstr:", pp(currtoken.mstr),
-                                )
+                            "tok:", padx(pp(currtoken.stamp[1]), 7),
+                            " =", padx(pp(currtoken.mstr), 6),
+                            end = " ")
+                    global row
+                    if row % 3 == 2:
+                        print()
+                    row += 1
             #iprog = len(self.arrx[tprog].mstr)
-            currstamp.call(self, tprog, 0)
+            if currstamp.call:
+                currstamp.call(self, tprog, 0)
 
             # Switch state as instructed
             if currstamp.nstate != ST.val("STATEANY") and \

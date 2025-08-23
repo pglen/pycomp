@@ -33,7 +33,7 @@ from complib.utils import *
 # it can not (will not) report on syntactic anomalies of the target
 # language itself.
 
-class Lex():
+class LexI():
 
     ''' Store one lexed item (used to be a list, but got out of hand)
     '''
@@ -64,7 +64,7 @@ class Lex():
                         pp(str(self.flag)) + " ] "
 
     def dump(self):
-        strx = "[ " + padx("'" + str(self.stamp[1]) + "' = '" + \
+        strx = "[ Lex: " + padx("'" + str(self.stamp) + "' => '" + \
                         cesc(self.mstr) + "'", 20)  + \
                         "flag = " + padx("%d" % (self.flag)) + \
                         "pos = "  + padx("%d:%d" % (self.start, self.end), 8) +  \
@@ -89,7 +89,7 @@ def state2str(state):
     if state == COMM_STATED:   strx = "COMM_STATED"
     if state == ESC_STATE:     strx = "ESC_STATE"
     if state == HEX_STATE:     strx = "HEX_STATE"
-    if state == UNI_STATE:     strx = "UNI_STAT"
+    if state == UNI_STATE:     strx = "UNI_STATE"
     return strx
 
 # Regex shortcuts
@@ -155,7 +155,7 @@ try:
     (INI_STATE, "enum",         r"enum"   + IDEN3   ),
     (INI_STATE, "enum",         r"enum"             ),
 
-    (INI_STATE, "double",       r"double"           ),
+    (INI_STATE, "dbl",          r"double"           ),
     (INI_STATE, "float",        r"float"            ),
 
     (INI_STATE, "decl" ,        r"[sS]8"            ),

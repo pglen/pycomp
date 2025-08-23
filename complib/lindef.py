@@ -42,44 +42,78 @@ class Stamp:
         return strx
 
 GR = xenum("GROUPANY")
+
+# Changed to auto add new state
 ST = xenum("STATEANY", "STATEINI", "STPOP", "STPOP2",
                 "STATEIGN", "STATEFUNC", "SFUNARG", "SFUNARG2", "SFUNARG3",
-                    "SFUNARG4", "SFUNBODY")
+                    "SFUNARG4", "SFUNBODY", "SFASSN", "SFASSN2", "SFADD2")
 
 # These are the entries to be matched agains the parse array.
 #    state       item        new_state   function   group
 #    -----       ---------   ----------  --------   -----
 
 stamps =  (  \
-        Stamp(ST.val("STATEINI"), "func",   ST.val("STATEFUNC"), False,  func_func),
-        Stamp(ST.val("STATEFUNC"), "(",     ST.val("SFUNARG"),   False, func_dummy),
-        Stamp(ST.val("SFUNARG"), "decl",    ST.val("SFUNARG2"), True,  func_dummy),
+    Stamp(ST.val("STATEINI"), "func",   ST.val("STATEFUNC"), False,  func_func),
+    Stamp(ST.val("STATEFUNC"), "(",     ST.val("SFUNARG"),   False, func_dummy),
+    Stamp(ST.val("SFUNARG"), "decl",    ST.val("SFUNARG2"), True,  func_dummy),
 
-        Stamp(ST.val("STATEINI"), "decl",   ST.val("SFUNARG2"), True,   func_dummy),
-        Stamp(ST.val("STATEINI"), "float",  ST.val("SFUNARG2"), True,   func_dummy),
-        Stamp(ST.val("STATEINI"), "double", ST.val("SFUNARG2"), True,   func_dummy),
+    # Declarations
+    Stamp(ST.val("STATEINI"), "decl",   ST.val("SFUNARG2"), True,   None),
+    Stamp(ST.val("STATEINI"), "float",  ST.val("SFUNARG2"), True,   func_dummy),
+    Stamp(ST.val("STATEINI"), "dbl",    ST.val("SFUNARG2"), True,   func_dummy),
 
-        Stamp(ST.val("SFUNARG2"), ":",      ST.val("SFUNARG3"), False,  func_dummy),
-        Stamp(ST.val("SFUNARG3"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
-        Stamp(ST.val("SFUNARG3"), "=",      ST.val("SFUNARG4"), False,  func_dummy),
-        Stamp(ST.val("SFUNARG4"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
-        Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  func_dummy),
-        Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),  False,  func_dummy),
-        Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),  False,  func_dummy),
+    Stamp(ST.val("SFUNARG2"), ":",      ST.val("SFUNARG3"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG3"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG3"), "=",      ST.val("SFUNARG4"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG4"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),    False,  func_dummy),
+    Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),    False,  func_dummy),
+    Stamp(ST.val("SFUNARG3"), "comm2",  ST.val("STPOP"),    False,  func_dummy),
 
-        Stamp(ST.val("SFUNARG"), ")",       ST.val("STATEIGN"),   False,  func_dummy),
-        Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
-        Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEIGN"),  False,  func_dummy),
+    Stamp(ST.val("SFUNARG"), ")",       ST.val("STATEIGN"), False,  func_dummy),
+    Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
+    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEIGN"), False,  func_dummy),
 
-        # This will ignore commants
-        Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"), False,   func_comment),
-        Stamp(ST.val("STATEANY"), "comm3",   ST.val("STATEIGN"), False,   func_comment),
-        Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STATEIGN"), False,   func_dcomment),
-        Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STATEIGN"), False,   func_dcomment),
+    # Assignments / arithmetic
+    Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),  True,   func_arithstart),
+    Stamp(ST.val("STATEINI"), "ident",  ST.val("SFARITH"),  True,   func_arithstart),
 
-        # This will ignore white spaces
-        Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"), False,   func_dummy),
-        Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"), False,   func_dummy),
+    Stamp(ST.val("SFARITH"),  "=",      ST.val("SFASSN"),  False,   None),
+    Stamp(ST.val("SFASSN"),   "ident",  ST.val("STPOP"),   False,   None),
+    Stamp(ST.val("SFASSN"),   "num",    ST.val("STPOP"),   False,   None),
+
+    # Arithmetics
+    Stamp(ST.val("SFARITH"), "+",         ST.val("SFADD"), False,  None),
+    Stamp(ST.val("SFADD"),   "ident",     ST.val("STPOP"), False,   func_addexpr),
+    Stamp(ST.val("SFADD"),   "num",       ST.val("STPOP"), False,   func_addexpr),
+
+    #Stamp(ST.val("SFASSN"), "-",         ST.val("SFSUB2"), False,   None),
+    #Stamp(ST.val("SFSUB2"), "ident",     ST.val("STPOP"), False,   None),
+    #Stamp(ST.val("SFSUB2"), "num",       ST.val("STPOP"), False,   None),
+    #
+    #Stamp(ST.val("SFASSN"), "*",         ST.val("SFMUL2"), False,   None),
+    #Stamp(ST.val("SFMUL2"), "ident",     ST.val("STPOP"), False,   None),
+    #Stamp(ST.val("SFMUL2"), "num",       ST.val("STPOP"), False,   None),
+    #
+    #Stamp(ST.val("SFASSN"), "/",         ST.val("SFDIV2"), False,   None),
+    #Stamp(ST.val("SFDIV2"), "ident",     ST.val("STPOP"), False,   None),
+    #Stamp(ST.val("SFDIV2"), "num",       ST.val("STPOP"), False,   None),
+
+    # Expressions
+    Stamp(ST.val("SFASSN"), "+",         ST.val("SFADD2"), False,   None),
+    Stamp(ST.val("SFADD2"), "ident",     ST.val("STPOP"),  False,   None),
+    Stamp(ST.val("SFADD2"), "num",       ST.val("STPOP"),  False,   None),
+
+    # This will ignore commants
+    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"), False,   func_comment),
+    Stamp(ST.val("STATEANY"), "comm3",   ST.val("STATEIGN"), False,   func_comment),
+    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STATEIGN"), False,   func_dcomment),
+    Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STATEIGN"), False,   func_dcomment),
+
+    # This will ignore white spaces
+    Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"), False,   func_dummy),
+    Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"), False,   func_dummy),
   )
 
 if __name__ == "__main__":

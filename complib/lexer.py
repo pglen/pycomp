@@ -57,7 +57,7 @@ class Lexer():
                     print("match pos:", mmm.end(), mmm.start(),
                         "tok:", "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
-                tt = lexdef.Lex(ttt, mstr, mmm.start(), mmm.end())
+                tt = lexdef.LexI(list(ttt), mstr, mmm.start(), mmm.end())
                 tt.linenum = self.linenum
                 tt.linestart = self.linestart
                 ret = tt
@@ -119,6 +119,10 @@ class Lexer():
                 if self.pvg.opt_ldebug > 2:
                     print("Newline at pos:", tt.start)
                 self.lastline = tt.end
+            if tt.stamp[1] == "comm2":
+                self.linestart = pos
+                self.linenum += 1
+
             #print("state =", tt, self.state)
 
             # Statful actions

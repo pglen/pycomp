@@ -2,6 +2,9 @@
 
 ''' functions for the lin parser '''
 
+import complib.stack as stack
+import complib.lindef as lindef
+
 #import operator
 
 try:
@@ -15,6 +18,8 @@ def funcpvg(xpvg):
     pvg = xpvg
 
 # Functions to call on stamp match
+
+astack = stack.pStack()
 
 def func_dummy(self2, tprog, iprog):
     if pvg.opt_debug > 5:
@@ -38,10 +43,28 @@ def func_str(self2, idx, tprog, iprog):
 
 def func_func(self2, tprog, iprog):
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog], "func_func pre: ", True)
+        prarr(self2.arrx[tprog:tprog+iprog], "func_func pre: ")
     #sys.exit(0)
     self2.arrx[tprog].flag = 1
     #self2._feed(tprog + 1, tprog+iprog - 1)
+
+def func_arithstart(self2, tprog, iprog):
+    if pvg.opt_debug > 2:
+        print("func_arithstart: ", "tprog =", tprog, self2.arrx[tprog])
+    astack.push(tprog)
+
+def func_addexpr(self2, tprog, iprog):
+    tprog2 = astack.pop()
+    if pvg.opt_debug > 2:
+        print("func_addexpr: ",
+                "tprog  =", tprog,  self2.arrx[tprog],
+                "tprog2 =", tprog2, self2.arrx[tprog2] )
+
+    self2.arrx[tprog].stamp[1] = "arith" #lindef.ST.val("STARITH")
+    self2.arrx[tprog].flag = 1
+
+    print(self2.arrx[tprog2])
+    print(self2.arrx[tprog])
 
 def func_brace(self2, tprog, iprog):
 

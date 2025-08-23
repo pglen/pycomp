@@ -116,7 +116,8 @@ def parsefile(strx):
     if lpg.opt_emit:
         show_emit()
 
-    print(treeroot)
+    #if lpg.opt_verbose:
+    #    print(treeroot)
 
 def setheads(lpg):
     prestr =    "PCOMP parallel compiler.\n" \
@@ -141,6 +142,7 @@ if __name__ == "__main__":
     #sys.setrecursionlimit(25)
 
     lpg = args.Lpg(opts, sys.argv)
+
     setheads(lpg)
 
     if lpg.opt_Version:

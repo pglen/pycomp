@@ -4,6 +4,12 @@ import sys, os, re, time, stat
 
 import threading
 
+pvg = None
+
+def upvg(xpvg):
+    global pvg
+    pvg = xpvg
+
 _gl_cnt = 0
 sema = threading.Semaphore()
 def unique():             # create a unique temporary number
@@ -29,6 +35,13 @@ def show_emit():
     print("emit results:")
     print(cummulate)
 
+def xprintf(*args, end = " "):
+    strx = ""
+    for aa in args:
+        strx += str(aa) + " "
+    strx += end
+    print(strx, end = "")
+    #return strx
 
 def time_ms(start_time):
     ttt = time.process_time() - start_time
@@ -38,8 +51,9 @@ def time_ms(start_time):
 # Pretty Print array
 
 def prarr(xarr, pre = "", all = False):
+
     if pre:
-        print(pre, end = "")
+        print(pre, end = " ")
     for aa in xarr:
         if all or not aa.flag:
             print( " [" + pp(aa.stamp[1]) + " " + pp(aa.mstr), aa.flag, end = "]")
@@ -337,7 +351,7 @@ def padx(strx, lenx = 4):
 
 class   xenum():
 
-    ''' Simple enum to use in parser '''
+    ''' Simple autofill enum to use in parser '''
 
     def __init__(self, *val):
         self.arr = [] ; self.narr = {}
@@ -359,7 +373,14 @@ class   xenum():
         return self.arr[cnt]
 
     def val(self, name):
-        return self.narr[name]
+        try:
+            ret = self.narr[name]
+        except:
+            if 0: #pvg.opt_verbose:
+                print("Warn: adding:", name)
+            self.add(name)
+            ret = self.narr[name]
+        return ret
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
@@ -377,6 +398,9 @@ def test_xenum():
     assert eee.get(1) == "yes"
     assert eee.val("no")  == 0
     assert eee.val("yes") == 1
+
+    # Autogen
+    assert eee.val("none") == 3
 
 def test_cesc():
     org = "12345678\r\n\a\tabcdef"
