@@ -220,14 +220,13 @@ try:
     (INI_STATE, "squote",       r"\'"               ),
     (INI_STATE, "ident",        IDEN2               ),
 
-    (INI_STATE, "peq",          r"\+="              ),  # Add to
-    (INI_STATE, "meq",          r"\-="              ),  # Sub from
+    (INI_STATE, "peq",          r"\+=>"             ),  # Add to
+    (INI_STATE, "meq",          r"\-=>"             ),  # Sub from
     (INI_STATE, "deq",          r"=="               ),  # Equal
     (INI_STATE, "ndeq",         r"!="               ),  # Not Equal
     (INI_STATE, "teq",          r"==="              ),  # Identical
     (INI_STATE, "tneq",         r"!=="              ),  # Not Identical
-    (INI_STATE, "put",          r"=>"               ),  # Put into
-    (INI_STATE, "gett",         r"<="               ),  # Get from
+    (INI_STATE, "=>",           r"=>"               ),  # Assignment
     (INI_STATE, "dref",         r"->"               ),  # Reference
     (INI_STATE, "aref",         r"<-"               ),  # De ref
     (INI_STATE, "idev",         r"\/\%"             ),  # Int divide
@@ -245,11 +244,10 @@ try:
 
     (INI_STATE, "(",            r"\("               ),
     (INI_STATE, ")",            r"\)"               ),
-    (INI_STATE, "=",            r"="                ),
     (INI_STATE, "<",            r"<"                ),
     (INI_STATE, ">",            r">"                ),
     (INI_STATE, "&",            r"&"                ),
-    (INI_STATE, "sqr",          r"\*\*"               ),
+    (INI_STATE, "sqr",          r"\*\*"             ),
     (INI_STATE, "*",            r"\*"               ),
     (INI_STATE, "+",            r"\+"               ),
     (INI_STATE, "-",            r"\-"               ),
@@ -258,15 +256,15 @@ try:
     (INI_STATE, "]",            r"\]"               ),
     (INI_STATE, "{",            r"\{"               ),
     (INI_STATE, "}",            r"\}"               ),
-    (INI_STATE, ";",            r";"                ),
-    (INI_STATE, ":",            r":"                ),
+    (INI_STATE, ";",            r";"                ),  # Semi Colon
+    (INI_STATE, ":",            r":"                ),  # Colon
     (INI_STATE, "::",           r"::"               ),  # Double colon
     (INI_STATE, "dot",          r"\."               ),
 
-    (INI_STATE, "<<",           r"<<"               ),  # Shift <
-    (INI_STATE, ">>",           r">>"               ),
-    (INI_STATE, "<<<",          r"<<<"              ),  # Rotate <
-    (INI_STATE, ">>>",          r">>>"              ),  # Rotate >
+    (INI_STATE, "<<",           r"<<"               ),  # Shift left <<
+    (INI_STATE, ">>",           r">>"               ),  # Shift right >>
+    (INI_STATE, "<<<",          r"<<<"              ),  # Rotate left <<<
+    (INI_STATE, ">>>",          r">>>"              ),  # Rotate right >>>
     (INI_STATE, "++",           r"\+\+"             ),
     (INI_STATE, "--",           r"\-\-"             ),
 
@@ -278,10 +276,10 @@ try:
     (INI_STATE, "nl",           r"\n"               ),
     (INI_STATE, "comma",        r","                ),
 
-    #callback here
+    # Callback here
     (INI_STATE, "any",          r"."                ),
 
-    #string state
+    # String state
     (STR_STATE, "sbsla",        r"\\\\"             ),
     (STR_STATE, "dquote",       r"\""               ),
     (STR_STATE, "sany",         r"."                ),

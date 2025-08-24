@@ -82,29 +82,49 @@ def exeop(op, arg1, arg2):
     if op ==   "/":   ret = arg1 / arg2
     if op ==   "+":   ret = arg1 + arg2
     if op ==   "-":   ret = arg1 - arg2
+    if op ==   "<<":   ret = arg1 >> arg2
+    if op ==   ">>":   ret = arg1 << arg2
     return ret
 
 def reduce(self2, filter):
 
-    bstack = stack.pStack()
-    # Make a clean index:
-    for bb in range(len(list(astack))):
-        idx = astack.get(bb)
-        if self2.arrx[idx].flag == 0:
-            bstack.push(idx)
-
-    for aa in range(len(list(bstack))):
-        idx = bstack.get(aa)
-        if  self2.arrx[idx].stamp.xstr == filter:
-            idx1 = bstack.get(aa-1)
-            idx2 = bstack.get(aa+1)
-            if pvg.opt_debug > 2:
-                print("op", pp(filter), "is:",
-                    self2.arrx[idx1], self2.arrx[idx], self2.arrx[idx2])
-            self2.arrx[idx1].ival =  exeop(filter,
-                                self2.arrx[idx1].ival, self2.arrx[idx2].ival)
-            self2.arrx[idx1].mstr = str(self2.arrx[idx1].ival)
-            self2.arrx[idx].flag = 1 ; self2.arrx[idx2].flag = 1
+    while True:
+        # Cycle back here if changed the list
+        bstack = stack.pStack()
+        loopx = 0
+        # Make a clean index:
+        for bb in range(len(astack)):
+            idx = astack.get(bb)
+            if self2.arrx[idx].flag == 0:
+                bstack.push(idx)
+        #print("bstack:", filter)
+        #for cc in bstack:
+        #    print(self2.arrx[cc])
+        while True:
+            if loopx >= len(bstack):
+                break
+            idx = bstack.get(loopx)
+            if  self2.arrx[idx].stamp.xstr == filter:
+                idx1 = bstack.get(loopx-1)
+                idx2 = bstack.get(loopx+1)
+                if pvg.opt_debug > 5:
+                    print("op", pp(filter), "pr:",
+                        self2.arrx[idx1], self2.arrx[idx], self2.arrx[idx2])
+                self2.arrx[idx1].ival =  exeop(filter,
+                                    self2.arrx[idx1].ival, self2.arrx[idx2].ival)
+                # Just to make it look uniform
+                self2.arrx[idx1].mstr = str(self2.arrx[idx1].ival)
+                #self2.arrx[idx1].flag = 0
+                self2.arrx[idx].flag = self2.arrx[idx2].flag = 1
+                if pvg.opt_debug > 5:
+                    print("op", pp(filter), "po:",
+                        self2.arrx[idx1], self2.arrx[idx], self2.arrx[idx2])
+                # Restart loop if changed
+                break
+            loopx += 1
+        # End of stack
+        if loopx >= len(bstack):
+            break
 
 def func_endarith(self2, tprog):
     if pvg.opt_debug > 2:
@@ -115,6 +135,8 @@ def func_endarith(self2, tprog):
     reduce(self2, "/")
     reduce(self2, "+")
     reduce(self2, "-")
+    reduce(self2, ">>")
+    reduce(self2, "<<")
 
 def func_brace(self2, tprog):
 

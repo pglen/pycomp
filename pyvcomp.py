@@ -112,7 +112,10 @@ def parsefile(strx):
     #prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
     print("\nresults:", end = " ")
     for aa in res:
-        print(aa, end = " ")
+        if aa.stamp.xstr == "sp":
+            continue
+        if aa.flag == 0:
+            print(aa, end = " ")
     #emit("hello")
 
     # Output results

@@ -84,17 +84,9 @@ stamps =  (  \
     Stamp(ST.val("SFASSN"),   "num",    ST.val("STPOP"),    False,   None),
 
     # Arithmetics (+ - * / sqr)
-    Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False,  func_arithop),
-    Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False,  None),
-    Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False,  None),
-
-    Stamp(ST.val("SFARITH"), "+",       ST.val("SFADD"),    False,  func_arithop),
-    Stamp(ST.val("SFADD"),   "ident",   ST.val("SFARITH"),  False,   func_addexpr),
-    Stamp(ST.val("SFADD"),   "num",     ST.val("SFARITH"),  False,   func_addexpr),
-
-    Stamp(ST.val("SFARITH"), "-",       ST.val("SFSUB"),    False,   func_arithop),
-    Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,   None),
-    Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,   None),
+    #Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False,  func_arithop),
+    #Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False,  None),
+    #Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False,  None),
 
     Stamp(ST.val("SFARITH"), "*",       ST.val("SFMUL"),    False,   func_arithop),
     Stamp(ST.val("SFMUL"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
@@ -103,6 +95,14 @@ stamps =  (  \
     Stamp(ST.val("SFARITH"), "/",       ST.val("SFDIV"),    False,   func_arithop),
     Stamp(ST.val("SFDIV"), "ident",     ST.val("SFARITH"), False,   None),
     Stamp(ST.val("SFDIV"), "num",       ST.val("SFARITH"), False,   None),
+
+    Stamp(ST.val("SFARITH"), "+",       ST.val("SFADD"),    False,  func_arithop),
+    Stamp(ST.val("SFADD"),   "ident",   ST.val("SFARITH"),  False,   func_addexpr),
+    Stamp(ST.val("SFADD"),   "num",     ST.val("SFARITH"),  False,   func_addexpr),
+
+    Stamp(ST.val("SFARITH"), "-",       ST.val("SFSUB"),    False,   func_arithop),
+    Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,   None),
+    Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,   None),
 
     Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,   func_endarith),
     Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,   func_endarith),

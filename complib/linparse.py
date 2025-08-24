@@ -148,11 +148,13 @@ class LinParse():
                     xprintf(#"tprog =", tprog,
                             #"state:",  ST.get(self.state),
                             #"stamp:", pp(currstamp.token),
-                            "tok:", padx(pp(currtoken.stamp.xstr), 7),
-                            " =", padx(pp(currtoken.mstr), 6),
+                            "tok:", #padx(pp(currtoken.stamp.xstr), 7),
+                            #" =",
+                            padx(pp(currtoken.mstr), 5),
                             end = " ")
                     global row
-                    if row % 3 == 2:
+                    rrr =  6
+                    if row % rrr == rrr - 1:
                         print()
                     row += 1
             #iprog = len(self.arrx[tprog].mstr)
