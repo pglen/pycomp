@@ -110,6 +110,9 @@ def parsefile(strx):
     if lpg.opt_timing_show: print  ("parse time:", time_ms(start_time))
 
     #prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
+    print("\nresults:", end = " ")
+    for aa in res:
+        print(aa, end = " ")
     #emit("hello")
 
     # Output results
@@ -118,6 +121,7 @@ def parsefile(strx):
 
     #if lpg.opt_verbose:
     #    print(treeroot)
+    print()
 
 def setheads(lpg):
     prestr =    "PCOMP parallel compiler.\n" \

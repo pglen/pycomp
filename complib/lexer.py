@@ -57,7 +57,9 @@ class Lexer():
                     print("match pos:", mmm.end(), mmm.start(),
                         "tok:", "'" + strx[mmm.start():mmm.end()] + "'", end = " ")
                 mstr = mmm.string[mmm.start():mmm.end()]
-                tt = lexdef.LexI(list(ttt), mstr, mmm.start(), mmm.end())
+                #print("ttt", ttt)
+                dd = lexdef.StI(ttt)
+                tt = lexdef.LexI(dd, mstr, mmm.start(), mmm.end())
                 tt.linenum = self.linenum
                 tt.linestart = self.linestart
                 ret = tt
@@ -113,13 +115,13 @@ class Lexer():
                 print("token at pos:", pos, tt, "state =", self.state)
 
             # Global actions
-            if  tt.stamp[1] == "nl":
+            if  tt.stamp.xstr == "nl":
                 self.linestart = pos
                 self.linenum += 1
                 if self.pvg.opt_ldebug > 2:
                     print("Newline at pos:", tt.start)
                 self.lastline = tt.end
-            if tt.stamp[1] == "comm2":
+            if tt.stamp.xstr == "comm2":
                 self.linestart = pos
                 self.linenum += 1
 
@@ -128,22 +130,22 @@ class Lexer():
             # Statful actions
             if self.state == lexdef.INI_STATE:
                 # Change state if needed
-                if tt.stamp[1] == "quote":
+                if tt.stamp.xstr == "quote":
                     if self.pvg.opt_ldebug > 2:
                         print("Changed to str state with", tt)
                     self._push_state(tt, lexdef.STR_STATE)
 
-                elif tt.stamp[1] == "squote":
+                elif tt.stamp.xstr == "squote":
                     if self.pvg.opt_ldebug > 2:
                         print("Changed to str2 state with", tt)
                     self._push_state(tt, lexdef.STR2_STATE)
 
-                elif tt.stamp[1] == "comm3":
+                elif tt.stamp.xstr == "comm3":
                     if self.pvg.opt_ldebug > 2:
                         print("Changed to comm3 state with", tt,
                                     "state =", lexdef.COMM_STATE)
                     self._push_state(tt, lexdef.COMM_STATE)
-                elif tt.stamp[1] == "comm3d":
+                elif tt.stamp.xstr == "comm3d":
                     if self.pvg.opt_ldebug > 2:
                         print("Changed to comm3d state with", tt,
                                     "state =", lexdef.COMM_STATED)
@@ -205,12 +207,12 @@ class Lexer():
                 elif tt.mstr == "x":
                     self._push_state(tt, lexdef.HEX_STATE)
                     if self.pvg.opt_ldebug > 2:
-                        print("Changed to HEX state with:", tt.stamp[1], tt.mstr)
+                        print("Changed to HEX state with:", tt.stamp.xstr, tt.mstr)
                     wasesc = False
                 elif tt.mstr == "u":
                     self._push_state(tt, lexdef.UNI_STATE)
                     if self.pvg.opt_ldebug > 2:
-                        print("Changed to UNI state with:", tt.stamp[1], tt.mstr)
+                        print("Changed to UNI state with:", tt.stamp.xstr, tt.mstr)
                     wasesc = False
                 if wasesc:
                     # Unrecognized, or non continuation escape, exit state
@@ -218,33 +220,33 @@ class Lexer():
                     self._pop_state(tt, "esc")
                     continue
 
-            elif tt.stamp[1] == "sbsla":
+            elif tt.stamp.xstr == "sbsla":
                 #self.accum[self.state] += "";
                 self._push_state(tt, lexdef.ESC_STATE)
                 if self.pvg.opt_ldebug > 2:
-                    print("Changed to ESC state with:", tt.stamp[1])
+                    print("Changed to ESC state with:", tt.stamp.xstr)
                 self.backslash = 0
                 #res.append(tt)    # Emit
 
             # Handle back offs
-            elif tt.stamp[1] == "dquote": # and self.state == lexdef.STR_STATE:
+            elif tt.stamp.xstr == "dquote": # and self.state == lexdef.STR_STATE:
                 self.accum[self.state] += '"';
                 self._pop_state(tt, "strx")
                 res.append(tt)    # Emit
 
-            elif tt.stamp[1] == "dquote2": # self.state == lexdef.STR2_STATE:
+            elif tt.stamp.xstr == "dquote2": # self.state == lexdef.STR2_STATE:
                 self.accum[self.state] += "'";
                 self._pop_state(tt, "strx")
                 res.append(tt)    # Emit
 
-            elif tt.stamp[1] == "ecomm3":
+            elif tt.stamp.xstr == "ecomm3":
                 self.accum[self.state] += "*/";
                 if self.pvg.opt_ldebug > 0:
                     print("Change comm state down:",
                                 self.accum[self.state], tt, lexdef.COMM_STATE)
                 self._pop_state(tt, "comm3")
                 res.append(tt)    # Emit
-            elif tt.stamp[1] == "ecomm3d":
+            elif tt.stamp.xstr == "ecomm3d":
                 self.accum[self.state] += "*/";
                 if self.pvg.opt_ldebug > 0:
                     print("Change comm state down:",

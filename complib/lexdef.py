@@ -6,7 +6,6 @@
 
 from complib.utils import *
 
-'''
 # We initialize parser variables in the context of the parser module.
 #
 # a.) Token definitions, b.) Lexer tokens,
@@ -15,23 +14,25 @@ from complib.utils import *
 # To create a custom parser, just add new tokens / states here
 #
 
+class StI():
+
+    ''' Store one stamp. (used to be a list, but got out of hand)
+    '''
+
+    def __init__(self, stampx):
+        self.num  = stampx[0]
+        self.xstr = stampx[1]
+        self.reg  = stampx[2]
+
+    def __str__(self):
+        return "[ " + str(self.num) + " " + pp(str(self.xstr)) + " " \
+                + pp(str(self.reg)) + " " + str(self.ival) + " ]"
+
 # Quick into: The lexer creates a stack of tokens. The parser scans
 # the tokens, and walks the state machine for matches. If match
 # is encountered, the parser calls the function in the state table,
 # and / or changes state. Reduce is called after the state has been
 # successfully digested. For more info see lex / yacc literature.
-'''
-
-# The order of the definitions only matters as lexing priority. Longer
-# tokens should be at the top, fallback alternates at the buttom.
-#
-# To add a new syntactic element, search for an existing feature (like 'func')
-# Add the new element into the a.) definition, b.) regex defintion,
-# c.) state definition, d.) state table, e.) action function.
-#
-# The script is self checking, will report on missing defintions. However,
-# it can not (will not) report on syntactic anomalies of the target
-# language itself.
 
 class LexI():
 
@@ -48,6 +49,24 @@ class LexI():
         self.val = 0.0
         self.ival = 0
 
+        # Decode and mold
+        if self.stamp.xstr == "num":
+            self.ival = int(self.mstr)
+
+        if self.stamp.xstr == "hex":
+            self.stamp.xstr = "num"
+            self.ival = int(self.mstr[2:], 16)
+
+        if self.stamp.xstr == "oct":
+            self.stamp.xstr = "num"
+            self.ival = int(self.mstr[2:], 8)
+
+        if self.stamp.xstr == "bin":
+            self.stamp.xstr = "num"
+            self.ival = int(self.mstr[2:], 2)
+
+        #print("inited", str(self))
+
     def copy(self, other):
         other.state = self.state
         other.stamp = self.stamp
@@ -60,8 +79,11 @@ class LexI():
 
     def __str__(self):
         '''   Deliver it in an easy to see format  '''
-        return  "[ " + pp(self.stamp[1]) + " = " + pp(self.mstr) + ", " + \
-                        pp(str(self.flag)) + " ] "
+        strx = "[ " + pp(self.stamp.xstr) + " = " + pp(self.mstr) + \
+                        " ival = " + pp(str(self.ival)) + \
+                        " flag = " + pp(str(self.flag)) + \
+                        " ] "
+        return strx
 
     def dump(self):
         strx = "[ Lex: " + padx("'" + str(self.stamp) + "' => '" + \
@@ -91,6 +113,17 @@ def state2str(state):
     if state == HEX_STATE:     strx = "HEX_STATE"
     if state == UNI_STATE:     strx = "UNI_STATE"
     return strx
+
+# The order of the definitions only matters as lexing priority. Longer
+# tokens should be at the top, fallback alternates at the buttom.
+#
+# To add a new syntactic element, search for an existing feature (like 'func')
+# Add the new element into the a.) definition, b.) regex defintion,
+# c.) state definition, d.) state table, e.) action function.
+#
+# The script is self checking, will report on missing defintions. However,
+# it can not (will not) report on syntactic anomalies of the target
+# language itself.
 
 # Regex shortcuts
 IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
@@ -171,9 +204,9 @@ try:
 
     (INI_STATE, "hex",          HEX2                ),
     (INI_STATE, "oct",          r"0o[0-7]+"         ),
+    (INI_STATE, "oct",          r"0y[0-7]+"         ),
     (INI_STATE, "bin",          r"0b[0-1]+"         ),
-    (INI_STATE, "oct2",         r"0y[0-17]+"        ),
-    (INI_STATE, "bin2",         r"0z[0-1]+"         ),
+    (INI_STATE, "bin",          r"0z[0-1]+"         ),
 
     (INI_STATE, "comm2d",       r"\#\#.*\n"         ),
     (INI_STATE, "comm2d",       r"\/\/\/.*\n"       ),
@@ -216,6 +249,7 @@ try:
     (INI_STATE, "<",            r"<"                ),
     (INI_STATE, ">",            r">"                ),
     (INI_STATE, "&",            r"&"                ),
+    (INI_STATE, "sqr",          r"\*\*"               ),
     (INI_STATE, "*",            r"\*"               ),
     (INI_STATE, "+",            r"\+"               ),
     (INI_STATE, "-",            r"\-"               ),

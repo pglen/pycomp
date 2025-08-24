@@ -1,6 +1,1 @@
-// Expressions
-
-    u32 ccc; u32 ddd; u32 eee; u32 fff;
-
-	ccc = ddd + eee * fff;
-
+ 1  +  2  *  3  +  4  *  5 ;

@@ -43,7 +43,7 @@ class LinParse():
                 if self.pvg.opt_verbose.cnt:
                     print(" [", aa, "] ", end = " ")
                 else:
-                    print(" [", aa.stamp[1], pp(aa.mstr), aa.flag, " ]", end = " ")
+                    print(" [", aa.stamp.xstr, pp(aa.mstr), aa.flag, " ]", end = " ")
             print("\nend arrx.")
 
         startx = 0 ; endd = len(self.arrx)
@@ -65,7 +65,7 @@ class LinParse():
         else:
             if not match:
                 posx = self.arrx[startx]
-                print("Parse error:", "line:", posx.linenum + 1,
+                print("Parse \033[31;1merror:\033[0m", "line:", posx.linenum + 1,
                                 "col:", posx.start - posx.linestart )
                 pos = 0
                 # Till end of this line
@@ -132,23 +132,23 @@ class LinParse():
         #print("stamp", stamps[idx])
 
         if self.pvg.opt_debug > 5:
-            print("    stamp:", pp(currstamp.token), "token:", pp(currtoken.stamp[1]))
+            print("    stamp:", pp(currstamp.token), "token:", pp(currtoken.stamp.xstr))
 
         # ----------------------------------------------------------------
         # Compare current position to ONE stamp
 
-        if currstamp.token == currtoken.stamp[1]:
+        if currstamp.token == currtoken.stamp.xstr:
             match = True
             if self.pvg.opt_debug > 6:
                 if currstamp.nstate != ST.val("STATEIGN"):
                     print(" sState;", ST.get(self.state))
 
             if self.pvg.opt_debug > 2:
-                if  currtoken.stamp[1] != "sp":    # no sp display
+                if  currtoken.stamp.xstr != "sp":    # no sp display
                     xprintf(#"tprog =", tprog,
                             #"state:",  ST.get(self.state),
                             #"stamp:", pp(currstamp.token),
-                            "tok:", padx(pp(currtoken.stamp[1]), 7),
+                            "tok:", padx(pp(currtoken.stamp.xstr), 7),
                             " =", padx(pp(currtoken.mstr), 6),
                             end = " ")
                     global row
@@ -157,7 +157,7 @@ class LinParse():
                     row += 1
             #iprog = len(self.arrx[tprog].mstr)
             if currstamp.call:
-                currstamp.call(self, tprog, 0)
+                currstamp.call(self, tprog)
 
             # Switch state as instructed
             if currstamp.nstate != ST.val("STATEANY") and \
@@ -182,10 +182,10 @@ class LinParse():
 
             global lastnode
             if currstamp.nstate != ST.val("STATEIGN"):
-                lastnode = lastnode.add(TreeNode(currtoken.stamp[1]))
+                lastnode = lastnode.add(TreeNode(currtoken.stamp.xstr))
 
                 if self.pvg.opt_emit:
-                    emit("match:", currtoken.stamp[1])
+                    emit("match:", currtoken.stamp.xstr)
         else:
             #print("misMatch")
             pass

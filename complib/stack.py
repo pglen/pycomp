@@ -12,6 +12,10 @@ class pStack():
         self.raisex = raisex   # Pass False if production code
         self.verbose = False
 
+    def __iter__(self):
+        for aa in self._store:
+            yield aa
+
     def push(self, item):
         try:
             self._store.append(item)
@@ -50,11 +54,15 @@ class pStack():
 
     def get(self, idx):
         if len(self._store) == 0: return None
-        item = self._store[idx]
+        try:
+            item = self._store[idx]
+            if self.raisex: raise
+        except:
+            item = None
         return item
 
-    # Non destructive pop
-    def pop2(self):
+    # Non destructive peek
+    def peek(self):
         if len(self._store) == 0: return None
         xlen = len(self._store)
         if xlen <= 0: return None
@@ -66,7 +74,9 @@ class pStack():
 
     def dump(self):
         strx = ""; cnt = 0; xlen = len(self._store)
-        while cnt < xlen:
+        while True:
+            if cnt >= xlen:
+                break
             strx += str(self._store[cnt]) + " "
             cnt += 1
         return strx;

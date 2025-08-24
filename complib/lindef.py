@@ -75,35 +75,37 @@ stamps =  (  \
     Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
     Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEIGN"), False,  func_dummy),
 
-    # Assignments / arithmetic
+    # Assignments / Start of arithmetic
     Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),  True,   func_arithstart),
     Stamp(ST.val("STATEINI"), "ident",  ST.val("SFARITH"),  True,   func_arithstart),
 
-    Stamp(ST.val("SFARITH"),  "=",      ST.val("SFASSN"),  False,   None),
-    Stamp(ST.val("SFASSN"),   "ident",  ST.val("STPOP"),   False,   None),
-    Stamp(ST.val("SFASSN"),   "num",    ST.val("STPOP"),   False,   None),
+    Stamp(ST.val("SFARITH"),  "=",      ST.val("SFASSN"),   False,   func_arithop),
+    Stamp(ST.val("SFASSN"),   "ident",  ST.val("STPOP"),    False,   None),
+    Stamp(ST.val("SFASSN"),   "num",    ST.val("STPOP"),    False,   None),
 
-    # Arithmetics
-    Stamp(ST.val("SFARITH"), "+",         ST.val("SFADD"), False,  None),
-    Stamp(ST.val("SFADD"),   "ident",     ST.val("STPOP"), False,   func_addexpr),
-    Stamp(ST.val("SFADD"),   "num",       ST.val("STPOP"), False,   func_addexpr),
+    # Arithmetics (+ - * / sqr)
+    Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False,  func_arithop),
+    Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False,  None),
+    Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False,  None),
 
-    #Stamp(ST.val("SFASSN"), "-",         ST.val("SFSUB2"), False,   None),
-    #Stamp(ST.val("SFSUB2"), "ident",     ST.val("STPOP"), False,   None),
-    #Stamp(ST.val("SFSUB2"), "num",       ST.val("STPOP"), False,   None),
-    #
-    #Stamp(ST.val("SFASSN"), "*",         ST.val("SFMUL2"), False,   None),
-    #Stamp(ST.val("SFMUL2"), "ident",     ST.val("STPOP"), False,   None),
-    #Stamp(ST.val("SFMUL2"), "num",       ST.val("STPOP"), False,   None),
-    #
-    #Stamp(ST.val("SFASSN"), "/",         ST.val("SFDIV2"), False,   None),
-    #Stamp(ST.val("SFDIV2"), "ident",     ST.val("STPOP"), False,   None),
-    #Stamp(ST.val("SFDIV2"), "num",       ST.val("STPOP"), False,   None),
+    Stamp(ST.val("SFARITH"), "+",       ST.val("SFADD"),    False,  func_arithop),
+    Stamp(ST.val("SFADD"),   "ident",   ST.val("SFARITH"),  False,   func_addexpr),
+    Stamp(ST.val("SFADD"),   "num",     ST.val("SFARITH"),  False,   func_addexpr),
 
-    # Expressions
-    Stamp(ST.val("SFASSN"), "+",         ST.val("SFADD2"), False,   None),
-    Stamp(ST.val("SFADD2"), "ident",     ST.val("STPOP"),  False,   None),
-    Stamp(ST.val("SFADD2"), "num",       ST.val("STPOP"),  False,   None),
+    Stamp(ST.val("SFARITH"), "-",       ST.val("SFSUB"),    False,   func_arithop),
+    Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,   None),
+    Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,   None),
+
+    Stamp(ST.val("SFARITH"), "*",       ST.val("SFMUL"),    False,   func_arithop),
+    Stamp(ST.val("SFMUL"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
+    Stamp(ST.val("SFMUL"), "num",       ST.val("SFARITH"), False,   func_mulexpr),
+
+    Stamp(ST.val("SFARITH"), "/",       ST.val("SFDIV"),    False,   func_arithop),
+    Stamp(ST.val("SFDIV"), "ident",     ST.val("SFARITH"), False,   None),
+    Stamp(ST.val("SFDIV"), "num",       ST.val("SFARITH"), False,   None),
+
+    Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,   func_endarith),
+    Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,   func_endarith),
 
     # This will ignore commants
     Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"), False,   func_comment),
@@ -114,7 +116,7 @@ stamps =  (  \
     # This will ignore white spaces
     Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"), False,   func_dummy),
     Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"), False,   func_dummy),
-  )
+    )
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

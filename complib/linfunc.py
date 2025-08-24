@@ -21,70 +21,120 @@ def funcpvg(xpvg):
 
 astack = stack.pStack()
 
-def func_dummy(self2, tprog, iprog):
+def func_dummy(self2, tprog):
     if pvg.opt_debug > 5:
-        print("match dummy", "tprog =", tprog, "iprog=", iprog)
+        print("match dummy", "tprog =", tprog, "iprog=")
 
-def func_comment(self2, tprog, iprog):
+def func_comment(self2, tprog):
     if pvg.opt_debug > 5:
         print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
 
-def func_dcomment(self2, tprog, iprog):
+def func_dcomment(self2, tprog):
     if pvg.opt_debug > 5:
         print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
     if pvg.opt_rdocstr:
         print(self2.arrx[tprog].mstr, end = "")
 
-def func_str(self2, idx, tprog, iprog):
-    print("func_str() idx =", idx, "tprog =", tprog, "iprog=", iprog, "slen =", len(stamps[idx][0]))
+def func_str(self2, idx, tprog):
+    print("func_str() idx =", idx, "tprog =", tprog, "iprog=", "slen =", len(stamps[idx][0]))
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog], "func_str pre: ")
+        prarr(self2.arrx[tprog:tprog], "func_str pre: ")
     sys.exit(0)
 
-def func_func(self2, tprog, iprog):
+def func_func(self2, tprog):
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog], "func_func pre: ")
+        prarr(self2.arrx[tprog:tprog], "func_func pre: ")
     #sys.exit(0)
     self2.arrx[tprog].flag = 1
-    #self2._feed(tprog + 1, tprog+iprog - 1)
+    #self2._feed(tprog + 1, tprog - 1)
 
-def func_arithstart(self2, tprog, iprog):
-    if pvg.opt_debug > 2:
+def func_arithstart(self2, tprog):
+    if pvg.opt_debug > 5:
         print("func_arithstart: ", "tprog =", tprog, self2.arrx[tprog])
     astack.push(tprog)
 
-def func_addexpr(self2, tprog, iprog):
-    tprog2 = astack.pop()
-    if pvg.opt_debug > 2:
+def func_arithop(self2, tprog):
+    if pvg.opt_debug > 5:
+        print("func_arithop: ", "tprog =", tprog, self2.arrx[tprog])
+    astack.push(tprog)
+
+def func_addexpr(self2, tprog):
+    if pvg.opt_debug > 5:
+        tprog2 = astack.peek()
         print("func_addexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
+    astack.push(tprog)
 
-    self2.arrx[tprog].stamp[1] = "arith" #lindef.ST.val("STARITH")
-    self2.arrx[tprog].flag = 1
+def func_mulexpr(self2, tprog):
+    if pvg.opt_debug > 5:
+        tprog2 = astack.peek()
+        print("func_mulexpr: ",
+                "tprog  =", tprog,  self2.arrx[tprog],
+                "tprog2 =", tprog2, self2.arrx[tprog2] )
 
-    print(self2.arrx[tprog2])
-    print(self2.arrx[tprog])
+    astack.push(tprog)
 
-def func_brace(self2, tprog, iprog):
+def exeop(op, arg1, arg2):
+    #print("exeop", arg1, arg2)
+    if op ==  "sqr":  ret = arg1 ** arg2
+    if op ==   "*":   ret = arg1 * arg2
+    if op ==   "/":   ret = arg1 / arg2
+    if op ==   "+":   ret = arg1 + arg2
+    if op ==   "-":   ret = arg1 - arg2
+    return ret
+
+def reduce(self2, filter):
+
+    bstack = stack.pStack()
+    # Make a clean index:
+    for bb in range(len(list(astack))):
+        idx = astack.get(bb)
+        if self2.arrx[idx].flag == 0:
+            bstack.push(idx)
+
+    for aa in range(len(list(bstack))):
+        idx = bstack.get(aa)
+        if  self2.arrx[idx].stamp.xstr == filter:
+            idx1 = bstack.get(aa-1)
+            idx2 = bstack.get(aa+1)
+            if pvg.opt_debug > 2:
+                print("op", pp(filter), "is:",
+                    self2.arrx[idx1], self2.arrx[idx], self2.arrx[idx2])
+            self2.arrx[idx1].ival =  exeop(filter,
+                                self2.arrx[idx1].ival, self2.arrx[idx2].ival)
+            self2.arrx[idx1].mstr = str(self2.arrx[idx1].ival)
+            self2.arrx[idx].flag = 1 ; self2.arrx[idx2].flag = 1
+
+def func_endarith(self2, tprog):
+    if pvg.opt_debug > 2:
+        print("func_endarith", "tprog =", tprog, "iprog=")
+    # Execute operator precedence
+    reduce(self2, "sqr")
+    reduce(self2, "*")
+    reduce(self2, "/")
+    reduce(self2, "+")
+    reduce(self2, "-")
+
+def func_brace(self2, tprog):
 
     #if pvg.opt_debug > 5:
-    #    print("match brack tprog =", tprog, "iprog=", iprog)
+    #    print("match brack tprog =", tprog, "iprog=")
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog], "func brace pre: ")
+        prarr(self2.arrx[tprog:tprog], "func brace pre: ")
 
     # Done with parentheses
     self2.arrx[tprog].flag = 1
-    self2.arrx[tprog + iprog - 1].flag = 1
+    self2.arrx[tprog  - 1].flag = 1
 
     if pvg.opt_debug > 5:
         prarr(self2.arrx, "pre func brace feed:", True)
 
-    #self2._feed(tprog + 1, tprog+iprog - 1)
+    #self2._feed(tprog + 1, tprog - 1)
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog+1], "post func brace feed:")
+        prarr(self2.arrx[tprog:tprog+1], "post func brace feed:")
 
     if pvg.opt_debug > 6:
         prarr(self2.arrx, "func brace post:", True)
@@ -92,25 +142,25 @@ def func_brace(self2, tprog, iprog):
     # Force rescan
     return True
 
-def func_paren(self2, tprog, iprog):
+def func_paren(self2, tprog):
 
     #if pvg.opt_debug > 5:
-    #    print("match paren tprog =", tprog, "iprog=", iprog)
+    #    print("match paren tprog =", tprog, "iprog=")
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog], "func paren pre: ")
+        prarr(self2.arrx[tprog:tprog], "func paren pre: ")
 
     # Done with parentheses
     self2.arrx[tprog].flag = 1
-    self2.arrx[tprog + iprog - 1].flag = 1
+    self2.arrx[tprog  - 1].flag = 1
 
     if pvg.opt_debug > 5:
         prarr(self2.arrx, "func pre par feed:", True)
 
-    #self2._feed(tprog + 1, tprog+iprog - 1)
+    #self2._feed(tprog + 1, tprog - 1)
 
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog+1], "func post par feed:")
+        prarr(self2.arrx[tprog:tprog+1], "func post par feed:")
 
     if pvg.opt_debug > 6:
         prarr(self2.arrx, "func paren post:", True)
@@ -118,14 +168,14 @@ def func_paren(self2, tprog, iprog):
     # Force rescan
     return True
 
-def _func_arith(self2, opstr, tprog, iprog):
+def _func_arith(self2, opstr, tprog):
 
     uprog = 0;
     # Skip till number
     while 1:
-        if uprog >= iprog: return
+        #if uprog >= iprog: return
         if self2.arrx[tprog + uprog].flag: uprog += 1 ; continue
-        if "num" == self2.arrx[tprog + uprog].stamp[1]:
+        if "num" == self2.arrx[tprog + uprog].stamp.xstr:
             break
         uprog += 1
     #print("num[", uprog, self2.arrx[tprog + uprog][2])
@@ -133,18 +183,18 @@ def _func_arith(self2, opstr, tprog, iprog):
     ttt =  self2.arrx[tprog + uprog]
     # Skip till operator
     while 1:
-        if uprog >= iprog: return
+        #if uprog >= iprog: return
         if self2.arrx[tprog + uprog].flag: uprog += 1 ; continue
-        if opstr == self2.arrx[tprog + uprog].stamp[1]:
+        if opstr == self2.arrx[tprog + uprog].stamp.xstr:
             break
         uprog += 1
     op =  self2.arrx[tprog + uprog]
-    #print("op[",  uprog, self2.arrx[tprog + uprog].stamp[1])
+    #print("op[",  uprog, self2.arrx[tprog + uprog].stamp.xstr)
     # Skip till number
     while 1:
-        if uprog >= iprog: return
+        #if uprog >= iprog: return
         if self2.arrx[tprog + uprog].flag: uprog += 1 ; continue
-        if "num" == self2.arrx[tprog + uprog].stamp[1]:
+        if "num" == self2.arrx[tprog + uprog].stamp.xstr:
             break
         uprog += 1
     #print("num2[",  uprog, self2.arrx[tprog + uprog][2])
@@ -169,22 +219,22 @@ def _func_arith(self2, opstr, tprog, iprog):
     #    #prarr(self2.arrx[ss:ss+1], "delx")
     #    #self2.arrx[ss].flag = 1
 
-def func_mul(self2, tprog, iprog):
+def func_mul(self2, tprog):
     if pvg.opt_debug > 5:
-        print("match func  mul tprog =", tprog, "iprog=", iprog)
+        print("match func  mul tprog =", tprog, "iprog=")
     if pvg.opt_debug > 3:
-        prarr(self2.arrx[tprog:tprog+iprog], "mul pre: ")
-    _func_arith(self2, "*", tprog, iprog)
+        prarr(self2.arrx[tprog:tprog], "mul pre: ")
+    _func_arith(self2, "*", tprog)
     if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog+iprog], "mul post: ")
+        prarr(self2.arrx[tprog:tprog], "mul post: ")
 
-def func_add(self2, tprog, iprog):
+def func_add(self2, tprog):
     if pvg.opt_debug > 6:
-        print("match func add tprog =", tprog, "iprog=", iprog)
+        print("match func add tprog =", tprog, "iprog=")
     if pvg.opt_debug > 6:
-        prarr(self2.arrx[tprog:tprog+iprog], "add pre: ")
-    _func_arith(self2, "+", tprog, iprog)
+        prarr(self2.arrx[tprog:tprog], "add pre: ")
+    _func_arith(self2, "+", tprog)
     if pvg.opt_debug > 6:
-        prarr(self2.arrx[tprog:tprog+iprog], "add post: ")
+        prarr(self2.arrx[tprog:tprog], "add post: ")
 
 # EOF
