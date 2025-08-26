@@ -1,0 +1,21 @@
+x86-64 Registers
+64-bit 	32-bit 	16-bit 	8-bit 	Special Purpose
+for functions 	When calling
+a function 	When writing
+a function
+rax	eax	ax	ah,al 	Return Value 	Might be changed 	Use freely
+rbx	ebx	bx	bh,bl 	  	Will not be changed 	Save before using!
+rcx	ecx	cx	ch,cl 	4th integer argument 	Might be changed 	Use freely
+rdx	edx	dx	dh,dl 	3rd integer argument 	Might be changed 	Use freely
+rsi	esi	si	sil 	2nd integer argument 	Might be changed 	Use freely
+rdi	edi	di	sil 	1st integer argument 	Might be changed 	Use freely
+rbp	ebp	bp	bpl 	Frame Pointer 	Maybe Be Careful 	Maybe Be Careful
+rsp	esp	sp	spl 	Stack Pointer 	Be Very Careful! 	Be Very Careful!
+r8	r8d	r8w	r8b 	5th integer argument 	Might be changed 	Use freely
+r9	r9d	r9w	r9b 	6th integer argument 	Might be changed 	Use freely
+r10	r10d	r10w	r10b 	  	Might be changed 	Use freely
+r11	r11d	r11w	r11b 	  	Might be changed 	Use freely
+r12	r12d	r12w	r12b 	  	Will not be changed 	Save before using!
+r13	r13d	r13w	r13b 	  	Will not be changed 	Save before using!
+r14	r14d	r14w	r14b 	  	Will not be changed 	Save before using!
+r15	r15d	r15w	r15b 	  	Will not be changed 	Save before using!

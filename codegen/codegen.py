@@ -21,7 +21,11 @@ bits 64
 section .text
 
 main:
-        ;call    _version
+        mov     rcx, [dumpx_len]
+        mov     rsi, dumpx
+        call    _print_mem
+
+        call    _printnl
 
         push    rdx                     ; callee-save registers
         push    rsi                     ; callee-save registers
@@ -29,8 +33,7 @@ main:
 
         mov     rsi, 1                  ; current value
         mov     rcx, 3                  ; counter
-
-L1:
+  L1:
         push    rsi                     ; caller-save register
         push    rdi                     ; caller-save register
 
@@ -47,10 +50,12 @@ L1:
 
         loop    L1
 
-        mov     rax, 0xab654321876543ff21
+        call    _printnl
 
-        ;mov     rax, 0x1
+        mov     rax, 0xfedcba876543210
         call    _print_num
+
+        call    _printnl
 
         ;mov     ax, 'a'
         ;call    _print_char
@@ -60,10 +65,18 @@ L1:
         pop     rdi
         pop     rsi
         pop     rdx
+
         xor     eax, eax
+
+        ;mov       rsp, rbp
+        pop       rbp
+
         ret
 
 section   .data
+dumpx       db      2, 4, 6, 8, 9, 10, 'a', 'Z', '1', '2', 128, 130
+
+dumpx_len     dq    $ - dumpx
 
 message:    db        "Hello, World", 10, 0      ; note the newline at the end
 msg_len     dq        $ - message

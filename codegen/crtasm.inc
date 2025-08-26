@@ -1,14 +1,15 @@
 ; Standard library CRT substitution; only including neccessary functions
+; Named as an .inc so it is not cleaned with the generated assembly
 
 global  _exit, _start
 global _print, _print_char, _print_num, _printnl
 global _version
 
+%include "crt.inc"
+
 extern main
 
 bits 64
-
-%include "crt.inc"
 
 section .text
 
@@ -16,7 +17,14 @@ _start:
         ;mov rax, 0                         ; test core dump
         ;mov word [rax], 0
         ;call _version                       ; mostly for testing
-        call main
+
+        lea     rsi, [rsp]
+        mov     rcx, 8
+        call    _print_mem
+        call    _printnl
+        call    showregs
+        call    main
+
         mov rdi, rax                        ; transfer exit code
         call _exit
 
@@ -27,11 +35,64 @@ _version:
          mov        eax, 0                  ; Set return value
          ret
 
+_print_mem:                                 ; String in rsi, len in rcx
+
+        xor    rax,rax
+L4:
+        push    rcx
+        push    rsi
+
+        mov     al, [rsi]
+        cmp     rax,127
+        jb      letters
+        mov      al, '.'
+        jmp       just_print
+
+    letters:
+        cmp     rax,20
+        jg      just_print
+
+        push      rax
+        and       rax, 0xf0
+        shr       rax, 4
+
+
+        cmp       rax, 10
+        jl        norm_num4
+        add       rax, 'a' - 10
+        jmp       added4
+      norm_num4:
+        add       rax, '0'
+      added4:
+
+        call    _print_char
+
+        pop       rax
+        and       rax, 0xf
+        cmp       rax, 10
+        jl        norm_num3
+        add       rax, 'a'- 10
+        jmp       added3
+      norm_num3:
+        add       rax, '0'
+     added3:
+
+just_print:
+        call    _print_char
+        call    _printsp
+
+        pop     rsi
+        inc     rsi
+        pop rcx
+
+        loop L4
+    ret
+
 _print_char:                                 ; Characteris is in rax
 
         push      rbp
         mov       rbp, rsp
-        sub       rsp, 8
+        sub       rsp, 16
 
         lea       rsi, [rbp - 4]
         mov       byte [rsi], al
@@ -47,6 +108,13 @@ _print_char:                                 ; Characteris is in rax
 _printnl:
          mov       rsi, nl                  ; Address of string to output
          mov       rdx, [nl_len]            ; Number of bytes
+         call      _print
+         mov        eax, 0                  ; Set return value
+         ret
+
+_printsp:
+         mov       rsi, spx                  ; Address of string to output
+         mov       rdx, [spx_len]            ; Number of bytes
          call      _print
          mov        eax, 0                  ; Set return value
          ret
@@ -104,7 +172,7 @@ _print_num:                                 ; Number is in rax
           add       rax, '0'
          added2:
 
-          mov       [rsi], al
+          mov       byte [rsi], al
           dec       rsi
           pop       rax
 
@@ -114,23 +182,17 @@ _print_num:                                 ; Number is in rax
           shr       rax, 8
           loop      L2
 
-   ;         mov ecx, [rdi]
-   ; L3:
-   ;         pushall
-   ;         mov ax, 's'
-   ;         call    _print_char
-   ;         popall
-   ;         loop    L3
-
-          ;this is a reversed accumulated number
+          ; this is a reversed accumulated number
           lea       rsi, [rbp - 8]
           sub       rsi, [rdi]
+          add       rsi, 2
           mov       rdx, [rdi]
-          add       rdx, 1
+          ;add       rdx, 1
           call      _print
           pop       rax
 
         err:
+          ; we leave the string blank
 
           mov       rsp, rbp
           pop       rbp
@@ -143,6 +205,90 @@ _exit:
           syscall                           ; Invoke operating system to exit
           ret
 
+; main:           %rdi
+;  71         argc:           %rsi
+;  72         argv:           %rdx
+;  73         init:           %rcx
+;  74         fini:           %r8
+;  75         rtld_fini:      %r9
+;  76         stack_end:      stack.  */
+
+showregs:
+
+        ;push       rbp
+        mov         rbp, rsp
+        ;sub       rsp, 8
+
+        lea   rsi, [rbp ]
+        printx  [rsi]
+        printnl
+
+        lea   rsi, [rbp + 8 ]
+        printx  [rsi]
+        printnl
+
+        lea   rsi, [rbp + 16 ]
+        printx  [rsi]
+        printnl
+
+        lea   rsi, [rbp + 24 ]
+        printx  [rsi]
+        printnl
+
+        ;pop     rsi
+        ;printx  rsi
+        ;printnl
+        ;
+        ;pop     rdi
+        ;printx  rdi
+        ;printnl
+        ;
+        ;pop     rbx
+        ;printx  rbx
+        ;printnl
+
+        ;push    rdi
+        ;push    rbx
+        ;push    rsi
+
+        printnl
+
+        printx  rax
+        printnl
+        printx  rbx
+        printnl
+        printx  rcx
+        printnl
+        printx  rdx
+        printnl
+        printx  rsi
+        printnl
+        printx  rdi
+        printnl
+        ;printx  r8
+        ;printnl
+        ;printx  r9
+        ;printnl
+        ;printx  r10
+        ;printnl
+        ;printx  r11
+        ;printnl
+        ;printx  r12
+        ;printnl
+        ;printx  r13
+        ;printnl
+        ;printx  r14
+        ;printnl
+        ;printx  r15
+        ;printnl
+        printx  rbp
+        printnl
+        printx  rsp
+        printnl
+    ;pop rbp
+    ret
+
+
 section .data
 
 message     db        "CRT Version 1.0", 10  ; Note the newline at the end
@@ -151,5 +297,7 @@ message2    db        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 10
 msg_len2    dq        $-message2
 nl          db        10
 nl_len      dq        $-nl
+spx         db        32
+spx_len      dq        $-spx
 
 ; EOF

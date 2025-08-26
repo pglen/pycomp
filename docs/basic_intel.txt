@@ -1,0 +1,24 @@
+add ⟨dest⟩ ⟨src⟩
+sub ⟨dest⟩ ⟨src⟩
+inc ⟨dest⟩
+dec ⟨dest⟩
+imul ⟨dest⟩ ⟨src⟩
+div ⟨dest⟩ 	and ⟨dest⟩ ⟨src⟩
+or ⟨dest⟩ ⟨src⟩
+not ⟨dest⟩
+shr ⟨dest⟩, ⟨imm⟩
+shr ⟨dest⟩, cl
+shl ⟨dest⟩, ⟨imm⟩
+shl ⟨dest⟩, cl
+sar ⟨dest⟩, ⟨imm⟩
+sar ⟨dest⟩, cl 	jmp ⟨label⟩
+cmp ⟨dest⟩ ⟨src⟩
+je ⟨label⟩
+jne ⟨label⟩
+jg ⟨label⟩
+jge ⟨label⟩
+jl ⟨label⟩
+jle ⟨label⟩ 	call ⟨label⟩
+ret
+push ⟨src⟩
+pop ⟨dest⟩
