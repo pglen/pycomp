@@ -208,9 +208,9 @@ try:
     (INI_STATE, "bin",          r"0b[0-1]+"         ),
     (INI_STATE, "bin",          r"0z[0-1]+"         ),
 
-    (INI_STATE, "comm2d",       r"\#\#.*\n"         ),
+    (INI_STATE, "comm4d",       r"\#\#.*\n"         ),
+    (INI_STATE, "comm4",        r"\#.*\n"           ),
     (INI_STATE, "comm2d",       r"\/\/\/.*\n"       ),
-    (INI_STATE, "comm2",        r"\#.*\n"           ),
     (INI_STATE, "comm2",        r"\/\/.*\n"         ),
 
     (INI_STATE, "num",          r"[0-9]+"           ),
@@ -227,17 +227,18 @@ try:
     (INI_STATE, "teq",          r"==="              ),  # Identical
     (INI_STATE, "tneq",         r"!=="              ),  # Not Identical
     (INI_STATE, "=>",           r"=>"               ),  # Assignment
+    (INI_STATE, "=",            r"="                ),  # Assignment
     (INI_STATE, "dref",         r"->"               ),  # Reference
     (INI_STATE, "aref",         r"<-"               ),  # De ref
     (INI_STATE, "idev",         r"\/\%"             ),  # Int divide
     (INI_STATE, "and",          r"\&\&"             ),  # Logical and
     (INI_STATE, "or",           r"\|\|"             ),  # Logical or
-    (INI_STATE, "xor",          r"\^\^"             ),  # Logical or
+    (INI_STATE, "xor",          r"\^\^"             ),  # Logical xor
 
-    (INI_STATE, "at",           r"@"                ),
-    (INI_STATE, "excl",         r"!"                ),
-    (INI_STATE, "tilde",        r"~"                ),
-    (INI_STATE, "under",        r"_"                ),
+    (INI_STATE, "at",           r"@"                ),  # At
+    (INI_STATE, "excl",         r"!"                ),  # Not
+    (INI_STATE, "tilde",        r"~"                ),  # Tilde
+    (INI_STATE, "under",        r"_"                ),  # Underscore
 
     (INI_STATE, "comm3d",       r"\/\*\*"           ),
     (INI_STATE, "comm3",        r"\/\*"             ),
@@ -290,11 +291,10 @@ try:
     (STR2_STATE, "sany2",      r"."                 ),
 
     #comm states
-    #(COMM_STATE, "cbsla",     r"\\\\"              ),
-    (COMM_STATE,  "ecomm3",     r"\*\/"              ),
-    (COMM_STATE,  "cany",       "(?s)."                 ),
     (COMM_STATED, "ecomm3d",    r"\*\/"              ),
-    (COMM_STATED, "canyd",      r"(?s)."                 ),
+    (COMM_STATE,  "ecomm3",     r"\*\/"              ),
+    (COMM_STATE,  "cany",      "(?s)."              ),
+    (COMM_STATED, "canyd",     r"(?s)."             ),
 
     #escape state
     (ESC_STATE, "anyx",        r"."                 ),

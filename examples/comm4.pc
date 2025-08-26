@@ -1,2 +1,4 @@
-/// Doc Comment
-## Doc comment
+/// Doc Comment C++
+/** Doc Comment C++ inline */
+///
+## Doc Comment SH

@@ -87,9 +87,10 @@ class Lexer():
         tt.mstr = self.accum[self.state]
         tt.start = ttt.start
         # Update stamp to reflect collected data
-        sss = list(tt.stamp)
-        sss[1] = typex
-        tt.stamp = tuple(sss)   # Back to tuple (for read only)
+        #sss = list(tt.stamp)
+        #sss[1] = typex
+        #tt.stamp = tuple(sss)   # Back to tuple (for read only)
+        tt.stamp.stampx = typex
         self.state = self.statstack.pop()
 
     def feed(self, data):
@@ -112,7 +113,7 @@ class Lexer():
             beg = pos; pos = tt.end
             self.lastpos = pos
             if self.pvg.opt_ldebug > 2:
-                print("token at pos:", pos, tt, "state =", self.state)
+                print("token at pos:", pos, tt, "state =", lexdef.state2str(self.state))
 
             # Global actions
             if  tt.stamp.xstr == "nl":
@@ -151,7 +152,8 @@ class Lexer():
                                     "state =", lexdef.COMM_STATED)
                     self._push_state(tt, lexdef.COMM_STATED)
                 else:
-                    #print("no state")
+                    #if self.pvg.opt_ldebug > 0:
+                    #    print("warn: no state")
                     res.append(tt)
 
             elif self.state == lexdef.UNI_STATE:

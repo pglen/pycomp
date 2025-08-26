@@ -45,7 +45,7 @@ GR = xenum("GROUPANY")
 
 # Changed to auto add new state
 ST = xenum("STATEANY", "STATEINI", "STPOP", "STPOP2",
-                "STATEIGN", "STATEFUNC", "SFUNARG", "SFUNARG2", "SFUNARG3",
+                "STIGN", "STATEFUNC", "SFUNARG", "SFUNARG2", "SFUNARG3",
                     "SFUNARG4", "SFUNBODY", "SFASSN", "SFASSN2", "SFADD2")
 
 # These are the entries to be matched agains the parse array.
@@ -69,11 +69,11 @@ stamps =  (  \
     Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  func_dummy),
     Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),    False,  func_dummy),
     Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),    False,  func_dummy),
-    Stamp(ST.val("SFUNARG3"), "comm2",  ST.val("STPOP"),    False,  func_dummy),
+    Stamp(ST.val("SFUNARG3"), "comm2",  ST.val("STPOP"),    False,  func_comment),
 
-    Stamp(ST.val("SFUNARG"), ")",       ST.val("STATEIGN"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG"), ")",       ST.val("STIGN"), False,  func_dummy),
     Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
-    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEIGN"), False,  func_dummy),
+    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STIGN"), False,  func_dummy),
 
     # Assignments / Start of arithmetic
     Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),  True,   func_arithstart),
@@ -87,6 +87,10 @@ stamps =  (  \
     #Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False,  func_arithop),
     #Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False,  None),
     #Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False,  None),
+
+    Stamp(ST.val("SFARITH"), "=>",      ST.val("SFPUT"),    False,   func_arithop),
+    Stamp(ST.val("SFPUT"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
+    Stamp(ST.val("SFPUT"), "num",       ST.val("SFARITH"), False,   func_mulexpr),
 
     Stamp(ST.val("SFARITH"), "*",       ST.val("SFMUL"),    False,   func_arithop),
     Stamp(ST.val("SFMUL"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
@@ -107,15 +111,17 @@ stamps =  (  \
     Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,   func_endarith),
     Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,   func_endarith),
 
-    # This will ignore commants
-    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STATEIGN"), False,   func_comment),
-    Stamp(ST.val("STATEANY"), "comm3",   ST.val("STATEIGN"), False,   func_comment),
-    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STATEIGN"), False,   func_dcomment),
-    Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STATEIGN"), False,   func_dcomment),
+    # This will ignore comments
+    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"), False,   func_comment),
+    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STIGN"), False,   func_dcomment), # //
+    Stamp(ST.val("STATEANY"), "ecomm3",  ST.val("STIGN"), False,   func_comment),  # /* */
+    Stamp(ST.val("STATEANY"), "ecomm3d", ST.val("STIGN"), False,   func_dcomment2),
+    Stamp(ST.val("STATEANY"), "comm4",   ST.val("STIGN"), False,   func_comment),  # ##
+    Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"), False,   func_dcomment3),
 
     # This will ignore white spaces
-    Stamp(ST.val("STATEANY"), "sp",      ST.val("STATEIGN"), False,   func_dummy),
-    Stamp(ST.val("STATEANY"), "nl",      ST.val("STATEIGN"), False,   func_dummy),
+    Stamp(ST.val("STATEANY"), "sp",      ST.val("STIGN"), False,   func_dummy),
+    Stamp(ST.val("STATEANY"), "nl",      ST.val("STIGN"), False,   func_dummy),
     )
 
 if __name__ == "__main__":

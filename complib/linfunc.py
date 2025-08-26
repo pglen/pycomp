@@ -31,9 +31,21 @@ def func_comment(self2, tprog):
 
 def func_dcomment(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        print("func_dcomment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
     if pvg.opt_rdocstr:
-        print(self2.arrx[tprog].mstr, end = "")
+        print(self2.arrx[tprog].mstr[3:], end = "")
+
+def func_dcomment2(self2, tprog):
+    if pvg.opt_debug > 5:
+        print("func_dcomment2()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+    if pvg.opt_rdocstr:
+        print(self2.arrx[tprog].mstr[3:-2], end = "")
+
+def func_dcomment3(self2, tprog):
+    if pvg.opt_debug > 5:
+        print("func_dcomment3()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+    if pvg.opt_rdocstr:
+        print(self2.arrx[tprog].mstr[2:], end = "")
 
 def func_str(self2, idx, tprog):
     print("func_str() idx =", idx, "tprog =", tprog, "iprog=", "slen =", len(stamps[idx][0]))
