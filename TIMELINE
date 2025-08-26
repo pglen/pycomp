@@ -1,0 +1,22 @@
+Timeline for PCOMP parallel compiler
+
+  The project started around 2018 as an idea to merge levels of compilation
+and assembly to one code base. While the original intent is mostly in effect,
+it evoled to what we are working on today.
+
+  The landscape of computing is totally different today, we have more
+processing power, and we have ...
+
+   Also reliability, reproducability, compatibility and consistancy have a
+higher importance than the old requirements.
+
+Timeline:
+
+Jun 27  2019        Initial attempts for compiler
+Thu 3.Jul.2025      Compiler in 'C' started
+Thu 24.Jul.2025     Switched to python project 'pyvcomp'
+
+
+
+Memory management
+
