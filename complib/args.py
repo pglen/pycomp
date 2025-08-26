@@ -21,11 +21,15 @@ class Cntx:
 # Adding default options here allows a template like operation
 
 builtins = ( \
-    ("help",     False,  "Show help. (this screen)"),
-    ("Help2",    False,  "Show advanced help. (placeholder for now)"),
-    ("debug",    0,      "Debug level. Def=0 0=>none 9=>noisy."),
-    ("Version",  False,  "Print version number and build date."),
-    ("verbose",  Cntx(), "Set verbosity level."),
+
+    #   name        initval    Help Flag    Help string
+    #   ----        -------    ------       -----------
+
+    ("help",     False,  False, "Show help. (this screen)"),
+    ("Help2",    False,  False, "Show more help."),
+    ("debug",    0,      False, "Debug level. Def=0 0=>none 9=>noisy."),
+    ("Version",  False,  False, "Print version number and build date."),
+    ("verbose",  Cntx(), False, "Set verbosity level."),
     )
 
 class Lpg():
@@ -42,6 +46,7 @@ class Lpg():
         self.options = ""
         self.loptions = []
         self.helpdict = {}
+        self.helpflag = {}
 
         self.prestr  = "Program Help"
         self.poststr = "End Help"
@@ -51,12 +56,14 @@ class Lpg():
         for aa in builtins:
             oo = "opt_" + aa[0]
             setattr(self, oo, aa[1])
-            self.helpdict[oo] = aa[2]
+            self.helpflag[oo] = aa[2]
+            self.helpdict[oo] = aa[3]
         # Add options from the command invocation
         for aa in optlist:
             oo = "opt_" + aa[0]
             setattr(self, oo, aa[1])
-            self.helpdict[oo] = aa[2]
+            self.helpflag[oo] = aa[2]
+            self.helpdict[oo] = aa[3]
         #print("help", dir(self))
         #print("helpdict", self.helpdict)
         self._auto_opt()
@@ -129,22 +136,24 @@ class Lpg():
             print(aa, "=", "'" + str(getattr(self, aa)) + "'", "=>", bb)
         print()
 
-    def helpstr(self):
+    def helpstr(self, flag = False):
 
         #print("dict", self.helpdict)
         strx = ""
         for aa in self.iter_vars():
+            try:
+                if self.helpflag[aa] != flag:
+                    continue
+            except:
+                pass
             bb = "" ;
-            #print("help:", "'" + cc + "'")
             try:
                 bb = self.helpdict[aa]
-                #print("help str:", bb)
             except KeyError:
                 pass
             except:
                 print("err helpstr", sys.exc_info())
                 pass
-
             arg = " val"
             attr = getattr(self, aa)
             if isinstance(attr, type(False)) or \
@@ -190,8 +199,11 @@ class Lpg():
         print(self.poststr)
 
     def Help(self):
-        print("Advanced help placeholder.")
-        print("Under construction.")
+        #print("Advanced help placeholder.")
+        #print("Under construction.")
+        print(self.prestr)
+        print(self.helpstr(True), end = "")
+        print(self.poststr)
 
     def setpre(self, strx = None):
         if strx:

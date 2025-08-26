@@ -16,28 +16,29 @@ from complib.ptree import *
 from complib.utils import *
 
 Version = "Version: 1.0.0; "
-Build   = "Build date: Aug 13 2025"
+Build   = "Build date: Tue 26.Aug.2025"
 
 # Name is prepened opt_ and name's first letter is the option letter
 
 opts =  (\
-    #   name        initval     Help string
-    #   ----        -------     ----------------
-    ("Define",      [],         "Define variable. (multiple defines accepted)"),
-    ("outfile",     "",         "Name of output file."),
-    ("xlexer_show", False,      "Show lexer output"),
-    ("comp_only",   False,      "Compile only."),
-    ("emit",        False,      "Emit parse string."),
-    ("Target",      "x86_64",   "Select target. Def: x86_64 (no other targets)"),
-    ("state_show",  False,      "Show parser states."),
-    ("timing_show", False,      "Show timings for program execution."),
-    ("pre_only",    False,      "Pre-process only."),
-    ("just_lex",    False,      "Only execute lexer."),
-    ("emit",        False,      "Emit parse string."),
-    ("animate",     False,      "Animate (slow) output."),
-    ("rdocstr",     False,          "Show document strings"),
-    ("ldebug",      0,          "Lexer debug level. Def=0 0=>none 9=>noisy."),
-    ("workdir",     "./tmp",    "Directory for temp files. Def=./tmp"),
+    #   name        initval     HelpFlag    HelpString
+    #   ----        -------     ------      -----------
+    ("Define",      [],         False,  "Define variable. (multiple defines accepted)"),
+    ("outfile",     "",         False,  "Name of output file."),
+    ("xlexer_show", False,      False,  "Show lexer output"),
+    ("comp_only",   False,      False,  "Compile only."),
+    ("emit",        False,      False,  "Emit parse string."),
+    ("pre_only",    False,      False,  "Pre-process only."),
+    ("just_lex",    False,      False,  "Only execute lexer."),
+    ("emit",        False,      False,  "Emit parse string."),
+    ("rdocstr",     False,      False,  "Show document strings"),
+    ("uresults",    False,      False,  "Show results"),
+    ("workdir",     "./tmp",    False,  "Directory for temp files. Def=./tmp"),
+    ("ldebug",      0,          True,   "Lexer debug level. Def=0 0=>none 9=>noisy."),
+    ("animate",     False,      True,   "Animate (slow) output."),
+    ("Target",      "x86_64",   True,   "Select target. Def: x86_64 (no other targets)"),
+    ("state_show",  False,      True,   "Show parser states."),
+    ("timing_show", False,      True,   "Show timings for program execution."),
     )
 
 def parsefile(strx):
@@ -110,12 +111,14 @@ def parsefile(strx):
     if lpg.opt_timing_show: print  ("parse time:", time_ms(start_time))
 
     #prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
-    print("\nresults:", end = " ")
-    for aa in res:
-        if aa.stamp.xstr == "sp":
-            continue
-        if aa.flag == 0:
-            print(aa, end = " ")
+    if lpg.opt_uresults:
+        print("results:", end = " ")
+        for aa in res:
+            if aa.stamp.xstr == "sp":
+                continue
+            if aa.flag == 0:
+                print(aa, end = " ")
+        print()
     #emit("hello")
 
     # Output results
@@ -124,7 +127,7 @@ def parsefile(strx):
 
     #if lpg.opt_verbose:
     #    print(treeroot)
-    print()
+    #print()
 
 def setheads(lpg):
     prestr =    "PCOMP parallel compiler.\n" \
