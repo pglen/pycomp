@@ -3,81 +3,106 @@
 
 global  _exit, _start
 global _print, _print_char, _print_num, _printnl
+global  _print_dot, _print_regs
 global _version
 
 %include "crt.inc"
 
 extern main
 
-bits 64
-
 section .text
 
-_start:
+_start:       ; Main entry point
         ;mov rax, 0                         ; test core dump
         ;mov word [rax], 0
         ;call _version                       ; mostly for testing
 
-        lea     rsi, [rsp]
-        mov     rcx, 8
-        call    _print_mem
-        call    _printnl
-        call    showregs
+        ;lea     rsi, [rsp]
+        ;mov     rcx, 8
+        ;call    _print_mem
+        ;call    _printnl
+        ;call    _print_regs
+
         call    main
 
         mov rdi, rax                        ; transfer exit code
         call _exit
 
-_version:
+_version:       ; Print version
          mov       rsi, message             ; Address of string to output
          mov       rdx, [msg_len]           ; Number of bytes
          call      _print
          mov        eax, 0                  ; Set return value
          ret
 
+_print_lab:       ; String in rax
+        push    rax
+        shr     rax, 0
+        and     rax,0xff
+        call    _print_char
+        pop     rax
+        push    rax
+        shr     rax, 8
+        and     rax,0xff
+        call    _print_char
+        pop     rax
+        push    rax
+        shr     rax, 16
+        and     rax,0xff
+        call    _print_char
+        pop     rax
+        push    rax
+        shr     rax, 24
+        and     rax,0xff
+        call    _print_char
+        pop     rax
+        mov     rax, ':'
+        call    _print_char
+
+        mov     rax,0
+        ret
+
 _print_mem:                                 ; String in rsi, len in rcx
 
         xor    rax,rax
-L4:
+    .L4:
         push    rcx
         push    rsi
 
         mov     al, [rsi]
         cmp     rax,127
-        jb      letters
-        mov      al, '.'
-        jmp       just_print
+        ja      .numbers
 
-    letters:
+    .letters:
         cmp     rax,20
-        jg      just_print
+        jg      .just_print
 
+    .numbers:
         push      rax
         and       rax, 0xf0
         shr       rax, 4
 
-
         cmp       rax, 10
-        jl        norm_num4
+        jl        .norm_num4
         add       rax, 'a' - 10
-        jmp       added4
-      norm_num4:
+        jmp       .added4
+      .norm_num4:
         add       rax, '0'
-      added4:
+      .added4:
 
         call    _print_char
 
         pop       rax
         and       rax, 0xf
         cmp       rax, 10
-        jl        norm_num3
+        jl        .norm_num3
         add       rax, 'a'- 10
-        jmp       added3
-      norm_num3:
+        jmp       .added3
+      .norm_num3:
         add       rax, '0'
-     added3:
+     .added3:
 
-just_print:
+    .just_print:
         call    _print_char
         call    _printsp
 
@@ -85,7 +110,7 @@ just_print:
         inc     rsi
         pop rcx
 
-        loop L4
+        loop .L4
     ret
 
 _print_char:                                 ; Characteris is in rax
@@ -106,17 +131,30 @@ _print_char:                                 ; Characteris is in rax
         ret
 
 _printnl:
+        pushall
          mov       rsi, nl                  ; Address of string to output
          mov       rdx, [nl_len]            ; Number of bytes
          call      _print
+        popall
          mov        eax, 0                  ; Set return value
          ret
 
 _printsp:
+        pushall
          mov       rsi, spx                  ; Address of string to output
          mov       rdx, [spx_len]            ; Number of bytes
          call      _print
+        popall
          mov        eax, 0                  ; Set return value
+         ret
+
+_printdot:
+         pushall
+         mov       rsi, dot                  ; Address of string to output
+         mov       rdx, [dot_len]            ; Number of bytes
+         call      _print
+         popall
+        mov        eax, 0                  ; Set return value
          ret
 
 ; %rax	arg0 (%rdi)	arg1 (%rsi)	arg2 (%rdx)	arg3 (%r10)	arg4 (%r8)	arg5 (%r9)
@@ -130,31 +168,55 @@ _print:
           syscall                           ; invoke operating system to do the write
           ret
 
+;;  Print number in RAX
+
 _print_num:                                 ; Number is in rax
+
+          pushall
 
           push      rbp
           mov       rbp, rsp
           sub       rsp, 64
 
+          ; dump stack
+          ;mov   rsi, rsp
+          ;mov   ecx, 64
+          ;call _print_mem
+
+          ; zero stack
+          mov       rdi, rsp
+          mov       rcx, 64
+        .L5:
+          ;push      rcx
+          mov       byte [rdi], 0
+          add       rdi, 1
+          ;pop       rcx
+          loop      .L5
+
+          ;call _printnl
+          ;; dump stack
+          ;mov   rsi, rsp
+          ;mov   ecx, 64
+          ;call _print_mem
+
           push      rax
           mov       rcx, 16
-          lea       rdi, [rbp - 4]
+          lea       rdi, [rbp - 8]              ; Counter
           mov       qword [rdi], 0
-          lea       rsi, [rbp - 8]
-   L2:
+          lea       rsi, [rbp - 16]             ; Target end
+   .L2:
           push      rax
-
           push      rax
           and       rax, 0xf
           cmp       rax, 10
-          jl        norm_num
+          jl        .norm_num
           add       rax, 'a' - 10
-          jmp       added
-         norm_num:
+          jmp       .added
+     .norm_num:
           add       rax, '0'
-         added:
-
-          mov       [rsi], al
+     .added:
+          inc       qword [rdi]
+          mov       byte [rsi], al
           dec       rsi
           pop       rax
 
@@ -162,15 +224,15 @@ _print_num:                                 ; Number is in rax
           and       rax, 0xf0
           shr       rax, 4
           cmp       rax, 15
-          jg        err
+          jg        .err
 
           cmp       rax, 10
-          jl        norm_num2
+          jl        .norm_num2
           add       rax, 'a'- 10
-          jmp       added2
-         norm_num2:
+          jmp       .added2
+     .norm_num2:
           add       rax, '0'
-         added2:
+     .added2:
 
           mov       byte [rsi], al
           dec       rsi
@@ -180,23 +242,30 @@ _print_num:                                 ; Number is in rax
 
           pop       rax
           shr       rax, 8
-          loop      L2
+          loop      .L2
 
-          ; this is a reversed accumulated number
-          lea       rsi, [rbp - 8]
-          sub       rsi, [rdi]
-          add       rsi, 2
+          ; this is the reversed accumulated number
+          lea       rsi, [rbp - 16]
+          sub       qword rsi, [rdi]
+
+          ;back off from last increment
+          add       rsi, 1
           mov       rdx, [rdi]
           ;add       rdx, 1
           call      _print
           pop       rax
+          jmp       .retx
 
-        err:
+        .err:
           ; we leave the string blank
+
+        .retx:
 
           mov       rsp, rbp
           pop       rbp
-          ret
+
+        popall
+        ret
 
 _exit0:
           xor       rdi, rdi                ; Exit code 0
@@ -205,89 +274,63 @@ _exit:
           syscall                           ; Invoke operating system to exit
           ret
 
-; main:           %rdi
-;  71         argc:           %rsi
-;  72         argv:           %rdx
-;  73         init:           %rcx
-;  74         fini:           %r8
-;  75         rtld_fini:      %r9
-;  76         stack_end:      stack.  */
+_print_regs:        ; print processor registers
 
-showregs:
-
-        ;push       rbp
+        ;enter 8, 0
+        push        rbp
         mov         rbp, rsp
-        ;sub       rsp, 8
+        sub         rsp, 8
+
+        printx  "rax",  rax
+        printx  "rbx",  rbx
+        call    _printnl
+        printx  "rcx",  rcx
+        printx  "rdx",  rdx
+        call    _printnl
+        printx  "rsi",  rsi
+        printx  "rdi",  rdi
+        call    _printnl
+        printx  "r8 ",  r8
+        printx  "r9 ",  r9
+        call    _printnl
+        printx  "r10",  r10
+        printx  "r11",  r11
+        call    _printnl
+        printx  "r12",  r12
+        printx  "r13",  r13
+        call    _printnl
+        printx  "r14",  r14
+        printx  "r15",  r15
+        call    _printnl
+        printx  "rbp",  rbp
+        printx  "rsp",  rsp
+
+        printnl
+
+    ;leave
+    mov rsp, rbp
+    pop rbp
+    ret
+
+_show_args:
 
         lea   rsi, [rbp ]
-        printx  [rsi]
+        printx  "rsi", [rsi]
         printnl
 
         lea   rsi, [rbp + 8 ]
-        printx  [rsi]
+        printx  "rsi", [rsi]
         printnl
 
         lea   rsi, [rbp + 16 ]
-        printx  [rsi]
+        printx  "rsi", [rsi]
         printnl
 
         lea   rsi, [rbp + 24 ]
-        printx  [rsi]
+        printx  "rsi", [rsi]
         printnl
 
-        ;pop     rsi
-        ;printx  rsi
-        ;printnl
-        ;
-        ;pop     rdi
-        ;printx  rdi
-        ;printnl
-        ;
-        ;pop     rbx
-        ;printx  rbx
-        ;printnl
-
-        ;push    rdi
-        ;push    rbx
-        ;push    rsi
-
-        printnl
-
-        printx  rax
-        printnl
-        printx  rbx
-        printnl
-        printx  rcx
-        printnl
-        printx  rdx
-        printnl
-        printx  rsi
-        printnl
-        printx  rdi
-        printnl
-        ;printx  r8
-        ;printnl
-        ;printx  r9
-        ;printnl
-        ;printx  r10
-        ;printnl
-        ;printx  r11
-        ;printnl
-        ;printx  r12
-        ;printnl
-        ;printx  r13
-        ;printnl
-        ;printx  r14
-        ;printnl
-        ;printx  r15
-        ;printnl
-        printx  rbp
-        printnl
-        printx  rsp
-        printnl
-    ;pop rbp
-    ret
-
+        ret
 
 section .data
 
@@ -297,7 +340,9 @@ message2    db        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 10
 msg_len2    dq        $-message2
 nl          db        10
 nl_len      dq        $-nl
-spx         db        32
-spx_len      dq        $-spx
+spx         db        ' '
+spx_len     dq        $-spx
+dot         db        '.'
+dot_len     dq        $-dot
 
 ; EOF

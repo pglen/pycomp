@@ -1,9 +1,9 @@
 
 all:
-	python codegen.py > aa.asm
-	nasm  -felf64 -gstabs aa.asm
+	#python codegen.py > aa.asm
+	nasm  -felf64 -gstabs main.inc
 	nasm  -felf64 -gstabs crtasm.inc
-	ld  aa.o crtasm.o -o a.out
+	ld  main.o crtasm.o -o a.out
 	./a.out 11 22
 
 clean:

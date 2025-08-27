@@ -1,5 +1,7 @@
 ;; Macros and exports
 
+bits 64
+
 ; Use this macro only as a quick shortcut
 
 %macro pushall 0
@@ -22,10 +24,21 @@
             pop    rax
 %endmacro
 
-%macro printx 1
+%macro showregs 0
+    pushall
+    call    _print_regs
+    call    _printnl
+    popall
+%endmacro
+
+%macro printx 2
     pushall
     mov     rax,%1
-    call   _print_num
+    call    _print_lab
+    call    _printsp
+    mov     rax,%2
+    call    _print_num
+    call    _printsp
     popall
 %endmacro
 
@@ -35,7 +48,10 @@
     popall
 %endmacro
 
-extern _print, _print_char, _print_mem, _printsp, _print_num, _printnl
+extern  _print, _print_char, _print_mem, _print_regs
+extern  _printsp, _print_num
+extern  _printnl, _printsp, _printdot
 extern  _exit, _version
+extern _show_regs
 
 ; EOF

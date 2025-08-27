@@ -9,11 +9,24 @@ bits 64
 
 section .text
 
+; main:           %rdi
+;  71         argc:           %rsi
+;  72         argv:           %rdx
+;  73         init:           %rcx
+;  74         fini:           %r8
+;  75         rtld_fini:      %r9
+;  76         stack_end:      stack.  */
+
 main:
+        push    rbp
+        mov     rbp,rsp
+
+        ;call    _print_regs
+        showregs
+
         mov     rcx, [dumpx_len]
         mov     rsi, dumpx
         call    _print_mem
-
         call    _printnl
 
         push    rdx                     ; callee-save registers
@@ -22,9 +35,9 @@ main:
 
         mov     rsi, 1                  ; current value
         mov     rcx, 3                  ; counter
-  L1:
-        push    rsi                     ; caller-save register
-        push    rdi                     ; caller-save register
+  .L1:
+        push    rsi
+        push    rdi
 
         mov       rdx, rdi              ; third rdx
         mov       rsi, message          ; address of string to output
@@ -37,7 +50,7 @@ main:
         pop     rdi
         pop     rsi
 
-        loop    L1
+        loop    .L1
 
         call    _printnl
 
@@ -48,8 +61,7 @@ main:
 
         ;mov     ax, 'a'
         ;call    _print_char
-
-        call    _printnl
+        ;call    _printnl
 
         pop     rdi
         pop     rsi
@@ -57,7 +69,7 @@ main:
 
         xor     eax, eax
 
-        ;mov       rsp, rbp
+        mov       rsp, rbp
         pop       rbp
 
         ret
@@ -70,11 +82,4 @@ dumpx_len     dq    $ - dumpx
 message:    db        "Hello, World", 10, 0      ; note the newline at the end
 msg_len     dq        $ - message
 
-
-
-   
-END_CODE:
-    ;End of program
-
-
-
+; EOF
