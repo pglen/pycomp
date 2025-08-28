@@ -26,9 +26,8 @@ def emit(*argx):
     ''' Accumulate output '''
 
     global cummulate;
-
     for strx in argx:
-        cummulate += " '" + strx + "' "
+        cummulate += strx
     cummulate += "\n"
 
 def show_emit():

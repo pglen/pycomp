@@ -4,15 +4,12 @@
 %include "crt.inc"
 
 global  _main
-global  main
 
 bits 64
 
 section .text
 
-main:
-
-    ret
+extern  main
 
 ;; -----------------------------------------------------------------------
 ; Set up arguments and enviroument like the runtime CRT
@@ -78,6 +75,8 @@ _main:
         pop     rcx
 
      .done_scan:
+
+        call     main
 
         ;mov     rsp, rbp
         ;pop     rbp

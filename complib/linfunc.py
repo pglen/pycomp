@@ -19,11 +19,81 @@ def funcpvg(xpvg):
 
 # Functions to call on stamp match
 
-astack = stack.pStack()
+astack = stack.pStack()             # Arithmetic
+dstack = stack.pStack()             # Declaration
+
+def func_decl_start(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_decl_start", "tprog =", tprog)
+    dstack.empty()
+    dstack.push(tprog)
+    #emit(self2.arrx[tprog].mstr)
+
+def func_decl_ident(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_decl_ident", "tprog =", tprog)
+    dstack.push(tprog)
+    #emit(self2.arrx[tprog].mstr)
+
+def func_decl_val(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_decl_val", "tprog =", tprog)
+    dstack.push(tprog)
+    #emit(self2.arrx[tprog].mstr)
+
+def func_decl_comma(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_decl_comma", "tprog =", tprog)
+    print("\ndstack one:", end = " ")
+    for aa in dstack:
+        print(self2.arrx[aa], end = " ")
+    print()
+    dstack.empty()
+    #dstack.push(tprog)
+    #emit(self2.arrx[tprog].mstr)
+
+def func_decl_stop(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_decl_stop", "tprog =", tprog)
+    #print("\ndstack:", end = " ")
+    #for aa in dstack:
+    #    print(self2.arrx[aa], end = " ")
+    #print()
+    strx =  "; " + self2.arrx[dstack.get(0)].mstr + " : "
+    strx += self2.arrx[dstack.get(1)].mstr + " = "
+    strx += self2.arrx[dstack.get(2)].mstr
+    emit(strx)
+
+    datatype = pctona(self2.arrx[dstack.get(0)].mstr)
+
+    strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
+    strx +=  self2.arrx[dstack.get(2)].mstr
+    emit(strx)
+
+def pctona(ddd):
+
+    #print("pctona:", ddd)
+
+    retx = "db"
+    if ddd == "u8":
+        retx = "db"
+    elif ddd == "u16":
+        retx = "dw"
+    elif ddd == "u32":
+        retx = "dd"
+    return retx
+
+def func_space(self2, tprog):
+    if pvg.opt_debug > 5:
+        print("func_space", "tprog =", tprog)
+
+def func_nl(self2, tprog):
+    if pvg.opt_debug > 5:
+        print("func_nl", "tprog =", tprog)
 
 def func_dummy(self2, tprog):
     if pvg.opt_debug > 5:
-        print("match dummy", "tprog =", tprog, "iprog=")
+        print("match dummy", "tprog =", tprog)
 
 def func_comment(self2, tprog):
     if pvg.opt_debug > 5:
@@ -61,7 +131,7 @@ def func_func(self2, tprog):
     #self2._feed(tprog + 1, tprog - 1)
 
 def func_arithstart(self2, tprog):
-    if pvg.opt_debug > 5:
+    if pvg.opt_debug > 1:
         print("func_arithstart: ", "tprog =", tprog, self2.arrx[tprog])
     astack.push(tprog)
 

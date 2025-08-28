@@ -16,6 +16,9 @@ class pStack():
         for aa in self._store:
             yield aa
 
+    def empty(self):
+        self._store = []
+
     def push(self, item):
         try:
             self._store.append(item)
@@ -69,7 +72,7 @@ class pStack():
         item = self._store[xlen - 1]
         return item
 
-    def stacklen(self):
+    def getlen(self):
         return len(self._store)
 
     def dump(self):
@@ -86,6 +89,16 @@ class pStack():
         while cnt >= 0:
             print (self._store[cnt]);  cnt -= 1
 
+    def __getitem__(self, idx):
+        try:
+            item = self._store[idx]
+        except:
+            if self.raisex: raise
+            else: item = None
+        return  item
+
+    #def __setitem__(self, idx, item):
+    #    self._store[idx] = item
     #def __repr__(self):
     #    strx = self.dump()
     #    return strx
@@ -97,25 +110,26 @@ class pStack():
     def __len__(self):
         return len(self._store)
 
-
 def test_main():
     print("Tests:")
     ss = pStack()
-    assert ss
+    assert ss != None
     vvv = "abc"
     ss.push(vvv)
+    assert ss.getlen() == 1
     tt = ss.pop()
     assert tt == vvv
     ttt = ss.pop()
     assert ttt == None
+    assert ss.getlen() == 0
 
 def test_pop():
     ss = pStack()
-    assert ss
+    assert ss != None
     ss.raisex = True
     vvv = "abc"
     ss.push(vvv)
-    tt = ss.pop2()
+    tt = ss.peek()
     assert tt == vvv
     tt2 = ss.pop()
     assert tt2 == vvv
@@ -127,6 +141,14 @@ def test_pop():
     except:
         exc = 1
     assert exc == 1
+
+def test_empty():
+    ss = pStack()
+    vvv = "abc"
+    ss.push(vvv)
+    assert len(ss) == 1
+    ss.empty()
+    assert len(ss) == 0
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
@@ -140,10 +162,18 @@ if __name__ == "__main__":
     print("first:", st.first())
     print("last:", st.last())
     print("get:", st.get(1))
-    print("pop2:", st.pop2())
-    print("pop2:", st.pop2())
+    print("iter:", st[1])
+    print("peek:", st.peek())
     print("pop:", st.pop())
     print("pop:", st.pop())
+
     print("pop:", st.pop())
+    print("iter:", st[0])
+
+    st.push("hello2") ;  st.push("world2")
+    st.show()
+    st.empty()
+    st.show()
+
 
 # EOF

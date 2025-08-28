@@ -10,6 +10,7 @@ import  complib.stack as stack
 import  complib.lexer as lexer
 import  complib.lexdef as lexdef
 import  complib.lindef as lindef
+import  codegen.codegen as codegen
 #import  complib.ptree as ptree
 
 from complib.ptree import *
@@ -46,11 +47,14 @@ def parsefile(strx):
     ''' Parse file '''
 
     global buf, lpg
+    start_time =  time.process_time()
 
     if lpg.opt_verbose.cnt > 1:
         print ("Processing file:", strx)
 
-    start_time =  time.process_time()
+    #if lpg.opt_outfile == "":
+    strx2 = os.path.basename(strx)
+    lpg.opt_outfile = os.path.splitext(strx2)[0] + ".asm"
 
     try:
         fh = open(strx)
@@ -125,7 +129,31 @@ def parsefile(strx):
     if lpg.opt_emit:
         show_emit()
 
-    #if lpg.opt_verbose:
+    xcode = '''
+
+    main:
+        ;mov     rax, 0
+        ;mov     rax, [ rax ]
+
+        mov     rdi, format
+        call    printf
+
+        ret
+
+    '''
+
+    xdata = '''
+    format:    db      "Hello world", 10, 0
+'''
+
+    codegen.dep_assemble()
+
+    if not lpg.opt_comp_only:
+        codegen.output(lpg.opt_outfile, xcode, xdata)
+        codegen.assemble(lpg.opt_outfile , lpg)
+        codegen.link(lpg.opt_outfile, lpg)
+
+    #if lpg.opt_verbose.cnt:
     #    print(treeroot)
     #print()
 

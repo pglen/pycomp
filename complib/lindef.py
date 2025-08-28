@@ -53,75 +53,85 @@ ST = xenum("STATEANY", "STATEINI", "STPOP", "STPOP2",
 #    -----       ---------   ----------  --------   -----
 
 stamps =  (  \
-    Stamp(ST.val("STATEINI"), "func",   ST.val("STATEFUNC"), False,  func_func),
-    Stamp(ST.val("STATEFUNC"), "(",     ST.val("SFUNARG"),   False, func_dummy),
-    Stamp(ST.val("SFUNARG"), "decl",    ST.val("SFUNARG2"), True,  func_dummy),
+    Stamp(ST.val("STATEINI"), "func",   ST.val("STATEFUNC"), False, func_func),
+    Stamp(ST.val("STATEFUNC"), "(",     ST.val("SFUNARG"),   False, None),
+    Stamp(ST.val("SFUNARG"), "decl",    ST.val("SFUNARG2"),  True,  None),
+
+    Stamp(ST.val("SFUNARG2"), ":",      ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG3"), "ident",  ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG3"), "=",      ST.val("SFUNARG4"), False,  None),
+    Stamp(ST.val("SFUNARG4"), "ident",  ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),    False,  None),
+    Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),    False,  None),
+    Stamp(ST.val("SFUNARG3"), "comm2",  ST.val("STPOP"),    False,  None),
 
     # Declarations
-    Stamp(ST.val("STATEINI"), "decl",   ST.val("SFUNARG2"), True,   None),
-    Stamp(ST.val("STATEINI"), "float",  ST.val("SFUNARG2"), True,   func_dummy),
-    Stamp(ST.val("STATEINI"), "dbl",    ST.val("SFUNARG2"), True,   func_dummy),
+    Stamp(ST.val("STATEINI"), "decl",   ST.val("DECL2"),    True,   func_decl_start),
+    Stamp(ST.val("STATEINI"), "float",  ST.val("DECL2"),    True,   None),
+    Stamp(ST.val("STATEINI"), "dbl",    ST.val("DECL2"),    True,   None),
 
-    Stamp(ST.val("SFUNARG2"), ":",      ST.val("SFUNARG3"), False,  func_dummy),
-    Stamp(ST.val("SFUNARG3"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
-    Stamp(ST.val("SFUNARG3"), "=",      ST.val("SFUNARG4"), False,  func_dummy),
-    Stamp(ST.val("SFUNARG4"), "ident",  ST.val("SFUNARG3"), False,  func_dummy),
-    Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  func_dummy),
-    Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),    False,  func_dummy),
-    Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),    False,  func_dummy),
-    Stamp(ST.val("SFUNARG3"), "comm2",  ST.val("STPOP"),    False,  func_comment),
+    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),    False,  None),
+    Stamp(ST.val("DECL3"), "ident",     ST.val("DECL4"),    False,  func_decl_ident),
+    Stamp(ST.val("DECL4"), "=",         ST.val("DECL5"),    False,  None),
+    Stamp(ST.val("DECL5"), "ident",     ST.val("DECL6"),    False,  func_decl_val),
+    Stamp(ST.val("DECL5"), "num",       ST.val("DECL6"),    False,  func_decl_val),
+    Stamp(ST.val("DECL6"), ",",         ST.val("DECL3"),    False,  func_decl_comma),
+    Stamp(ST.val("DECL6"), ";",         ST.val("STPOP"),    False,  func_decl_stop),
+    Stamp(ST.val("DECL6"), "nl",        ST.val("STPOP"),    False,  func_decl_stop),
+    Stamp(ST.val("DECL6"), "comm2",     ST.val("STPOP"),    False,  func_comment),
 
-    Stamp(ST.val("SFUNARG"), ")",       ST.val("STIGN"), False,  func_dummy),
+    Stamp(ST.val("SFUNARG"), ")",       ST.val("STIGN"),    False,  func_dummy),
     Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
-    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STIGN"), False,  func_dummy),
+    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STIGN"),    False,  func_dummy),
 
     # Assignments / Start of arithmetic
     Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),  True,   func_arithstart),
     Stamp(ST.val("STATEINI"), "ident",  ST.val("SFARITH"),  True,   func_arithstart),
 
-    Stamp(ST.val("SFARITH"),  "=",      ST.val("SFASSN"),   False,   func_arithop),
-    Stamp(ST.val("SFASSN"),   "ident",  ST.val("STPOP"),    False,   None),
-    Stamp(ST.val("SFASSN"),   "num",    ST.val("STPOP"),    False,   None),
+    Stamp(ST.val("SFARITH"),  "=",      ST.val("SFASSN"),   False,  func_arithop),
+    Stamp(ST.val("SFASSN"),   "ident",  ST.val("STPOP"),    False,  None),
+    Stamp(ST.val("SFASSN"),   "num",    ST.val("STPOP"),    False,  None),
 
     # Arithmetics (+ - * / sqr)
-    #Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False,  func_arithop),
-    #Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False,  None),
-    #Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False,  None),
+    #Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False, func_arithop),
+    #Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False, None),
+    #Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False, None),
 
-    Stamp(ST.val("SFARITH"), "=>",      ST.val("SFPUT"),    False,   func_arithop),
+    Stamp(ST.val("SFARITH"), "=>",      ST.val("SFPUT"),    False,  func_arithop),
     Stamp(ST.val("SFPUT"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
     Stamp(ST.val("SFPUT"), "num",       ST.val("SFARITH"), False,   func_mulexpr),
 
-    Stamp(ST.val("SFARITH"), "*",       ST.val("SFMUL"),    False,   func_arithop),
+    Stamp(ST.val("SFARITH"), "*",       ST.val("SFMUL"),    False,  func_arithop),
     Stamp(ST.val("SFMUL"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
     Stamp(ST.val("SFMUL"), "num",       ST.val("SFARITH"), False,   func_mulexpr),
 
-    Stamp(ST.val("SFARITH"), "/",       ST.val("SFDIV"),    False,   func_arithop),
+    Stamp(ST.val("SFARITH"), "/",       ST.val("SFDIV"),    False,  func_arithop),
     Stamp(ST.val("SFDIV"), "ident",     ST.val("SFARITH"), False,   None),
     Stamp(ST.val("SFDIV"), "num",       ST.val("SFARITH"), False,   None),
 
     Stamp(ST.val("SFARITH"), "+",       ST.val("SFADD"),    False,  func_arithop),
-    Stamp(ST.val("SFADD"),   "ident",   ST.val("SFARITH"),  False,   func_addexpr),
-    Stamp(ST.val("SFADD"),   "num",     ST.val("SFARITH"),  False,   func_addexpr),
+    Stamp(ST.val("SFADD"),   "ident",   ST.val("SFARITH"),  False,  func_addexpr),
+    Stamp(ST.val("SFADD"),   "num",     ST.val("SFARITH"),  False,  func_addexpr),
 
-    Stamp(ST.val("SFARITH"), "-",       ST.val("SFSUB"),    False,   func_arithop),
-    Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,   None),
-    Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,   None),
+    Stamp(ST.val("SFARITH"), "-",       ST.val("SFSUB"),    False,  func_arithop),
+    Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,  None),
+    Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,  None),
 
-    Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,   func_endarith),
-    Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,   func_endarith),
+    Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,  func_endarith),
+    Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,  func_endarith),
 
     # This will ignore comments
-    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"), False,   func_comment),
-    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STIGN"), False,   func_dcomment), # //
-    Stamp(ST.val("STATEANY"), "ecomm3",  ST.val("STIGN"), False,   func_comment),  # /* */
-    Stamp(ST.val("STATEANY"), "ecomm3d", ST.val("STIGN"), False,   func_dcomment2),
-    Stamp(ST.val("STATEANY"), "comm4",   ST.val("STIGN"), False,   func_comment),  # ##
-    Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"), False,   func_dcomment3),
+    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"),   False,  func_comment),
+    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STIGN"),   False,  func_dcomment), # //
+    Stamp(ST.val("STATEANY"), "ecomm3",  ST.val("STIGN"),   False,  func_comment),  # /* */
+    Stamp(ST.val("STATEANY"), "ecomm3d", ST.val("STIGN"),   False,  func_dcomment2),
+    Stamp(ST.val("STATEANY"), "comm4",   ST.val("STIGN"),   False,  func_comment),  # ##
+    Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"),   False,  func_dcomment3),
 
     # This will ignore white spaces
-    Stamp(ST.val("STATEANY"), "sp",      ST.val("STIGN"), False,   func_dummy),
-    Stamp(ST.val("STATEANY"), "nl",      ST.val("STIGN"), False,   func_dummy),
+    Stamp(ST.val("STATEANY"), "sp",      ST.val("STIGN"),   False,  func_space),
+    Stamp(ST.val("STATEANY"), "nl",      ST.val("STIGN"),   False,  func_nl),
     )
 
 if __name__ == "__main__":

@@ -1,7 +1,1 @@
-// Declarations
-
-u32 : aaa=0 bbb=0 ccc=0
-u16 : ddd=0 eee=0 fffv
-u8  : ggg=0 hhh=0
-
-# EOF
+u32 : aaa=0, bbb=0, ccc=0,

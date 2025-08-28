@@ -275,7 +275,7 @@ try:
     (INI_STATE, "sp",           r" "                ),
     (INI_STATE, "tab",          r"\t"               ),
     (INI_STATE, "nl",           r"\n"               ),
-    (INI_STATE, "comma",        r","                ),
+    (INI_STATE, ",",            r","                ),
 
     # Callback here
     (INI_STATE, "any",          r"."                ),

@@ -65,19 +65,18 @@ class LinParse():
         else:
             if not match:
                 posx = self.arrx[startx]
-                print("Parse \033[31;1merror:\033[0m", "line:", posx.linenum + 1,
-                                "col:", posx.start - posx.linestart )
                 pos = 0
                 # Till end of this line
                 for aa in range(posx.linestart, len(self.buf)):
                     if self.buf[aa] == "\n":
                         pos = aa
                         break
-
                 #print("aa", self.buf[posx.linestart:pos])
                 print(self.buf[posx.linestart:pos])
                 print("-" *  (posx.end - posx.linestart - 1), end = "" )
                 print("^")
+                print("Parse \033[31;1merror:\033[0m", "line:", posx.linenum + 1,
+                                "col:", posx.start - posx.linestart )
                 #print("-" *  (pos - posx.end))
 
         #print("end scan")
@@ -140,7 +139,7 @@ class LinParse():
         if currstamp.token == currtoken.stamp.xstr:
             match = True
             if self.pvg.opt_debug > 6:
-                if currstamp.nstate != ST.val("STATEIGN"):
+                if currstamp.nstate != ST.val("STIGN"):
                     print(" sState;", ST.get(self.state))
 
             if self.pvg.opt_debug > 2:
@@ -163,7 +162,7 @@ class LinParse():
 
             # Switch state as instructed
             if currstamp.nstate != ST.val("STATEANY") and \
-                    currstamp.nstate != ST.val("STATEIGN"):
+                    currstamp.nstate != ST.val("STIGN"):
                 if currstamp.nstate == ST.val("STPOP"):
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
@@ -179,15 +178,14 @@ class LinParse():
                     self.state = currstamp.nstate
 
             if self.pvg.opt_debug > 4:
-                if currstamp.nstate != ST.val("STATEIGN"):
+                if currstamp.nstate != ST.val("STIGN"):
                     print(" eState;", ST.get(self.state))
 
             global lastnode
-            if currstamp.nstate != ST.val("STATEIGN"):
+            if currstamp.nstate != ST.val("STIGN"):
                 lastnode = lastnode.add(TreeNode(currtoken.stamp.xstr))
-
-                if self.pvg.opt_emit:
-                    emit("match:", currtoken.stamp.xstr)
+                #if self.pvg.opt_emit:
+                #    emit("match:", currtoken.stamp.xstr)
         else:
             #print("misMatch")
             pass
