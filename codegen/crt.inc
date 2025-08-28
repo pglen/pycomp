@@ -33,9 +33,11 @@ bits 64
 
 %macro printx 2
     pushall
+    push    %2
     mov     rax,%1
     call    _print_lab
     call    _printsp
+    pop     %2
     mov     rax,%2
     call    _print_num
     call    _printsp
@@ -48,10 +50,19 @@ bits 64
     popall
 %endmacro
 
+%macro showbp 2
+        mov rax, %1
+        call _print_lab
+        call _printsp
+        lea   rsi, %2
+        mov rax, [rsi ]
+        call _print_num
+        call _printsp
+%endmacro
+
 extern  _print, _print_char, _print_mem, _print_regs
-extern  _printsp, _print_num
+extern  _printsp, _print_num, _print_args, _print_zstr, _print_lab
 extern  _printnl, _printsp, _printdot
-extern  _exit, _version
-extern _show_regs
+extern  _exit, _version, _sbrk, _getkey
 
 ; EOF

@@ -1,30 +1,29 @@
 ; Standard library CRT substitution; only including neccessary functions
 ; Named as an .inc so it is not cleaned with the generated assembly
 
-global  _exit, _start
-global _print, _print_char, _print_num, _printnl
-global  _print_dot, _print_regs
-global _version
+global _print, _print_char, _print_num, _print_lab
+global _print_dot, _print_regs, _print_args, _print_zstr
+global _printnl, _printsp, _printdot, _getkey
+global _exit, _start, _version, _sbrk
 
 %include "crt.inc"
 
-extern main
+extern _main
 
 section .text
 
-_start:       ; Main entry point
-        ;mov rax, 0                         ; test core dump
-        ;mov word [rax], 0
-        ;call _version                       ; mostly for testing
+_start:         ; Main entry point
+        mov     rbp,rsp
 
+        ;call    _print_args
+        ;call    _printnl
         ;lea     rsi, [rsp]
         ;mov     rcx, 8
         ;call    _print_mem
         ;call    _printnl
         ;call    _print_regs
 
-        call    main
-
+        call    _main
         mov rdi, rax                        ; transfer exit code
         call _exit
 
@@ -62,7 +61,35 @@ _print_lab:       ; String in rax
         mov     rax,0
         ret
 
-_print_mem:                                 ; String in rsi, len in rcx
+_print_zstr:    ; String in rsi
+
+        push      rbp
+        mov       rbp, rsp
+        sub       rsp, 8
+        mov       qword [rbp - 8] , 0
+
+    .again:
+        mov     al, byte [rsi]
+        cmp     al, 0
+        je      .endd
+        push    rsi
+        push    rbx
+        call    _print_char
+        pop     rbx
+        pop     rsi
+        inc     rsi
+        inc     qword [rbp - 8]
+        inc     rbx
+        jmp     .again
+
+    .endd:
+
+        mov       rax, [rbp - 8]
+        mov       rsp, rbp
+        pop       rbp
+        ret
+
+_print_mem:             ; String in rsi, len in rcx
 
         xor    rax,rax
     .L4:
@@ -276,7 +303,6 @@ _exit:
 
 _print_regs:        ; print processor registers
 
-        ;enter 8, 0
         push        rbp
         mov         rbp, rsp
         sub         rsp, 8
@@ -307,42 +333,73 @@ _print_regs:        ; print processor registers
 
         printnl
 
-    ;leave
     mov rsp, rbp
     pop rbp
     ret
 
-_show_args:
+_print_args:
 
-        lea   rsi, [rbp ]
-        printx  "rsi", [rsi]
+        showbp "ar0", [rbp ]
+        showbp "ar1", [rbp + 1*8]
         printnl
-
-        lea   rsi, [rbp + 8 ]
-        printx  "rsi", [rsi]
+        showbp "ar2", [rbp + 2*8]
+        showbp "ar3", [rbp + 3*8]
         printnl
-
-        lea   rsi, [rbp + 16 ]
-        printx  "rsi", [rsi]
+        showbp "ar4", [rbp + 4*8]
+        showbp "ar5", [rbp + 5*8]
         printnl
+        xor     rax, rax
+        ret
 
-        lea   rsi, [rbp + 24 ]
-        printx  "rsi", [rsi]
-        printnl
+_sbrk:  ; get memory boundary add amount in rdi
+        mov     rax,  12
+        syscall
+        ret
 
+buff    db  0, 0
+
+_getkey: ; wait for a key
+        mov     rax,  0
+        mov     rdi, 1
+        mov     rsi, buff
+        mov     dx, 1
+        syscall
+        push rax
+        mov ecx, 1
+        mov rsi, buff
+        call _print_mem
+        pop rax
+        ret
+
+_addmem:   ; extend memory  amount in rax
+
+        push    rax
+        mov     rdi,  0
+        call    _sbrk
+        ;printx "srax", rax
+        mov     rdi,  rax
+        pop     rax
+        add     rdi, rax
+        call    _sbrk
+        ;printx "Srax", rax
+        mov     rdi,  0
+        call    _sbrk
+        ;printx "Srax", rax
         ret
 
 section .data
 
 message     db        "CRT Version 1.0", 10  ; Note the newline at the end
 msg_len     dq        $-message
-message2    db        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 10
-msg_len2    dq        $-message2
 nl          db        10
 nl_len      dq        $-nl
 spx         db        ' '
 spx_len     dq        $-spx
 dot         db        '.'
 dot_len     dq        $-dot
+
+section .bss
+
+section .txt
 
 ; EOF
