@@ -26,7 +26,7 @@ class StI():
 
     def __str__(self):
         return "[ " + str(self.num) + " " + pp(str(self.xstr)) + " " \
-                + pp(str(self.reg)) + " " + str(self.ival) + " ]"
+                + pp(str(self.reg)) + " ]"
 
 # Quick into: The lexer creates a stack of tokens. The parser scans
 # the tokens, and walks the state machine for matches. If match
@@ -188,8 +188,9 @@ try:
     (INI_STATE, "enum",         r"enum"   + IDEN3   ),
     (INI_STATE, "enum",         r"enum"             ),
 
-    (INI_STATE, "dbl",          r"double"           ),
     (INI_STATE, "float",        r"float"            ),
+    (INI_STATE, "dbl",          r"double"           ),
+    (INI_STATE, "exten",        r"extended"         ),
 
     (INI_STATE, "decl" ,        r"[sS]8"            ),
     (INI_STATE, "decl",         r"[sS]16"           ),
@@ -213,6 +214,7 @@ try:
     (INI_STATE, "comm2d",       r"\/\/\/.*\n"       ),
     (INI_STATE, "comm2",        r"\/\/.*\n"         ),
 
+    (INI_STATE, "num2",         r"[0-9]*\.[0-9]*([Ee][0-9]+)?"),
     (INI_STATE, "num",          r"[0-9]+"           ),
 
     (INI_STATE, "bs",           "\b"                ),

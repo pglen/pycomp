@@ -1,0 +1,3 @@
+float :  ggg = .01
+double : hhh = 2.2333333e1033
+extended : xxx = 4444444444.5555E66

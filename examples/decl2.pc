@@ -1,6 +1,4 @@
 // Declarations
-//u32 ddd = 20;
-u32 : aaa = 100  ;  /* + bbb + 120; */
-u32 : ddd = 11      // 400
-u16 : bbb = 200     // + 300;
+u32 : aaa = 2; /* + bbb + 120; */
+u32 : bbb = 3 //; u32 : bbb = 3
 u8  : ccc = aaa

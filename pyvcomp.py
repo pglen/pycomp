@@ -96,10 +96,12 @@ def parsefile(strx):
 
     if lpg.opt_xlexer_show:  # To show what the lexer did
         for aa in res:
-            if lpg.opt_verbose.cnt:
+            if lpg.opt_verbose.cnt > 1:
                 print(aa.dump())
-            else:
+            elif lpg.opt_verbose.cnt > 0:
                 print(aa, end = " ")
+            else:
+                print("[" + aa.stamp.xstr, pp(aa.mstr, 1),  end = "] ")
         print()
 
     if lpg.opt_just_lex:  # Only do lexer

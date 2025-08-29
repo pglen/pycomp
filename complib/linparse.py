@@ -149,7 +149,7 @@ class LinParse():
                             #"stamp:", pp(currstamp.token),
                             "tok:", #padx(pp(currtoken.stamp.xstr), 7),
                             #" =",
-                            padx(pp(currtoken.mstr), 5),
+                            padx(pp(currtoken.mstr, 6), 5),
                             end = " ")
                     global row
                     rrr =  6

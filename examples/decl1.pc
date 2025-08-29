@@ -1,1 +1,2 @@
-u32 : aaa=0, bbb=0, ccc=0,
+u32 : aaa=1, bbb=2, ccc=3 // commm
+u16 : ddd=4

@@ -22,52 +22,85 @@ def funcpvg(xpvg):
 astack = stack.pStack()             # Arithmetic
 dstack = stack.pStack()             # Declaration
 
+def func_assn(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("assn()", "tprog =", tprog)
+    astack.push(tprog)
+
+def func_assn_stop(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("assn_stop()", "tprog =", tprog)
+    astack.push(tprog)
+    strx =   "lea  rsi, " + self2.arrx[astack.get(0)].mstr + "\n"
+    strx +=  "mov rax, [rsi]" #self2.arrx[astack.get(1)].mstr
+
+    strx +=   "; " + self2.arrx[astack.get(0)].mstr + " = "
+    strx +=  self2.arrx[astack.get(1)].mstr
+
+    strx +=  "\n"
+
+    emit(strx)
+    astack.empty()
+
 def func_decl_start(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_decl_start", "tprog =", tprog)
+        print("decl_start()", "tprog =", tprog)
     dstack.empty()
     dstack.push(tprog)
     #emit(self2.arrx[tprog].mstr)
 
 def func_decl_ident(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_decl_ident", "tprog =", tprog)
+        print("decl_ident()", "tprog =", tprog)
     dstack.push(tprog)
     #emit(self2.arrx[tprog].mstr)
 
 def func_decl_val(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_decl_val", "tprog =", tprog)
+        print("decl_val()", "tprog =", tprog)
     dstack.push(tprog)
     #emit(self2.arrx[tprog].mstr)
 
 def func_decl_comma(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_decl_comma", "tprog =", tprog)
+        print("decl_comma()", "tprog =", tprog)
     print("\ndstack one:", end = " ")
     for aa in dstack:
         print(self2.arrx[aa], end = " ")
     print()
-    dstack.empty()
-    #dstack.push(tprog)
-    #emit(self2.arrx[tprog].mstr)
-
-def func_decl_stop(self2, tprog):
-    if pvg.opt_debug > 1:
-        print("func_decl_stop", "tprog =", tprog)
-    #print("\ndstack:", end = " ")
-    #for aa in dstack:
-    #    print(self2.arrx[aa], end = " ")
-    #print()
-    strx =  "; " + self2.arrx[dstack.get(0)].mstr + " : "
-    strx += self2.arrx[dstack.get(1)].mstr + " = "
-    strx += self2.arrx[dstack.get(2)].mstr
-    emit(strx)
 
     datatype = pctona(self2.arrx[dstack.get(0)].mstr)
 
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
     strx +=  self2.arrx[dstack.get(2)].mstr
+    emit(strx)
+
+    strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
+    strx += self2.arrx[dstack.get(1)].mstr + " = "
+    strx += self2.arrx[dstack.get(2)].mstr + " \n"
+    emit(strx)
+
+    # Back off of last variable
+    dstack.pop(); dstack.pop()
+
+
+def func_decl_stop(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("decl_stop()", "tprog =", tprog)
+    #print("\ndstack:", end = " ")
+    #for aa in dstack:
+    #    print(self2.arrx[aa], end = " ")
+    #print()
+
+    datatype = pctona(self2.arrx[dstack.get(0)].mstr)
+
+    strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
+    strx +=  self2.arrx[dstack.get(2)].mstr
+    emit(strx)
+
+    strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
+    strx += self2.arrx[dstack.get(1)].mstr + " = "
+    strx += self2.arrx[dstack.get(2)].mstr  + " \n"
     emit(strx)
 
 def pctona(ddd):
@@ -81,39 +114,45 @@ def pctona(ddd):
         retx = "dw"
     elif ddd == "u32":
         retx = "dd"
+    elif ddd == "float":
+        retx = "dd"
+    elif ddd == "double":
+        retx = "dq"
+    elif ddd == "extended":
+        retx = "dt"
     return retx
 
 def func_space(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_space", "tprog =", tprog)
+        print("space()", "tprog =", tprog)
 
 def func_nl(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_nl", "tprog =", tprog)
+        print("nl()", "tprog =", tprog)
 
 def func_dummy(self2, tprog):
     if pvg.opt_debug > 5:
-        print("match dummy", "tprog =", tprog)
+        print("match dummy()", "tprog =", tprog)
 
 def func_comment(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        print("comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
 
 def func_dcomment(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_dcomment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        print("dcomment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
     if pvg.opt_rdocstr:
         print(self2.arrx[tprog].mstr[3:], end = "")
 
 def func_dcomment2(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_dcomment2()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        print("dcomment2()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
     if pvg.opt_rdocstr:
         print(self2.arrx[tprog].mstr[3:-2], end = "")
 
 def func_dcomment3(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_dcomment3()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        print("dcomment3()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
     if pvg.opt_rdocstr:
         print(self2.arrx[tprog].mstr[2:], end = "")
 
@@ -132,18 +171,18 @@ def func_func(self2, tprog):
 
 def func_arithstart(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_arithstart: ", "tprog =", tprog, self2.arrx[tprog])
+        print("arithstart()", "tprog =", tprog, self2.arrx[tprog])
     astack.push(tprog)
 
 def func_arithop(self2, tprog):
     if pvg.opt_debug > 5:
-        print("func_arithop: ", "tprog =", tprog, self2.arrx[tprog])
+        print("arithop: ()", "tprog =", tprog, self2.arrx[tprog])
     astack.push(tprog)
 
 def func_addexpr(self2, tprog):
     if pvg.opt_debug > 5:
         tprog2 = astack.peek()
-        print("func_addexpr: ",
+        print("addexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
     astack.push(tprog)
@@ -151,7 +190,7 @@ def func_addexpr(self2, tprog):
 def func_mulexpr(self2, tprog):
     if pvg.opt_debug > 5:
         tprog2 = astack.peek()
-        print("func_mulexpr: ",
+        print("mulexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
 
@@ -210,7 +249,7 @@ def reduce(self2, filter):
 
 def func_endarith(self2, tprog):
     if pvg.opt_debug > 2:
-        print("func_endarith", "tprog =", tprog, "iprog=")
+        print("endarith()", "tprog =", tprog, "iprog=")
     # Execute operator precedence
     reduce(self2, "sqr")
     reduce(self2, "*")
@@ -325,7 +364,7 @@ def _func_arith(self2, opstr, tprog):
 
 def func_mul(self2, tprog):
     if pvg.opt_debug > 5:
-        print("match func  mul tprog =", tprog, "iprog=")
+        print("mul() tprog =", tprog, "iprog=")
     if pvg.opt_debug > 3:
         prarr(self2.arrx[tprog:tprog], "mul pre: ")
     _func_arith(self2, "*", tprog)
@@ -334,7 +373,7 @@ def func_mul(self2, tprog):
 
 def func_add(self2, tprog):
     if pvg.opt_debug > 6:
-        print("match func add tprog =", tprog, "iprog=")
+        print("add() tprog =", tprog, "iprog=")
     if pvg.opt_debug > 6:
         prarr(self2.arrx[tprog:tprog], "add pre: ")
     _func_arith(self2, "+", tprog)

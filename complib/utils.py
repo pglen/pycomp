@@ -28,7 +28,7 @@ def emit(*argx):
     global cummulate;
     for strx in argx:
         cummulate += strx
-    cummulate += "\n"
+    #cummulate += "\n"
 
 def show_emit():
     print("emit results:")
@@ -58,7 +58,15 @@ def prarr(xarr, pre = "", all = False):
             print( " [" + pp(aa.stamp[1]) + " " + pp(aa.mstr), aa.flag, end = "]")
     print()
 
-def pp(strx):
+def shorten(strx, xlen = 5):
+    if len(strx) < xlen:
+        return strx
+    else:
+        return strx[:xlen] + ".."
+
+def pp(strx, shortenx = False, xlen = 5):
+    if shortenx:
+        strx = shorten(strx, xlen)
     str2 = cesc(strx)
     return "'" + str(str2) + "'"
 
