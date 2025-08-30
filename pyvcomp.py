@@ -148,12 +148,15 @@ def parsefile(strx):
     format:    db      "Hello world", 10, 0
 '''
 
-    codegen.dep_assemble()
-
     if not lpg.opt_comp_only:
-        codegen.output(lpg.opt_outfile, xcode, xdata)
-        codegen.assemble(lpg.opt_outfile , lpg)
-        codegen.link(lpg.opt_outfile, lpg)
+        codegen.dep_assemble()
+        outfile = lpg.opt_workdir + os.sep + lpg.opt_outfile
+        #print("outfile:", outfile)
+        #return
+
+        codegen.output(outfile, xcode, xdata)
+        codegen.assemble(outfile , lpg)
+        codegen.link(outfile, lpg)
 
     #if lpg.opt_verbose.cnt:
     #    print(treeroot)
@@ -204,6 +207,15 @@ if __name__ == "__main__":
         sys.exit(0);
 
     cnt = 0 ; strx = "None"
+
+    # Set up environment
+    if not os.path.isdir(lpg.opt_workdir):
+        os.mkdir(lpg.opt_workdir)
+
+    if not os.access(lpg.opt_workdir, os.W_OK):
+        print("Error - cannot write to work dir:", pp(lpg.opt_workdir))
+        sys.exit(1)
+
     while True:
         try:
             if cnt >= len(lpg.args):

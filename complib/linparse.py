@@ -51,7 +51,7 @@ class LinParse():
         while True:
             if startx >= endd:
                 if self.pvg.opt_debug > 6:
-                    print("stamp_iter: End of data")
+                    print("feed(): End of data")
                 break
             match, prog = self.stamps_iter(startx, endd)
             # None of the tokens match:
@@ -65,16 +65,18 @@ class LinParse():
         else:
             if not match:
                 posx = self.arrx[startx]
-                pos = 0
+                eol = 0
                 # Till end of this line
                 for aa in range(posx.linestart, len(self.buf)):
                     if self.buf[aa] == "\n":
-                        pos = aa
+                        eol = aa
+                        print("Found pos", posx.linestart, eol)
                         break
-                #print("aa", self.buf[posx.linestart:pos])
-                print(self.buf[posx.linestart:pos])
-                print("-" *  (posx.end - posx.linestart - 1), end = "" )
-                print("^")
+                #print("aa", self.buf[posx.linestart:posx.linestart+pos])
+                print(self.buf[posx.linestart:eol])
+                print("-" *  (posx.end - posx.linestart - 2), end = "" )
+                print("^", end = "")
+                print("-" *  (eol - posx.linestart), )
                 print("Parse \033[31;1merror:\033[0m", "line:", posx.linenum + 1,
                                 "col:", posx.start - posx.linestart )
                 #print("-" *  (pos - posx.end))
@@ -86,14 +88,14 @@ class LinParse():
         ''' Iterate all stamps at startx offset '''
 
         if self.pvg.opt_debug > 5:
-            print("stamp_iter()", "startx =", startx, "endd =", endd)
+            print("stamps_iter()", "startx =", startx, "endd =", endd)
 
         matchx = 0 ; xprog = 0; stidx = 0
         while True:
             # Walk all stamps
             if  stidx >= len(stamps):
                 if self.pvg.opt_debug > 6:
-                    print("stamp_iter: End of stamps")
+                    print("stamps_iter: End of stamps")
                 break
 
             matchx, xprog = self.itemx(stidx, startx, endd)
@@ -120,7 +122,7 @@ class LinParse():
 
         if stamps[sidx].state != ST.val("STATEANY"):
             if  stamps[sidx].state != self.state:
-                if self.pvg.opt_debug > 7:
+                if self.pvg.opt_debug > 9:
                     print("Out of state:", ST.get(stamps[sidx].state), "state:",
                             ST.get(self.state),
                                 "token:", stamps[sidx].token,
@@ -164,22 +166,32 @@ class LinParse():
             if currstamp.nstate != ST.val("STATEANY") and \
                     currstamp.nstate != ST.val("STIGN"):
                 if currstamp.nstate == ST.val("STPOP"):
+                    if self.pvg.opt_debug > 4:
+                        print("pop state", ST.get(self.state), end = " ")
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
-                        print("pop state", ST.get(self.state))
+                        print("to:", ST.get(self.state))
+
                 elif currstamp.nstate == ST.val("STPOP2"):
+                    if self.pvg.opt_debug > 4:
+                        print("pop state2", ST.get(self.state), end = " ")
                     self.state = self.statestack.pop()
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
-                        print("pop state2", ST.get(self.state))
+                        print("to:", ST.get(self.state))
                 else:
                     if  currstamp.push:
+                        if self.pvg.opt_debug > 4:
+                            print("push:", ST.get(self.state), end = " ")
                         self.statestack.push(self.state)
-                    self.state = currstamp.nstate
 
-            if self.pvg.opt_debug > 4:
-                if currstamp.nstate != ST.val("STIGN"):
-                    print(" eState;", ST.get(self.state))
+                    self.state = currstamp.nstate
+                    if self.pvg.opt_debug > 4:
+                        print("to:", ST.get(self.state))
+
+            #if self.pvg.opt_debug > 4:
+            #    if currstamp.nstate != ST.val("STIGN"):
+            #        print(" State to;", ST.get(self.state))
 
             global lastnode
             if currstamp.nstate != ST.val("STIGN"):

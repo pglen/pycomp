@@ -14,6 +14,6 @@ funcy() {
 
 find . -maxdepth 1 -type f -name "*.py" | funcy $1
 find complib -type f -name "*.py" | funcy $1
-find study -type f -name "*.py" | funcy $1
+#find study -type f -name "*.py" | funcy $1
 
 # EOF

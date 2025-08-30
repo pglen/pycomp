@@ -72,4 +72,7 @@ lexcheck:
 
 	@echo " OK"
 
+testdrive:
+	testdrive.py testcase.txt
+
 # End of Makefile

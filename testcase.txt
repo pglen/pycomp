@@ -1,0 +1,25 @@
+# String quadruplet per test.
+#
+# Format:
+#
+#   Context_string  Send_string     Expect_string   Find/Compare
+#   --------------  -----------     -------------   ------------
+#    for the user   what to test    what to expect  True if Find
+#
+
+#r1 = b"arithstart() tprog = 0 [ 'ident' = 'aaa' ival = '0' flag = '0' ] \nassn() tprog = 4\nassn_stop() tprog = 6\narithstart() tprog = 8 [ 'ident' = 'bbb' ival = '0' flag = '0' ] \nassn() tprog = 12\nassn_stop() tprog = 13\n"
+[
+    #[ "Echo Command", "", "", True],                # NOOP
+    #[ "Test ls", "ls", "Make", True],               # Do we have a Make file
+    #[ "DF command", "df", "blocks", "regex" ],      # Search regex
+    #[ "DF mregex", "df", ".*blo",  "mregex" ],      # Match regex
+    [ "Exact", "/bin/ls -d .", b".\n", False ],     # Exact match
+    [ "Assn", "./pyvcomp.py -d 2 examples/assn.pc",
+    b"arithstart() tprog = 0 [ 'ident' = 'aaa' ival = '0' flag = '0' ] \nassn() tprog = 4\nassn_stop() tprog = 6\narithstart() tprog = 8 [ 'ident' = 'bbb' ival = '0' flag = '0' ] \nassn() tprog = 12\nassn_stop() tprog = 13\n",
+    False ],     # Exact match
+]
+
+# EOF
+
+
+

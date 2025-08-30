@@ -250,7 +250,7 @@ try:
     (INI_STATE, "<",            r"<"                ),
     (INI_STATE, ">",            r">"                ),
     (INI_STATE, "&",            r"&"                ),
-    (INI_STATE, "sqr",          r"\*\*"             ),
+    (INI_STATE, "expo",         r"\*\*"             ),
     (INI_STATE, "*",            r"\*"               ),
     (INI_STATE, "+",            r"\+"               ),
     (INI_STATE, "-",            r"\-"               ),

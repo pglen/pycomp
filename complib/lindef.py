@@ -30,14 +30,14 @@ class Stamp:
         self.flags  = flags
 
     def dump(self):
-        strx  =  str.self.state
-        strx +=  str.self.token
-        strx +=  str.self.nstate
+        strx  =  "[ " + ST.get(self.state) + " "
+        strx +=  pp(str(self.token)) + " "
+        strx +=  ST.get(self.nstate) + " ]"
         return strx
 
     def __str__(self):
-        strx = "State: " + str(ST.get(self.state)) + " " + \
-            str(self.token) + " nState: " + str(ST.get(self.nstate)) + \
+        strx = "State: " + ST.get(self.state) + " " + \
+            str(self.token) + " nState: " + ST.get(self.nstate) + \
                 " " + str(self.call.__name__)
         return strx
 
@@ -90,24 +90,31 @@ stamps =  (  \
     Stamp(ST.val("DECL6"), "comm4d",    ST.val("STPOP"),    False,  func_decl_stop),
 
     # Assignments / Start of arithmetic
-    #Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),  True,   func_arithstart),
+    Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),   True,   func_arithstart),
     Stamp(ST.val("STATEINI"), "ident",  ST.val("SFARITH"),   True,   func_arithstart),
 
-    Stamp(ST.val("SFARITH"),  "=",      ST.val("STASSN"),     False,  None),
-    Stamp(ST.val("STASSN"),   "ident",  ST.val("STASSN2"),    False,  func_assn),
-    Stamp(ST.val("STASSN"),   "num",    ST.val("STASSN2"),    False,  func_assn),
-    Stamp(ST.val("STASSN"),   "num2",   ST.val("STASSN2"),    False,  func_assn),
-    Stamp(ST.val("STASSN2"),  ";",      ST.val("STPOP"),      False,  func_assn_stop),
-    Stamp(ST.val("STASSN2"),  "nl",     ST.val("STPOP"),      False,  func_assn_stop),
+    #Stamp(ST.val("SFARITH"),  "=>",     ST.val("STRASSN3"),  False,  None),
+    #Stamp(ST.val("STRASSN3"), "num",    ST.val("STRASSN4"),  False,  func_rassn),
+    #Stamp(ST.val("STRASSN3"), "num2",   ST.val("STRASSN4"),  False,  func_rassn),
+    #Stamp(ST.val("STRASSN3"), "ident",  ST.val("STRASSN4"),  False,  func_rassn),
+    #Stamp(ST.val("STRASSN4"),  ";",     ST.val("STPOP"),     False,  func_rassn_stop),
+    #Stamp(ST.val("STRASSN4"),  "nl",    ST.val("STPOP"),     False,  func_rassn_stop),
 
-    # Arithmetics (+ - * / sqr)
-    #Stamp(ST.val("SFARITH"), "sqr",     ST.val("SFSQR"),    False, func_arithop),
-    #Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False, None),
-    #Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False, None),
+    Stamp(ST.val("SFARITH"),  "=",      ST.val("STASSN"),    False,  None),
+    Stamp(ST.val("STASSN"),   "ident",  ST.val("SFARITH"),   False,  func_assn),
+    Stamp(ST.val("STASSN"),   "num",    ST.val("SFARITH"),   False,  func_assn),
+    Stamp(ST.val("STASSN"),   "num2",   ST.val("SFARITH"),   False,  func_assn),
+    #Stamp(ST.val("STASSN2"),  ";",      ST.val("STPOP"),     False,  func_assn_stop),
+    #Stamp(ST.val("STASSN2"),  "nl",     ST.val("STPOP"),     False,  func_assn_stop),
 
+    # Arithmetics (+ - * / sqr assn)
     Stamp(ST.val("SFARITH"), "=>",      ST.val("SFPUT"),    False,  func_arithop),
     Stamp(ST.val("SFPUT"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
     Stamp(ST.val("SFPUT"), "num",       ST.val("SFARITH"), False,   func_mulexpr),
+
+    Stamp(ST.val("SFARITH"), "expo",    ST.val("SFSQR"),    False, func_arithop),
+    Stamp(ST.val("SFSQR"),   "ident",   ST.val("SFARITH"),  False, func_expexpr),
+    Stamp(ST.val("SFSQR"),   "num",     ST.val("SFARITH"),  False, func_expexpr),
 
     Stamp(ST.val("SFARITH"), "*",       ST.val("SFMUL"),    False,  func_arithop),
     Stamp(ST.val("SFMUL"), "ident",     ST.val("SFARITH"), False,   func_mulexpr),
@@ -125,8 +132,8 @@ stamps =  (  \
     Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,  None),
     Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,  None),
 
-    Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,  func_endarith),
-    Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,  func_endarith),
+    Stamp(ST.val("SFARITH"), ";",       ST.val("STPOP"),    False,  func_arit_stop),
+    Stamp(ST.val("SFARITH"), "nl",      ST.val("STPOP"),    False,  func_arit_stop),
 
     # This will ignore comments
     Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"),   False,  func_comment),

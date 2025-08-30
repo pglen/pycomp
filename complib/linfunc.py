@@ -22,6 +22,26 @@ def funcpvg(xpvg):
 astack = stack.pStack()             # Arithmetic
 dstack = stack.pStack()             # Declaration
 
+def func_rassn(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("rassn()", "tprog =", tprog)
+    dstack.push(tprog)
+
+def func_rassn_stop(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("assnr_stop()", "tprog =", tprog)
+    astack.push(tprog)
+    strx =   "lea  rsi, " + self2.arrx[astack.get(0)].mstr + "\n"
+    strx +=  "mov rax, [rsi]" #self2.arrx[astack.get(1)].mstr
+
+    strx +=   "; " + self2.arrx[astack.get(0)].mstr + " = "
+    strx +=  self2.arrx[astack.get(1)].mstr
+
+    strx +=  "\n"
+
+    emit(strx)
+    astack.empty()
+
 def func_assn(self2, tprog):
     if pvg.opt_debug > 1:
         print("assn()", "tprog =", tprog)
@@ -30,12 +50,12 @@ def func_assn(self2, tprog):
 def func_assn_stop(self2, tprog):
     if pvg.opt_debug > 1:
         print("assn_stop()", "tprog =", tprog)
-    astack.push(tprog)
-    strx =   "lea  rsi, " + self2.arrx[astack.get(0)].mstr + "\n"
-    strx +=  "mov rax, [rsi]" #self2.arrx[astack.get(1)].mstr
+    dstack.push(tprog)
+    strx =   "lea  rsi, " + self2.arrx[dstack.get(0)].mstr + "\n"
+    strx +=  "mov rax, [rsi]" #self2.arrx[dstack.get(1)].mstr
 
-    strx +=   "; " + self2.arrx[astack.get(0)].mstr + " = "
-    strx +=  self2.arrx[astack.get(1)].mstr
+    strx +=   "; " + self2.arrx[dstack.get(0)].mstr + " = "
+    strx +=  self2.arrx[dstack.get(1)].mstr
 
     strx +=  "\n"
 
@@ -83,7 +103,6 @@ def func_decl_comma(self2, tprog):
     # Back off of last variable
     dstack.pop(); dstack.pop()
 
-
 def func_decl_stop(self2, tprog):
     if pvg.opt_debug > 1:
         print("decl_stop()", "tprog =", tprog)
@@ -97,30 +116,11 @@ def func_decl_stop(self2, tprog):
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
     strx +=  self2.arrx[dstack.get(2)].mstr
     emit(strx)
-
+    # Output comment as well
     strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
     strx += self2.arrx[dstack.get(1)].mstr + " = "
     strx += self2.arrx[dstack.get(2)].mstr  + " \n"
     emit(strx)
-
-def pctona(ddd):
-
-    #print("pctona:", ddd)
-
-    retx = "db"
-    if ddd == "u8":
-        retx = "db"
-    elif ddd == "u16":
-        retx = "dw"
-    elif ddd == "u32":
-        retx = "dd"
-    elif ddd == "float":
-        retx = "dd"
-    elif ddd == "double":
-        retx = "dq"
-    elif ddd == "extended":
-        retx = "dt"
-    return retx
 
 def func_space(self2, tprog):
     if pvg.opt_debug > 5:
@@ -187,6 +187,14 @@ def func_addexpr(self2, tprog):
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
     astack.push(tprog)
 
+def func_expexpr(self2, tprog):
+    if pvg.opt_debug > 5:
+        tprog2 = astack.peek()
+        print("func_expexpr: ",
+                "tprog  =", tprog,  self2.arrx[tprog],
+                "tprog2 =", tprog2, self2.arrx[tprog2] )
+    astack.push(tprog)
+
 def func_mulexpr(self2, tprog):
     if pvg.opt_debug > 5:
         tprog2 = astack.peek()
@@ -196,15 +204,18 @@ def func_mulexpr(self2, tprog):
 
     astack.push(tprog)
 
-def exeop(op, arg1, arg2):
-    #print("exeop", arg1, arg2)
+def execop(arg1, op, arg2):
+    print("execop:", arg1, op, arg2)
+    ret = 0
     if op ==  "sqr":  ret = arg1 ** arg2
-    if op ==   "*":   ret = arg1 * arg2
-    if op ==   "/":   ret = arg1 / arg2
-    if op ==   "+":   ret = arg1 + arg2
-    if op ==   "-":   ret = arg1 - arg2
-    if op ==   "<<":   ret = arg1 >> arg2
-    if op ==   ">>":   ret = arg1 << arg2
+    elif op ==   "*":   ret = arg1 * arg2
+    elif op ==   "/":   ret = arg1 / arg2
+    elif op ==   "+":   ret = arg1 + arg2
+    elif op ==   "-":   ret = arg1 - arg2
+    elif op ==   "<<":  ret = arg1 >> arg2
+    elif op ==   ">>":  ret = arg1 << arg2
+    elif op ==   "=":   ret = arg1
+    else:  print("Invalid operator")
     return ret
 
 def reduce(self2, filter):
@@ -231,8 +242,9 @@ def reduce(self2, filter):
                 if pvg.opt_debug > 5:
                     print("op", pp(filter), "pr:",
                         self2.arrx[idx1], self2.arrx[idx], self2.arrx[idx2])
-                self2.arrx[idx1].ival =  exeop(filter,
-                                    self2.arrx[idx1].ival, self2.arrx[idx2].ival)
+
+                self2.arrx[idx1].ival =  execop(self2.arrx[idx1].ival, filter,
+                                            self2.arrx[idx2].ival)
                 # Just to make it look uniform
                 self2.arrx[idx1].mstr = str(self2.arrx[idx1].ival)
                 #self2.arrx[idx1].flag = 0
@@ -247,9 +259,9 @@ def reduce(self2, filter):
         if loopx >= len(bstack):
             break
 
-def func_endarith(self2, tprog):
+def func_arit_stop(self2, tprog):
     if pvg.opt_debug > 2:
-        print("endarith()", "tprog =", tprog, "iprog=")
+        print("func_arit_stop()", "tprog =", tprog, self2.arrx[tprog])
     # Execute operator precedence
     reduce(self2, "sqr")
     reduce(self2, "*")
@@ -258,6 +270,23 @@ def func_endarith(self2, tprog):
     reduce(self2, "-")
     reduce(self2, ">>")
     reduce(self2, "<<")
+    reduce(self2, "=")
+
+    if pvg.opt_debug > 2:
+        print("\nastack:", end = " ")
+        for aa in astack:
+            print(self2.arrx[aa], end = " ")
+        print()
+
+    strx =   self2.arrx[astack.get(0)].mstr + " = "
+    strx +=  self2.arrx[astack.get(1)].mstr
+    emit(strx)
+
+    #strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
+    #strx += self2.arrx[dstack.get(1)].mstr + " = "
+    #strx += self2.arrx[dstack.get(2)].mstr + " \n"
+    #emit(strx)
+
 
 def func_brace(self2, tprog):
 
