@@ -2,6 +2,8 @@
 ;                                                                         
 ;   Compile with NASM                                                     
 ;                                                                         
+;   Automatically generated, will be overwritten.                         
+;                                                                         
                                                                           
         global main                                                       
         extern printf                                                     
@@ -10,24 +12,22 @@
 
 %include "codegen/crt.inc"
 
+ main:
 
 
-    main:
-        ;mov     rax, 0
-        ;mov     rax, [ rax ]
 
-        mov     rdi, format
-        call    printf
-
-        ret
-
-    
    
 enc_code:
     ;End of program
 
 
 
-section .data
+    mov     rdi, endx
+    call    printf
+    ret
+    ret
 
-    format:    db      "Hello world", 10, 0
+section .data
+format:    db      "Hello world", 10, 0
+endx:      db      "End program.", 10, 0
+

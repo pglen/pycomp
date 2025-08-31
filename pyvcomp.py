@@ -131,30 +131,14 @@ def parsefile(strx):
     if lpg.opt_emit:
         show_emit()
 
-    xcode = '''
-
-    main:
-        ;mov     rax, 0
-        ;mov     rax, [ rax ]
-
-        mov     rdi, format
-        call    printf
-
-        ret
-
-    '''
-
-    xdata = '''
-    format:    db      "Hello world", 10, 0
-'''
-
     if not lpg.opt_comp_only:
-        codegen.dep_assemble()
+        codegen.dep_assemble(lpg)
         outfile = lpg.opt_workdir + os.sep + lpg.opt_outfile
         #print("outfile:", outfile)
         #return
 
-        codegen.output(outfile, xcode, xdata)
+        #codegen.output(outfile, xcode, xdata)
+        codegen.output(outfile, cummulate)
         codegen.assemble(outfile , lpg)
         codegen.link(outfile, lpg)
 
@@ -181,11 +165,8 @@ def setheads(lpg):
 if __name__ == "__main__":
 
     #global lpg
-
     #sys.setrecursionlimit(25)
-
     lpg = args.Lpg(opts, sys.argv)
-
     setheads(lpg)
 
     if lpg.opt_Version:

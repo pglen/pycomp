@@ -21,7 +21,6 @@ extern  main
 ;       passed arg count, environment, till empty string
 
 _main:
-
         ;call    _printnl
         ;call _getkey
         ;printx "key", rax
@@ -52,10 +51,10 @@ _main:
         push    rcx
         push    rbx
 
-        call    _print_zstr
+        ;call    _print_zstr
         push    rax
         ;printx  "rax", rax
-        printnl
+        ;printnl
         pop     rax
         cmp     rax, 0
         je      .end_env
@@ -69,8 +68,8 @@ _main:
         jmp     .done_scan
 
      .end_env:
-        printx  "end", rax
-        call    _printnl
+        ;printx  "end", rax
+        ;call    _printnl
         pop     rbx
         pop     rcx
 

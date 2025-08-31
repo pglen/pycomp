@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 
-import os, subprocess
+import os, sys, subprocess
 
 ''' Codegen '''
 
@@ -9,11 +9,15 @@ import os, subprocess
 #//
 #// Code generator for FASM output
 #//
+#// Automatically generated, will be overwritten.
+#//
 
 prolstr = '''\
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\
 ;                                                                         \n\
 ;   Compile with NASM                                                     \n\
+;                                                                         \n\
+;   Automatically generated, will be overwritten.                         \n\
 ;                                                                         \n\
                                                                           \n\
         global main                                                       \n\
@@ -23,29 +27,70 @@ prolstr = '''\
 
 %include "codegen/crt.inc"
 
+ main:
+
+
 '''
 
 epilstr = '''
    \nenc_code:\n    ;End of program\n\n
 
+    mov     rdi, endx
+    call    printf
+    ret
+    ret
+
 section .data
+format:    db      "Hello world", 10, 0
+endx:      db      "End program.", 10, 0
+
 '''
 
-def dep_assemble():
+def isnewer(targ, *file2):
+
+    ''' return True if file does not exist or ...
+       modify time is newer  '''
+
+    #print("isnewer:", targ, file2)
+    retx = False; targinfo = 0; statinfo2 = 0
+    while True:
+        #print("targ file:", targ)
+        try: targinfo = os.stat(targ)
+        except:
+            #print("warn: no targ file", targ, targ, sys.exc_info())
+            return True
+        for aaa in file2:
+            try : statinfo2 = os.stat(aaa)
+            except:
+                #print("warn: no test file:", aaa, sys.exc_info())
+                return True
+            #print("isnewer cmp:", retx, targinfo.st_mtime, statinfo2.st_mtime)
+            if targinfo.st_mtime < statinfo2.st_mtime:
+                retx |= True
+                break
+            break
+        break
+
+    return retx
+
+def dep_assemble(lpg):
 
     ''' Conditionally greate CRT objects '''
 
+    depnames = "codegen/crt.inc",
     fnames = "codegen/main.inc", "codegen/crtasm.inc"
     for fname in fnames:
         oname = os.path.splitext(fname)[0] + ".o"
-        if not os.path.isfile(oname):
-            print("create:", fname, oname)
-            linprog = ["nasm", "-felf64", "-Icodegen", fname, "-o", oname]
-            try:
-                ret = subprocess.Popen(linprog, stdout=subprocess.PIPE)
-                ret.wait()
-            except:
-                print("assemble", sys.exc_info())
+        if not isnewer(oname, fname, *depnames):
+            continue
+        if lpg.opt_verbose:
+            print("create crt:", fname, oname)
+        linprog = ["nasm", "-felf64", "-Icodegen", fname, "-o", oname]
+        try:
+            ret = subprocess.Popen(linprog, stdout=subprocess.PIPE)
+            ret.wait()
+        except:
+            print("err on assemble", fname, sys.exc_info())
 
 def assemble(fname, lpg):
 
@@ -75,7 +120,7 @@ def link(fname, lpg):
     except:
         print("link", sys.exc_info())
 
-def output(fname, contents, datax):
+def output(fname, contents, datax = ""):
 
     #print("outfile:", fname)
 
@@ -85,6 +130,22 @@ def output(fname, contents, datax):
     fp.write(epilstr)
     fp.write(datax)
     fp.close()
+
+xcode = '''
+
+    main:
+        ;mov     rax, 0
+        ;mov     rax, [ rax ]
+
+        mov     rdi, format
+        call    printf
+
+        ret
+
+    '''
+xdata = '''
+    format:    db      "Hello world", 10, 0
+'''
 
 if __name__ == "__main__":
     #print ("This module was not meant to operate as main.")
