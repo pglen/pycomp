@@ -4,8 +4,7 @@
 
 import complib.stack as stack
 import complib.lindef as lindef
-
-#import operator
+import codegen.codegen as codegen
 
 try:
     from complib.utils import *
@@ -19,8 +18,10 @@ def funcpvg(xpvg):
 
 # Functions to call on stamp match
 
-astack = stack.pStack()             # Arithmetic
-dstack = stack.pStack()             # Declaration
+astack    = stack.pStack()             # Arithmetic
+dstack    = stack.pStack()             # Declaration
+argstack  = stack.pStack()             # function arguments
+callstack = stack.pStack()             # Function call
 
 def func_rassn(self2, tprog):
     if pvg.opt_debug > 1:
@@ -31,15 +32,15 @@ def func_rassn_stop(self2, tprog):
     if pvg.opt_debug > 1:
         print("assnr_stop()", "tprog =", tprog)
     astack.push(tprog)
-    strx =   "lea  rsi, " + self2.arrx[astack.get(0)].mstr + "\n"
-    strx +=  "mov rax, [rsi]" #self2.arrx[astack.get(1)].mstr
+    strx =   "  lea  rsi, " + self2.arrx[astack.get(0)].mstr + "\n"
+    strx +=  "  mov rax, [rsi]" #self2.arrx[astack.get(1)].mstr
 
     strx +=   "; " + self2.arrx[astack.get(0)].mstr + " = "
     strx +=  self2.arrx[astack.get(1)].mstr
 
     strx +=  "\n"
 
-    emit(strx)
+    codegen.emit(strx)
     astack.empty()
 
 def func_assn(self2, tprog):
@@ -59,27 +60,27 @@ def func_assn_stop(self2, tprog):
 
     strx +=  "\n"
 
-    emit(strx)
+    codegen.emit(strx)
     astack.empty()
 
 def func_decl_start(self2, tprog):
     if pvg.opt_debug > 1:
-        print("decl_start()", "tprog =", tprog)
+        print("func_decl_start()", "tprog =", tprog)
     dstack.empty()
     dstack.push(tprog)
-    #emit(self2.arrx[tprog].mstr)
+    #codegen.emit(self2.arrx[tprog].mstr)
 
 def func_decl_ident(self2, tprog):
     if pvg.opt_debug > 1:
-        print("decl_ident()", "tprog =", tprog)
+        print("funct_decl_ident()", "tprog =", tprog)
     dstack.push(tprog)
-    #emit(self2.arrx[tprog].mstr)
+    #codegen.emit(self2.arrx[tprog].mstr)
 
 def func_decl_val(self2, tprog):
     if pvg.opt_debug > 1:
-        print("decl_val()", "tprog =", tprog)
+        print("func_decl_val()", "tprog =", tprog)
     dstack.push(tprog)
-    #emit(self2.arrx[tprog].mstr)
+    #codegen.emit(self2.arrx[tprog].mstr)
 
 def func_decl_comma(self2, tprog):
     if pvg.opt_debug > 1:
@@ -93,34 +94,43 @@ def func_decl_comma(self2, tprog):
 
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
     strx +=  self2.arrx[dstack.get(2)].mstr
-    emit(strx)
+    #codegen.emitdata(strx)
 
-    strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
+    strx +=  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
     strx += self2.arrx[dstack.get(1)].mstr + " = "
-    strx += self2.arrx[dstack.get(2)].mstr + " \n"
-    emit(strx)
+    strx += self2.arrx[dstack.get(2)].mstr
+    codegen.emitdata(strx)
 
     # Back off of last variable
     dstack.pop(); dstack.pop()
 
 def func_decl_stop(self2, tprog):
     if pvg.opt_debug > 1:
-        print("decl_stop()", "tprog =", tprog)
-    #print("\ndstack:", end = " ")
-    #for aa in dstack:
-    #    print(self2.arrx[aa], end = " ")
-    #print()
+        print("func_decl_stop()", "tprog =", tprog)
+
+    if pvg.opt_debug > 1:
+        print("\ndstack:", end = " ")
+        for aa in dstack:
+            print(self2.arrx[aa], end = " ")
+        print()
 
     datatype = pctona(self2.arrx[dstack.get(0)].mstr)
 
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
     strx +=  self2.arrx[dstack.get(2)].mstr
-    emit(strx)
+
+    # if str type, put trailing zero
+
+    if self2.arrx[dstack.get(2)].stamp.xstr == "str":
+        strx +=  ", 0"
+
     # Output comment as well
-    strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
+    linex = self2.arrx[dstack.get(0)].linenum + 1
+    strx +=  " ; line: " + str(linex) + " -- "
+    strx +=  self2.arrx[dstack.get(0)].mstr + " : "
     strx += self2.arrx[dstack.get(1)].mstr + " = "
-    strx += self2.arrx[dstack.get(2)].mstr  + " \n"
-    emit(strx)
+    strx += self2.arrx[dstack.get(2)].mstr
+    codegen.emitdata(strx)
 
 def func_space(self2, tprog):
     if pvg.opt_debug > 5:
@@ -162,16 +172,50 @@ def func_str(self2, idx, tprog):
         prarr(self2.arrx[tprog:tprog], "func_str pre: ")
     sys.exit(0)
 
-def func_func(self2, tprog):
-    if pvg.opt_debug > 5:
-        prarr(self2.arrx[tprog:tprog], "func_func pre: ")
-    #sys.exit(0)
-    self2.arrx[tprog].flag = 1
-    #self2._feed(tprog + 1, tprog - 1)
+def func_func_start(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_start()", pp(self2.arrx[tprog].mstr))
+        argstack.empty()
+        callstack.empty()
+        callstack.push(astack.pop())
+
+def func_func_decl_val(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_decl_val()", pp(self2.arrx[tprog].mstr))
+        argstack.push(tprog)
+
+def func_func_end(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_end()", pp(self2.arrx[tprog].mstr))
+        #print("\nargtsack:", end = " ")
+        #for aa in argstack:
+        #    print(self2.arrx[aa], end = " ")
+        #print()
+        idx  =   callstack.get(0)
+        funcname =  self2.arrx[idx].mstr
+        linex = self2.arrx[idx].linenum + 1
+
+        estr = ""
+        for cnt, aa in enumerate(argstack):
+            if cnt > 6:
+                print("Too many arguments to function:", funcname )
+                sys.exit(1)
+            # Skip first arg as syscall opcode is in rax
+            #estr += "   push   rbp\n"
+            estr += "   mov  " + codegen.regorder[cnt+1] + "  " + \
+                        ", " + self2.arrx[aa].mstr + "\n"
+            #estr += "   pop   rbp\n"
+
+        estr += "   extern " +  funcname + "\n"
+        estr += "   and     rsp, 0xfffffffffffffff0\n"
+        estr += "   call " +  funcname
+        estr +=  " ; line: " + str(linex) + " -- " + funcname
+
+        codegen.emit(estr)
 
 def func_arithstart(self2, tprog):
     if pvg.opt_debug > 1:
-        print("arithstart()", "tprog =", tprog, self2.arrx[tprog])
+        print("func_arithstart()", "tprog =", tprog, self2.arrx[tprog])
     astack.push(tprog)
 
 def func_arithop(self2, tprog):
@@ -280,13 +324,12 @@ def func_arit_stop(self2, tprog):
 
     strx =   self2.arrx[astack.get(0)].mstr + " = "
     strx +=  self2.arrx[astack.get(1)].mstr
-    emit(strx)
+    codegen.emit(strx)
 
     #strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
     #strx += self2.arrx[dstack.get(1)].mstr + " = "
     #strx += self2.arrx[dstack.get(2)].mstr + " \n"
-    #emit(strx)
-
+    #codegen.emit(strx)
 
 def func_brace(self2, tprog):
 

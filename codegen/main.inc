@@ -20,7 +20,53 @@ extern  main
 ;   arg2:    [bp+8]     string arguments back to back
 ;       passed arg count, environment, till empty string
 
+
+ extern printf
+
 _main:
+        push        rbp
+        mov         rbp, rsp
+        sub         rsp, 16
+        push        rbp
+
+        and     rsp, 0xfffffffffffffff0
+        call    _print_regs
+        call    _printnl
+
+        xor     rax,rax
+        mov     rdi, message             ; set 1st parameter (format)
+        call    printf
+        call    _print_regs
+        call    _printnl
+
+        mov     rsp, rbp
+        call    _print_regs
+        call    _printnl
+
+        call     main
+
+        ;mov     rsp, rbp
+        ;pop     rbp
+        ;xor     rax, rax
+        ;mov     rcx, [dumpx_len]
+        ;mov     rsi, dumpx
+        ;call    _print_mem
+        ;call    _printnl
+
+        ;call    _printnl
+        ;call    _print_regs
+
+        xor     eax, eax
+
+        mov       rsp, rbp
+        pop       rbp
+
+        ret
+
+_print_xargs:
+
+    ;call    _print_regs
+
         ;call    _printnl
         ;call _getkey
         ;printx "key", rax
@@ -75,41 +121,23 @@ _main:
 
      .done_scan:
 
-        call     main
+    ret
 
-        ;mov     rsp, rbp
-        ;pop     rbp
-
-        xor     rax, rax
-        ret
-
-        ;mov     rcx, [dumpx_len]
-        ;mov     rsi, dumpx
-        ;call    _print_mem
-        ;call    _printnl
-
-        push    rdx                     ; callee-save registers
-        push    rsi                     ; callee-save registers
-        push    rdi
-
-        mov     rsi, 1                  ; current value
-        mov     rcx, 1                  ; counter
-  .L1:
-        push    rsi
-        push    rdi
-
-        mov       rdx, rdi              ; third rdx
-        mov       rsi, message          ; address of string to output
-        mov       rdx, [msg_len]        ; number of bytes
-
-        push      rcx
-        call      _print
-        pop       rcx
-
-        pop     rdi
-        pop     rsi
-
-        loop    .L1
+_garbage:
+ ;      mov     rsi, 1                  ; current value
+  ;      mov     rcx, 1                  ; counter
+  ;.L1:
+  ;      push    rsi
+  ;      push    rdi
+  ;      mov       rdx, rdi              ; third rdx
+  ;      mov       rsi, message          ; address of string to output
+  ;      mov       rdx, [msg_len]        ; number of bytes
+  ;      push      rcx
+  ;      call      _print
+  ;      pop       rcx
+  ;      pop     rdi
+  ;      pop     rsi
+  ;      loop    .L1
 
         ;call    _printnl
         ;mov     rax, 0xfedcba876543210
@@ -120,15 +148,6 @@ _main:
         ;call    _print_char
         ;call    _printnl
 
-        pop     rdi
-        pop     rsi
-        pop     rdx
-
-        xor     eax, eax
-
-        mov       rsp, rbp
-        pop       rbp
-
         ret
 
 section   .data
@@ -136,7 +155,7 @@ section   .data
 dumpx       db      2, 4, 6, 8, 9, 10, 'a', 'Z', '1', '2', 128, 130
 dumpx_len   dq      $ - dumpx
 
-message:    db      "Hello World in _start.", 10, 0      ; note the newline at the end
+message:    db      "Hello World in _main.", 10, 0      ; note the newline at the end
 msg_len     dq      $ - message
 buffer      db      0 dup (4096)
 

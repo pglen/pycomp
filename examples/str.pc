@@ -1,6 +1,1 @@
-// String
-
- string	str = "hello";
- string	str2 = str;
-
-
+u8:A="X"

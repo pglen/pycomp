@@ -16,6 +16,7 @@ clean:
 	@rm -f *.pyc
 	@rm -rf __pycache__
 	@rm -f err
+	@rm -rf tmp/*
 
 git:
 	git add .

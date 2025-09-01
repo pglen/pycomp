@@ -8,24 +8,67 @@ global _exit, _start, _version, _sbrk
 
 %include "crt.inc"
 
-extern _main
+bits    64
+;default rel
+
+extern  _main
+extern  printf
 
 section .text
 
-_start:         ; Main entry point
-        mov     rbp,rsp
 
+_start:     ; Main entry point
+
+        push      rbp
+        mov       rbx, rsp
+        mov       rbp, rsp
+
+        mov       [orgstack], rbx
+        mov       rbp, rsp
+        push      rbp
+
+        mov       rsp, stack_end
+        mov       rbp,rsp
+
+        ;push      rbp
         ;call    _print_args
         ;call    _printnl
         ;lea     rsi, [rsp]
         ;mov     rcx, 8
         ;call    _print_mem
-        ;call    _printnl
+
         ;call    _print_regs
+        ;call    _printnl
+
+        ;mov     rsi, format2             ; set 1st parameter (format)
+        ;call    _print_zstr
+
+        ;push        rbp
+        ;mov         rbp, rsp
+        ;sub         rsp, 8
+        ;
+        ;;push        qword 0
+        ;mov         rdi, format2             ; set 1st parameter (format)
+        ;xor         rax,rax
+        ;call        printf
+        ;pop         rax
+        ;
+        ;add         rsp, 8               ; Restore stack pointer after call
+        ;pop         rbp
+
+        ;mov     rsi, format2             ; set 1st parameter (format)
+        ;mov     rcx, [format2_end]
+        ;call    _print_mem
+        ;call    _printnl
 
         call    _main
-        mov rdi, rax                        ; transfer exit code
-        call _exit
+        ;call    _print_regs
+
+        mov     rsp, [orgstack]
+        pop     rbp
+
+        mov     rdi, rax                        ; transfer exit code
+        jmp     _exit
 
 _version:       ; Print version
          mov       rsi, message             ; Address of string to output
@@ -89,7 +132,7 @@ _print_zstr:    ; String in rsi
         pop       rbp
         ret
 
-_print_mem:             ; String in rsi, len in rcx
+_print_mem:  ; String in rsi, len in rcx
 
         xor    rax,rax
     .L4:
@@ -301,6 +344,9 @@ _exit:
           syscall                           ; Invoke operating system to exit
           ret
 
+_dummy:
+    ret
+
 _print_regs:        ; print processor registers
 
         push        rbp
@@ -330,7 +376,16 @@ _print_regs:        ; print processor registers
         call    _printnl
         printx  "rbp",  rbp
         printx  "rsp",  rsp
+        printnl
+        call    _dummy
+        pop     rax
+        pop     rbx
 
+        push    rbx
+        push    rax
+
+        printx  "rip",   rbx
+        printx  "stk",  rax
         printnl
 
     mov rsp, rbp
@@ -389,16 +444,27 @@ _addmem:   ; extend memory  amount in rax
 
 section .data
 
-message     db        "CRT Version 1.0", 10  ; Note the newline at the end
-msg_len     dq        $-message
-nl          db        10
-nl_len      dq        $-nl
-spx         db        ' '
-spx_len     dq        $-spx
-dot         db        '.'
-dot_len     dq        $-dot
+message     db      "CRT Version 1.0", 10  ; Note the newline at the end
+msg_len     dq      $-message
+nl          db      10
+nl_len      dq      $-nl
+spx         db      ' '
+spx_len     dq      $-spx
+dot         db      '.'
+dot_len     dq      $-dot
+orgstack    dq      0
+
+format3:    db      "Hello world3.%d", 10, 0
+format2:    db      "Hello world2.", 10, 0
+format2_end dq      $-format2
+format1:    db      "Hello world1.", 10, 0
+format1_end dq      $-format1
 
 section .bss
+
+align 64
+stack        resb 4096
+stack_end:
 
 section .txt
 

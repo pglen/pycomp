@@ -14,7 +14,23 @@
 
  main:
 
+    push    rbp
+    mov     rbp, rsp
 
+    push    rax
+    and     rsp, 0xfffffffffffffff0
+    ;call   _print_regs
+    mov     rdi, hellodef
+    call    printf
+
+   mov  rdi  , strx
+   extern printf
+   and     rsp, 0xfffffffffffffff0
+   call printf ; line: 2 -- printf
+
+
+    ;mov     rsp, rbp
+    ;pop     rbp
 
    
 enc_code:
@@ -22,12 +38,25 @@ enc_code:
 
 
 
+    ;call   _print_regs
+
+    ; This is just in case of no exit statement
+    xor     rax,rax
     mov     rdi, endx
+    and     rsp, 0xfffffffffffffff0
     call    printf
-    ret
+
+    mov     rsp, rbp
+    pop     rbp
+
     ret
 
 section .data
-format:    db      "Hello world", 10, 0
-endx:      db      "End program.", 10, 0
 
+hellodef:   db      "Start program", 10, 0
+endx:      db       "End program.", 10, 0
+;endx:       db      10, 0
+
+strx : db "hello\n", 0 ; line: 1 -- u8 : strx = "hello\n"
+
+; EOF

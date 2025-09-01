@@ -45,9 +45,12 @@ class LexI():
         self.mstr = mstr        # Main payload
         self.start = startx
         self.end = endx
+        # Init future vars (just to show what comes)
         self.flag = 0           # State information
-        self.val = 0.0
-        self.ival = 0
+        self.linenum = 0
+        self.lineoffs = 0
+        self.val = 0.0          # if number
+        self.ival = 0           # if integer
 
         # Decode and mold
         if self.stamp.xstr == "num":

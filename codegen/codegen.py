@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
-#
 
 import os, sys, subprocess
 
-''' Codegen '''
+'''  Code generator for FASM output '''
 
-#///////////////////////////////////////////////////////////////////////////
-#//
-#// Code generator for FASM output
-#//
-#// Automatically generated, will be overwritten.
-#//
+cummulate  = ""
+cummulate2 = ""
+
+regorder = ( "rax", #arg0
+             "rdi", #arg1
+             "rsi", #arg2
+             "rdx", #arg3
+             "r10", #arg4
+             "r8",  #arg5
+             "r9",  #arg6
+            )
+
+reglist = ( "rax", #arg0
+            )
 
 prolstr = '''\
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\
@@ -29,22 +36,89 @@ prolstr = '''\
 
  main:
 
+    push    rbp
+    mov     rbp, rsp
+
+    push    rax
+    and     rsp, 0xfffffffffffffff0
+    ;call   _print_regs
+    mov     rdi, hellodef
+    call    printf
 
 '''
 
 epilstr = '''
+
+    ;mov     rsp, rbp
+    ;pop     rbp
+
    \nenc_code:\n    ;End of program\n\n
 
+    ;call   _print_regs
+
+    ; This is just in case of no exit statement
+    xor     rax,rax
     mov     rdi, endx
+    and     rsp, 0xfffffffffffffff0
     call    printf
-    ret
+
+    mov     rsp, rbp
+    pop     rbp
+
     ret
 
 section .data
-format:    db      "Hello world", 10, 0
-endx:      db      "End program.", 10, 0
+
+hellodef:   db      "Start program", 10, 0
+endx:      db       "End program.", 10, 0
+;endx:       db      10, 0
 
 '''
+
+endstr = '''
+; EOF
+'''
+
+
+xcode = '''
+    main:
+        ;mov     rax, 0
+        ;mov     rax, [ rax ]
+        mov     rdi, format
+        call    printf
+        ret
+    '''
+xdata = '''
+    format:    db      "Hello world", 10, 0
+'''
+
+
+def emit(*argx):
+
+    ''' Accumulate TEXT output '''
+
+    global cummulate;
+    for strx in argx:
+        cummulate += strx
+    cummulate += "\n"
+
+def emitdata(*argx):
+
+    ''' Accumulate DATA output '''
+
+    global cummulate2;
+    for strx in argx:
+        cummulate2 += strx
+    cummulate2 += "\n"
+
+def show_emit():
+    print("emit code results:")
+    print(cummulate)
+    print("emit data results:")
+    print(cummulate2)
+
+
+# ------------------------------------------------------------------------
 
 def isnewer(targ, *file2):
 
@@ -111,7 +185,7 @@ def link(fname, lpg):
     outname = os.path.splitext(fname)[0]
     linprog = ["ld", objname, "codegen/main.o", "codegen/crtasm.o",
                 "-o", outname, "-dynamic-linker",
-                "/lib64/ld-linux-x86-64.so.2", "-lc", ]
+                "/lib64/ld-linux-x86-64.so.2", "-lc"]
     if lpg.opt_verbose.cnt:
         print("link:",  linprog)
     try:
@@ -120,36 +194,20 @@ def link(fname, lpg):
     except:
         print("link", sys.exc_info())
 
-def output(fname, contents, datax = ""):
+def output(fname, codex, datax):
 
     #print("outfile:", fname)
-
     fp = open(fname, "w")
     fp.write(prolstr)
-    fp.write(contents)
+    fp.write(codex)
     fp.write(epilstr)
     fp.write(datax)
+    fp.write(endstr)
     fp.close()
-
-xcode = '''
-
-    main:
-        ;mov     rax, 0
-        ;mov     rax, [ rax ]
-
-        mov     rdi, format
-        call    printf
-
-        ret
-
-    '''
-xdata = '''
-    format:    db      "Hello world", 10, 0
-'''
 
 if __name__ == "__main__":
     #print ("This module was not meant to operate as main.")
     print(prolstr)
     print(epilstr)
-
+    print(endstr)
 # EOF

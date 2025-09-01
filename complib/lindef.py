@@ -43,10 +43,11 @@ class Stamp:
 
 GR = xenum("GROUPANY")
 
-# Changed to auto add new state
-ST = xenum("STATEANY", "STATEINI", "STPOP", "STPOP2",
-                "STIGN", "STATEFUNC", "SFUNARG", "SFUNARG2", "SFUNARG3",
-                    "SFUNARG4", "SFUNBODY", "SFASSN", "SFASSN2", "SFADD2")
+# Changed to auto add new state (note: no dup checking)
+ST = xenum()
+#"STATEANY", "STATEINI", "STPOP", "STPOP2",
+#                "STIGN", "STATEFUNC", "SFUNARG", "SFUNARG2", "SFUNARG3",
+#                    "SFUNARG4", "SFUNBODY", "SFASSN", "SFASSN2", "SFADD2")
 
 # These are the entries to be matched agains the parse array.
 #    state       item        new_state   function   group
@@ -69,29 +70,38 @@ stamps =  (  \
     #Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
     #Stamp(ST.val("SFUNBODY"), "}",      ST.val("STIGN"),    False,  func_dummy),
 
-    # Declarations
-    Stamp(ST.val("STATEINI"), "decl",   ST.val("DECL2"),    True,   func_decl_start),
-    Stamp(ST.val("STATEINI"), "float",  ST.val("DECL2"),    True,   func_decl_start),
-    Stamp(ST.val("STATEINI"), "dbl",    ST.val("DECL2"),    True,   func_decl_start),
-    Stamp(ST.val("STATEINI"), "exten",  ST.val("DECL2"),    True,   func_decl_start),
-
-    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),    False,  None),
-    Stamp(ST.val("DECL3"), "ident",     ST.val("DECL4"),    False,  func_decl_ident),
-    Stamp(ST.val("DECL4"), "=",         ST.val("DECL5"),    False,  None),
-    Stamp(ST.val("DECL5"), "ident",     ST.val("DECL6"),    False,  func_decl_val),
-    Stamp(ST.val("DECL5"), "num",       ST.val("DECL6"),    False,  func_decl_val),
-    Stamp(ST.val("DECL5"), "num2",      ST.val("DECL6"),    False,  func_decl_val),
-    Stamp(ST.val("DECL6"), ",",         ST.val("DECL3"),    False,  func_decl_comma),
-    Stamp(ST.val("DECL6"), ";",         ST.val("STPOP"),    False,  func_decl_stop),
-    Stamp(ST.val("DECL6"), "nl",        ST.val("STPOP"),    False,  func_decl_stop),
-    Stamp(ST.val("DECL6"), "comm2",     ST.val("STPOP"),    False,  func_decl_stop),
-    Stamp(ST.val("DECL6"), "comm4",     ST.val("STPOP"),    False,  func_decl_stop),
-    Stamp(ST.val("DECL6"), "comm2d",    ST.val("STPOP"),    False,  func_decl_stop),
-    Stamp(ST.val("DECL6"), "comm4d",    ST.val("STPOP"),    False,  func_decl_stop),
-
     # Assignments / Start of arithmetic
     Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),   True,   func_arithstart),
     Stamp(ST.val("STATEINI"), "ident",  ST.val("SFARITH"),   True,   func_arithstart),
+
+    # Declarations
+    Stamp(ST.val("STATEINI"), "decl",   ST.val("DECL2"),    True,    func_decl_start),
+    Stamp(ST.val("STATEINI"), "float",  ST.val("DECL2"),    True,    func_decl_start),
+    Stamp(ST.val("STATEINI"), "dbl",    ST.val("DECL2"),    True,    func_decl_start),
+    Stamp(ST.val("STATEINI"), "exten",  ST.val("DECL2"),    True,    func_decl_start),
+
+    # Functions
+    Stamp(ST.val("SFARITH"),  "(",      ST.val("FUNC3"),    False,   func_func_start),
+    Stamp(ST.val("FUNC3"),    "num",    ST.val("FUNC4"),    False,   func_func_decl_val),
+    Stamp(ST.val("FUNC3"),    "ident",  ST.val("FUNC4"),    False,   func_func_decl_val),
+    Stamp(ST.val("FUNC3"),    "str",    ST.val("FUNC4"),    False,   func_func_decl_val),
+    Stamp(ST.val("FUNC4"),    ",",      ST.val("FUNC3"),    False,   None),
+    Stamp(ST.val("FUNC4"),    ")",      ST.val("STPOP"),    False,   func_func_end),
+
+    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),    False,   None),
+    Stamp(ST.val("DECL3"), "ident",     ST.val("DECL4"),    False,   func_decl_ident),
+    Stamp(ST.val("DECL4"), "=",         ST.val("DECL5"),    False,   None),
+    Stamp(ST.val("DECL5"), "ident",     ST.val("DECL6"),    False,   func_decl_val),
+    Stamp(ST.val("DECL5"), "num",       ST.val("DECL6"),    False,   func_decl_val),
+    Stamp(ST.val("DECL5"), "num2",      ST.val("DECL6"),    False,   func_decl_val),
+    Stamp(ST.val("DECL5"), "str",       ST.val("DECL6"),    False,   func_decl_val),
+    Stamp(ST.val("DECL6"), ",",         ST.val("DECL3"),    False,   func_decl_comma),
+    Stamp(ST.val("DECL6"), ";",         ST.val("STPOP"),    False,   func_decl_stop),
+    Stamp(ST.val("DECL6"), "nl",        ST.val("STPOP"),    False,   func_decl_stop),
+    Stamp(ST.val("DECL6"), "comm2",     ST.val("STPOP"),    False,   func_decl_stop),
+    Stamp(ST.val("DECL6"), "comm4",     ST.val("STPOP"),    False,  func_decl_stop),
+    Stamp(ST.val("DECL6"), "comm2d",    ST.val("STPOP"),    False,  func_decl_stop),
+    Stamp(ST.val("DECL6"), "comm4d",    ST.val("STPOP"),    False,  func_decl_stop),
 
     #Stamp(ST.val("SFARITH"),  "=>",     ST.val("STRASSN3"),  False,  None),
     #Stamp(ST.val("STRASSN3"), "num",    ST.val("STRASSN4"),  False,  func_rassn),
@@ -104,6 +114,7 @@ stamps =  (  \
     Stamp(ST.val("STASSN"),   "ident",  ST.val("SFARITH"),   False,  func_assn),
     Stamp(ST.val("STASSN"),   "num",    ST.val("SFARITH"),   False,  func_assn),
     Stamp(ST.val("STASSN"),   "num2",   ST.val("SFARITH"),   False,  func_assn),
+    Stamp(ST.val("STASSN"),   "str",    ST.val("SFARITH"),    False,  func_assn),
     #Stamp(ST.val("STASSN2"),  ";",      ST.val("STPOP"),     False,  func_assn_stop),
     #Stamp(ST.val("STASSN2"),  "nl",     ST.val("STPOP"),     False,  func_assn_stop),
 

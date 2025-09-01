@@ -19,21 +19,6 @@ def unique():             # create a unique temporary number
     sema.release()
     return _gl_cnt
 
-cummulate = ""
-
-def emit(*argx):
-
-    ''' Accumulate output '''
-
-    global cummulate;
-    for strx in argx:
-        cummulate += strx
-    #cummulate += "\n"
-
-def show_emit():
-    print("emit results:")
-    print(cummulate)
-
 def xprintf(*args, end = " "):
     strx = ""
     for aa in args:

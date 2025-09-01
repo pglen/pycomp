@@ -84,8 +84,10 @@ class Lexer():
             print("Down from", typex, " state, accum:",
                         cesc(self.accum[self.state]), "tt =", tt)
         ttt = self.startstack.pop()
-        tt.mstr = self.accum[self.state]
         tt.start = ttt.start
+        #tt.mstr = rcesc(self.accum[self.state])
+        tt.mstr = self.accum[self.state]
+        #print("pop", tt.mstr)
         # Update stamp to reflect collected data
         #sss = list(tt.stamp)
         #sss[1] = typex
@@ -234,11 +236,13 @@ class Lexer():
             elif tt.stamp.xstr == "dquote": # and self.state == lexdef.STR_STATE:
                 self.accum[self.state] += '"';
                 self._pop_state(tt, "strx")
+                tt.stamp.xstr = "str"
                 res.append(tt)    # Emit
 
             elif tt.stamp.xstr == "dquote2": # self.state == lexdef.STR2_STATE:
                 self.accum[self.state] += "'";
                 self._pop_state(tt, "strx")
+                tt.stamp.xstr = "str"
                 res.append(tt)    # Emit
 
             elif tt.stamp.xstr == "ecomm3":

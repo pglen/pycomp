@@ -125,11 +125,11 @@ def parsefile(strx):
             if aa.flag == 0:
                 print(aa, end = " ")
         print()
-    #emit("hello")
+    #codegen.emit("hello")
 
     # Output results
     if lpg.opt_emit:
-        show_emit()
+        codegen.show_emit()
 
     if not lpg.opt_comp_only:
         codegen.dep_assemble(lpg)
@@ -137,8 +137,7 @@ def parsefile(strx):
         #print("outfile:", outfile)
         #return
 
-        #codegen.output(outfile, xcode, xdata)
-        codegen.output(outfile, cummulate)
+        codegen.output(outfile, codegen.cummulate, codegen.cummulate2)
         codegen.assemble(outfile , lpg)
         codegen.link(outfile, lpg)
 
