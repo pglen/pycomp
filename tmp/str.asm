@@ -56,5 +56,6 @@ hellodef:   db      "Start program", 10, 0
 endx:      db       "End program.", 10, 0
 ;endx:       db      10, 0
 
+A : db X0, 0 ; line: 1 -- u8 : A = X0
 
 ; EOF

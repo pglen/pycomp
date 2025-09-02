@@ -1,2 +1,2 @@
-u8 : strx =  "hello\n"
-printf(strx)
+u8 : strx =  'Hell\'\tWorr\bld\a\n'
+#printf(strx)

@@ -1,14 +1,1 @@
-// C++ Another comment
-/// C++ Doc comment
-# SH Comment
-## SH Doc comment
-/*
-    * Multi line C comment
-    * Here we go
-*/
-/* C comment */
-/**/*
- *   C doc comment
- */
-///
-/// Empty Doc
+// Comment

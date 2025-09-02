@@ -42,8 +42,8 @@ prolstr = '''\
     push    rax
     and     rsp, 0xfffffffffffffff0
     ;call   _print_regs
-    mov     rdi, hellodef
-    call    printf
+    ;mov     rdi, hellodef
+    ;call    printf
 
 '''
 
@@ -57,10 +57,13 @@ epilstr = '''
     ;call   _print_regs
 
     ; This is just in case of no exit statement
-    xor     rax,rax
-    mov     rdi, endx
-    and     rsp, 0xfffffffffffffff0
-    call    printf
+    ;xor     rax,rax
+    ;mov     rdi, endx
+    ;and     rsp, 0xfffffffffffffff0
+    ;call    printf
+
+    ; return value -> exit code
+    mov     rax, 0
 
     mov     rsp, rbp
     pop     rbp
@@ -78,20 +81,6 @@ endx:      db       "End program.", 10, 0
 endstr = '''
 ; EOF
 '''
-
-
-xcode = '''
-    main:
-        ;mov     rax, 0
-        ;mov     rax, [ rax ]
-        mov     rdi, format
-        call    printf
-        ret
-    '''
-xdata = '''
-    format:    db      "Hello world", 10, 0
-'''
-
 
 def emit(*argx):
 

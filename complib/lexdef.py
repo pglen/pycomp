@@ -5,6 +5,7 @@
 '''
 
 from complib.utils import *
+import complib.lexfunc as lexfunc
 
 # We initialize parser variables in the context of the parser module.
 #
@@ -51,6 +52,7 @@ class LexI():
         self.lineoffs = 0
         self.val = 0.0          # if number
         self.ival = 0           # if integer
+        self.wantstate = None
 
         # Decode and mold
         if self.stamp.xstr == "num":
@@ -79,6 +81,7 @@ class LexI():
         other.flag = self.flag
         other.val = self.val
         other.ival = self.ival
+        other.wantstate = self.wantstate
 
     def __str__(self):
         '''   Deliver it in an easy to see format  '''
@@ -86,6 +89,7 @@ class LexI():
                         " ival = " + pp(str(self.ival)) + \
                         " flag = " + pp(str(self.flag)) + \
                         " ] "
+        #" want = " + state2str(self.wantstate) + \
         return strx
 
     def dump(self):
@@ -96,17 +100,20 @@ class LexI():
                         "val = "  + padx("%d" % (self.val)) + \
                         "ival = " + padx("%d" % (self.ival)) + \
                         "]"
+        #" want = " + state2str(self.wantstate) + \
         return strx
 
 # Lexer states
 (INI_STATE, STR_STATE, STR2_STATE, COMM_STATE, COMM_STATED, ESC_STATE, HEX_STATE,
-    UNI_STATE, ) =  range(8)
+    UNI_STATE, POP_STATE) =  range(9)
 
 def state2str(state):
 
     ''' Convert state to string '''
+    if state == None:
+        return "NoneState"
 
-    strx = "None"
+    strx = "InvalState"
     if state == INI_STATE:     strx = "INI_STATE"
     if state == STR_STATE:     strx = "STR_STATE"
     if state == STR2_STATE:    strx = "STR2_STATE"
@@ -153,162 +160,163 @@ IDEN3   = "[A-Za-z0-9_]+"
 
 try:
     xtokens =  (
-    # State     # Token         # Regex             # OPT Notes
+    # State     # Token         # Regex         # New State    # OPT Notes
     # --------  -------         -------             ------------
-    (INI_STATE, "eolnl",        r"\\\\\n"           ),
-    (INI_STATE, "bsla",         r"\\\\"             ),
+    (INI_STATE, "eolnl",        r"\\\\\n"       ,None   ,None ),
+    (INI_STATE, "bsla",         r"\\\\"         ,None   ,None ),
 
-    (INI_STATE, "ifdef2",       r"%ifdef"           ),
-    (INI_STATE, "elifdef2",     r"%elifdef"         ),
-    (INI_STATE, "define2",      r"%define"          ),
-    (INI_STATE, "else2",        r"%else"            ),
-    (INI_STATE, "endif2",       r"%endif"           ),
+    (INI_STATE, "ifdef2",       r"%ifdef"       ,None   ,None ),
+    (INI_STATE, "elifdef2",     r"%elifdef"     ,None   ,None ),
+    (INI_STATE, "define2",      r"%define"      ,None   ,None ),
+    (INI_STATE, "else2",        r"%else"        ,None   ,None ),
+    (INI_STATE, "endif2",       r"%endif"       ,None   ,None ),
 
-    (INI_STATE, "if",           r"if"  + IDEN3      ),
-    (INI_STATE, "if",           r"if"               ),
-    (INI_STATE, "elif",         r"elif"  + IDEN3    ),
-    (INI_STATE, "elif",         r"elif"             ),
-    (INI_STATE, "else",         r"else"   + IDEN3   ),
-    (INI_STATE, "else",         r"else"             ),
-    (INI_STATE, "endif",        r"endif"   + IDEN3  ),
-    (INI_STATE, "endif",        r"endif"            ),
+    (INI_STATE, "if",           r"if"  + IDEN3  ,None   ,None ),
+    (INI_STATE, "if",           r"if"           ,None   ,None ),
+    (INI_STATE, "elif",         r"elif"  + IDEN3,None   ,None ),
+    (INI_STATE, "elif",         r"elif"         ,None   ,None ),
+    (INI_STATE, "else",         r"else"   + IDEN3,None  ,None ),
+    (INI_STATE, "else",         r"else"          ,None  ,None ),
+    (INI_STATE, "endif",        r"endif"   + IDEN3,None ,None ),
+    (INI_STATE, "endif",        r"endif"          ,None ,None ),
 
-    (INI_STATE, "ident",        r"func" + IDEN3     ),
-    (INI_STATE, "func",         r"func"             ),
-    (INI_STATE, "enter",        r"enter" + IDEN3    ),
-    (INI_STATE, "enter",        r"enter"            ),
-    (INI_STATE, "leave",        r"leave" + IDEN3    ),
-    (INI_STATE, "leave",        r"leave"            ),
-    (INI_STATE, "return",       r"return" + IDEN3   ),
-    (INI_STATE, "return",       r"return"           ),
-    (INI_STATE, "loop",         r"loop"  + IDEN3    ),
-    (INI_STATE, "loop",         r"loop"             ),
+    (INI_STATE, "ident",        r"func" + IDEN3   ,None ,None ),
+    (INI_STATE, "func",         r"func"           ,None ,None ),
+    (INI_STATE, "enter",        r"enter" + IDEN3  ,None ,None ),
+    (INI_STATE, "enter",        r"enter"          ,None ,None ),
+    (INI_STATE, "leave",        r"leave" + IDEN3  ,None ,None ),
+    (INI_STATE, "leave",        r"leave"          ,None ,None ),
+    (INI_STATE, "return",       r"return" + IDEN3 ,None ,None ),
+    (INI_STATE, "return",       r"return"         ,None ,None ),
+    (INI_STATE, "loop",         r"loop"  + IDEN3  ,None ,None ),
+    (INI_STATE, "loop",         r"loop"           ,None ,None ),
 
-    (INI_STATE, "type",         r"type"  + IDEN3    ),
-    (INI_STATE, "type",         r"type"             ),
-    (INI_STATE, "aggr",         r"aggr"  + IDEN3    ),
-    (INI_STATE, "aggr",         r"aggr"             ),
-    (INI_STATE, "enum",         r"enum"   + IDEN3   ),
-    (INI_STATE, "enum",         r"enum"             ),
+    (INI_STATE, "type",         r"type"  + IDEN3  ,None ,None ),
+    (INI_STATE, "type",         r"type"           ,None ,None ),
+    (INI_STATE, "aggr",         r"aggr"  + IDEN3  ,None ,None ),
+    (INI_STATE, "aggr",         r"aggr"           ,None ,None ),
+    (INI_STATE, "enum",         r"enum"   + IDEN3 ,None ,None ),
+    (INI_STATE, "enum",         r"enum"           ,None ,None ),
 
-    (INI_STATE, "float",        r"float"            ),
-    (INI_STATE, "dbl",          r"double"           ),
-    (INI_STATE, "exten",        r"extended"         ),
+    (INI_STATE, "float",        r"float"          ,None ,None ),
+    (INI_STATE, "dbl",          r"double"         ,None ,None ),
+    (INI_STATE, "exten",        r"extended"       ,None ,None ),
 
-    (INI_STATE, "decl" ,        r"[sS]8"            ),
-    (INI_STATE, "decl",         r"[sS]16"           ),
-    (INI_STATE, "decl",         r"[sS]32"           ),
-    (INI_STATE, "decl",         r"[sS]64"           ),
-    (INI_STATE, "decl",         r"[sS]128"          ),
-    (INI_STATE, "decl" ,        r"[uU]8"            ),
-    (INI_STATE, "decl",         r"[uU]16"           ),
-    (INI_STATE, "decl",         r"[uU]32"           ),
-    (INI_STATE, "decl",         r"[uU]64"           ),
-    (INI_STATE, "decl",         r"[uU]128"          ),
+    (INI_STATE, "decl" ,        r"[sS]8"          ,None ,None ),
+    (INI_STATE, "decl",         r"[sS]16"         ,None ,None ),
+    (INI_STATE, "decl",         r"[sS]32"         ,None ,None ),
+    (INI_STATE, "decl",         r"[sS]64"         ,None ,None ),
+    (INI_STATE, "decl",         r"[sS]128"        ,None ,None ),
+    (INI_STATE, "decl" ,        r"[uU]8"          ,None ,None ),
+    (INI_STATE, "decl",         r"[uU]16"         ,None ,None ),
+    (INI_STATE, "decl",         r"[uU]32"         ,None ,None ),
+    (INI_STATE, "decl",         r"[uU]64"         ,None ,None ),
+    (INI_STATE, "decl",         r"[uU]128"        ,None ,None ),
 
-    (INI_STATE, "hex",          HEX2                ),
-    (INI_STATE, "oct",          r"0o[0-7]+"         ),
-    (INI_STATE, "oct",          r"0y[0-7]+"         ),
-    (INI_STATE, "bin",          r"0b[0-1]+"         ),
-    (INI_STATE, "bin",          r"0z[0-1]+"         ),
+    (INI_STATE, "hex",          HEX2              ,None ,None ),
+    (INI_STATE, "oct",          r"0o[0-7]+"       ,None ,None ),
+    (INI_STATE, "oct",          r"0y[0-7]+"       ,None ,None ),
+    (INI_STATE, "bin",          r"0b[0-1]+"       ,None ,None ),
+    (INI_STATE, "bin",          r"0z[0-1]+"       ,None ,None ),
 
-    (INI_STATE, "comm4d",       r"\#\#.*\n"         ),
-    (INI_STATE, "comm4",        r"\#.*\n"           ),
-    (INI_STATE, "comm2d",       r"\/\/\/.*\n"       ),
-    (INI_STATE, "comm2",        r"\/\/.*\n"         ),
+    (INI_STATE, "comm4d",       r"\#\#.*\n"       ,None ,None ),
+    (INI_STATE, "comm4",        r"\#.*\n"         ,None ,None ),
+    (INI_STATE, "comm2d",       r"\/\/\/.*\n"     ,None ,None ),
+    (INI_STATE, "comm2",        r"\/\/.*\n"       ,None ,None ),
 
-    (INI_STATE, "num2",         r"[0-9]*\.[0-9]*([Ee][0-9]+)?"),
-    (INI_STATE, "num",          r"[0-9]+"           ),
+    (INI_STATE, "num2",         r"[0-9]*\.[0-9]*([Ee][0-9]+)?",None,None),
+    (INI_STATE, "num",          r"[0-9]+"          ,None ,None),
 
-    (INI_STATE, "bs",           "\b"                ),
-    (INI_STATE, "quote",        r"\""               ),
-    (INI_STATE, "squote",       r"\'"               ),
-    (INI_STATE, "ident",        IDEN2               ),
+    (INI_STATE, "bs",           "\b"               ,None ,None),
+    (INI_STATE, "quote",        r"\""              , STR_STATE , lexfunc.func_start_str),
+    (INI_STATE, "squote",       r"\'"              , STR2_STATE ,None),
+    (INI_STATE, "ident",        IDEN2              ,None ,None),
 
-    (INI_STATE, "peq",          r"\+=>"             ),  # Add to
-    (INI_STATE, "meq",          r"\-=>"             ),  # Sub from
-    (INI_STATE, "deq",          r"=="               ),  # Equal
-    (INI_STATE, "ndeq",         r"!="               ),  # Not Equal
-    (INI_STATE, "teq",          r"==="              ),  # Identical
-    (INI_STATE, "tneq",         r"!=="              ),  # Not Identical
-    (INI_STATE, "=>",           r"=>"               ),  # Assignment
-    (INI_STATE, "=",            r"="                ),  # Assignment
-    (INI_STATE, "dref",         r"->"               ),  # Reference
-    (INI_STATE, "aref",         r"<-"               ),  # De ref
-    (INI_STATE, "idev",         r"\/\%"             ),  # Int divide
-    (INI_STATE, "and",          r"\&\&"             ),  # Logical and
-    (INI_STATE, "or",           r"\|\|"             ),  # Logical or
-    (INI_STATE, "xor",          r"\^\^"             ),  # Logical xor
+    (INI_STATE, "peq",          r"\+=>"            ,None ,None),  # Add to
+    (INI_STATE, "meq",          r"\-=>"            ,None ,None),  # Sub from
+    (INI_STATE, "deq",          r"=="              ,None ,None),  # Equal
+    (INI_STATE, "ndeq",         r"!="              ,None ,None),  # Not Equal
+    (INI_STATE, "teq",          r"==="             ,None ,None),  # Identical
+    (INI_STATE, "tneq",         r"!=="             ,None ,None),  # Not Identical
+    (INI_STATE, "=>",           r"=>"              ,None ,None),  # Assignment
+    (INI_STATE, "=",            r"="               ,None ,None),  # Assignment
+    (INI_STATE, "dref",         r"->"              ,None ,None),  # Reference
+    (INI_STATE, "aref",         r"<-"              ,None ,None),  # De ref
+    (INI_STATE, "idev",         r"\/\%"            ,None ,None),  # Int divide
+    (INI_STATE, "and",          r"\&\&"            ,None ,None),  # Logical and
+    (INI_STATE, "or",           r"\|\|"            ,None ,None),  # Logical or
+    (INI_STATE, "xor",          r"\^\^"            ,None ,None),  # Logical xor
 
-    (INI_STATE, "at",           r"@"                ),  # At
-    (INI_STATE, "excl",         r"!"                ),  # Not
-    (INI_STATE, "tilde",        r"~"                ),  # Tilde
-    (INI_STATE, "under",        r"_"                ),  # Underscore
+    (INI_STATE, "at",           r"@"               ,None ,None),  # At
+    (INI_STATE, "excl",         r"!"               ,None ,None),  # Not
+    (INI_STATE, "tilde",        r"~"               ,None ,None),  # Tilde
+    (INI_STATE, "under",        r"_"               ,None ,None),  # Underscore
 
-    (INI_STATE, "comm3d",       r"\/\*\*"           ),
-    (INI_STATE, "comm3",        r"\/\*"             ),
+    (INI_STATE, "comm3d",       r"\/\*\*"          , COMM_STATED ,None),
+    (INI_STATE, "comm3",        r"\/\*"            , COMM_STATE ,None),
 
-    (INI_STATE, "(",            r"\("               ),
-    (INI_STATE, ")",            r"\)"               ),
-    (INI_STATE, "<",            r"<"                ),
-    (INI_STATE, ">",            r">"                ),
-    (INI_STATE, "&",            r"&"                ),
-    (INI_STATE, "expo",         r"\*\*"             ),
-    (INI_STATE, "*",            r"\*"               ),
-    (INI_STATE, "+",            r"\+"               ),
-    (INI_STATE, "-",            r"\-"               ),
-    (INI_STATE, "/",            r"/"                ),
-    (INI_STATE, "[",            r"\["               ),
-    (INI_STATE, "]",            r"\]"               ),
-    (INI_STATE, "{",            r"\{"               ),
-    (INI_STATE, "}",            r"\}"               ),
-    (INI_STATE, ";",            r";"                ),  # Semi Colon
-    (INI_STATE, ":",            r":"                ),  # Colon
-    (INI_STATE, "::",           r"::"               ),  # Double colon
-    (INI_STATE, "dot",          r"\."               ),
+    (INI_STATE, "(",            r"\("              ,None ,None),
+    (INI_STATE, ")",            r"\)"              ,None ,None),
+    (INI_STATE, "<",            r"<"               ,None ,None),
+    (INI_STATE, ">",            r">"               ,None ,None),
+    (INI_STATE, "&",            r"&"               ,None ,None),
+    (INI_STATE, "expo",         r"\*\*"            ,None ,None),
+    (INI_STATE, "*",            r"\*"              ,None ,None),
+    (INI_STATE, "+",            r"\+"              ,None ,None),
+    (INI_STATE, "-",            r"\-"              ,None ,None),
+    (INI_STATE, "/",            r"/"               ,None ,None),
+    (INI_STATE, "[",            r"\["              ,None ,None),
+    (INI_STATE, "]",            r"\]"              ,None ,None),
+    (INI_STATE, "{",            r"\{"              ,None ,None),
+    (INI_STATE, "}",            r"\}"              ,None ,None),
+    (INI_STATE, ";",            r";"               ,None ,None),  # Semi Colon
+    (INI_STATE, ":",            r":"               ,None ,None),  # Colon
+    (INI_STATE, "::",           r"::"              ,None ,None),  # Double colon
+    (INI_STATE, "dot",          r"\."              ,None ,None),
 
-    (INI_STATE, "<<",           r"<<"               ),  # Shift left <<
-    (INI_STATE, ">>",           r">>"               ),  # Shift right >>
-    (INI_STATE, "<<<",          r"<<<"              ),  # Rotate left <<<
-    (INI_STATE, ">>>",          r">>>"              ),  # Rotate right >>>
-    (INI_STATE, "++",           r"\+\+"             ),
-    (INI_STATE, "--",           r"\-\-"             ),
+    (INI_STATE, "<<",           r"<<"              ,None ,None),  # Shift left <<
+    (INI_STATE, ">>",           r">>"              ,None ,None),  # Shift right >>
+    (INI_STATE, "<<<",          r"<<<"             ,None ,None),  # Rotate left <<<
+    (INI_STATE, ">>>",          r">>>"             ,None ,None),  # Rotate right >>>
+    (INI_STATE, "++",           r"\+\+"            ,None ,None),
+    (INI_STATE, "--",           r"\-\-"            ,None ,None),
 
-    (INI_STATE, "caret",        r"\^"               ),
-    (INI_STATE, "cent",         r"%"                ),
+    (INI_STATE, "caret",        r"\^"              ,None ,None),
+    (INI_STATE, "cent",         r"%"               ,None ,None),
     # We parse white spaces, let the parser deal with it
-    (INI_STATE, "sp",           r" "                ),
-    (INI_STATE, "tab",          r"\t"               ),
-    (INI_STATE, "nl",           r"\n"               ),
-    (INI_STATE, ",",            r","                ),
+    (INI_STATE, "sp",           r" "               ,None ,None),
+    (INI_STATE, "tab",          r"\t"              ,None ,None),
+    (INI_STATE, "nl",           r"\n"              ,None ,None),
+    (INI_STATE, ",",            r","               ,None ,None),
 
     # Callback here
-    (INI_STATE, "any",          r"."                ),
+    (INI_STATE, "any",          r"."               ,None ,None),
 
     # String state
-    (STR_STATE, "sbsla",        r"\\\\"             ),
-    (STR_STATE, "dquote",       r"\""               ),
-    (STR_STATE, "sany",         r"."                ),
+    (STR_STATE, "sbsla",        r"\\"              , ESC_STATE , lexfunc.func_start_esc),
+    (STR_STATE, "dquote",       r"\""              ,None ,None),
+    (STR_STATE, "sany",         r"."               ,None ,None),
 
     #string state
-    (STR2_STATE, "sbsla2",     r"\\\\"              ),
-    (STR2_STATE, "dquote2",    r"\'"                ),
-    (STR2_STATE, "sany2",      r"."                 ),
+    (STR2_STATE, "sbsla2",     r"\\"               , ESC_STATE ,None),
+    (STR2_STATE, "dquote2",    r"\'"               ,None ,None),
+    (STR2_STATE, "sany2",      r"."                ,None ,None),
 
     #comm states
-    (COMM_STATED, "ecomm3d",    r"\*\/"              ),
-    (COMM_STATE,  "ecomm3",     r"\*\/"              ),
-    (COMM_STATE,  "cany",      "(?s)."              ),
-    (COMM_STATED, "canyd",     r"(?s)."             ),
+    (COMM_STATED, "ecomm3d",    r"\*\/"            ,None ,None ),
+    (COMM_STATE,  "ecomm3",     r"\*\/"            ,None ,None ),
+    (COMM_STATE,  "cany",      "(?s)."             ,None ,None ),
+    (COMM_STATED, "canyd",     r"(?s)."            ,None ,None ),
 
     #escape state
-    (ESC_STATE, "anyx",        r"."                 ),
+    #(ESC_STATE, "squote",      r"\'"              ,None ,None ),
+    (ESC_STATE, "anyx",        r"."                ,None ,None ),
 
-    (UNI_STATE, "unihex",      r"[0-9A-Fa-f]{4,8}"  ),
-    (UNI_STATE, "anyu",        r"."                 ),
+    (UNI_STATE, "unihex",      r"[0-9A-Fa-f]{4,8}" ,None ,None ),
+    (UNI_STATE, "anyu",        r"."                ,None ,None ),
 
-    (HEX_STATE, "eschex",      r"[0-9A-Fa-f]{1,2}"  ),
-    (HEX_STATE, "anyh",        r"."                 ),
+    (HEX_STATE, "eschex",      r"[0-9A-Fa-f]{1,2}" ,None ,None ),
+    (HEX_STATE, "anyh",        r"."                ,None ,None ),
     )
 
 except KeyError as err:

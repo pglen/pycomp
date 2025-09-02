@@ -97,16 +97,13 @@ class LinParse():
                 if self.pvg.opt_debug > 6:
                     print("stamps_iter: End of stamps")
                 break
-
             matchx, xprog = self.itemx(stidx, startx, endd)
             if matchx:
                 break
             stidx += 1
-
         # No matter what, step forward
         if xprog == 0:
             xprog = 1
-
         return  matchx, xprog
 
     def itemx(self, sidx, tprog, endd):

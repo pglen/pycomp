@@ -26,37 +26,18 @@ extern  main
 _main:
         push        rbp
         mov         rbp, rsp
-        sub         rsp, 16
-        push        rbp
 
         and     rsp, 0xfffffffffffffff0
-        call    _print_regs
-        call    _printnl
+        ;call    _print_regs
+        ;call    _printnl
 
-        xor     rax,rax
-        mov     rdi, message             ; set 1st parameter (format)
-        call    printf
-        call    _print_regs
-        call    _printnl
-
-        mov     rsp, rbp
-        call    _print_regs
-        call    _printnl
+        ;xor     rax,rax
+        ;mov     rdi, message             ; set 1st parameter (format)
+        ;call    printf
+        ;call    _print_regs
+        ;call    _printnl
 
         call     main
-
-        ;mov     rsp, rbp
-        ;pop     rbp
-        ;xor     rax, rax
-        ;mov     rcx, [dumpx_len]
-        ;mov     rsi, dumpx
-        ;call    _print_mem
-        ;call    _printnl
-
-        ;call    _printnl
-        ;call    _print_regs
-
-        xor     eax, eax
 
         mov       rsp, rbp
         pop       rbp

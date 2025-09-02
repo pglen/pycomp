@@ -52,10 +52,9 @@ def pctona(ddd):
         retx = "dt"
     return retx
 
-# ------------------------------------------------------------------------
-# Pretty Print array
-
 def prarr(xarr, pre = "", all = False):
+
+    ''' Pretty Print array '''
 
     if pre:
         print(pre, end = " ")
@@ -73,7 +72,7 @@ def shorten(strx, xlen = 5):
 def pp(strx, shortenx = False, xlen = 5):
     if shortenx:
         strx = shorten(strx, xlen)
-    str2 = cesc(strx)
+    str2 = cesc_lite(strx)
     return "'" + str(str2) + "'"
 
 def prclass(lpgx):
@@ -176,16 +175,112 @@ def rcesc(strx):
             retx += chh
         pos += 1
 
-    #print("revesc", strx)
-    #for aa in retx:
-    #    print(ord(retx))
+def asmesc(strx):
+
+    ''' escape to 'ASM' escape sequences '''
+
+    lenx = len(strx); sep = strx[0]
+    retx = ""; pos = 0;  cumm = "";
+
+    def subst(retxx, cummm, sepp, chh):
+        ''' internal function for esc sequences '''
+        if cummm:
+            retxx += sepp + cummm + sepp + ", "; cummm = ""
+        retxx += str(ord(chh))  + ", "
+        return retxx, cummm
+
+    while True:
+        if pos >= lenx:
+            break
+        chh = strx[pos]
+        if(chh == '\\'):
+            pos += 1                # leap of faith
+            if pos >= lenx:         # end ?
+                retx += chh
+                break
+            chh2 = strx[pos]
+            if chh2 == "t":
+                retx, cumm  = subst(retx, cumm, sep, "\t")
+            elif chh2 == "n":
+                retx, cumm  = subst(retx, cumm, sep, "\n")
+            elif chh2 == "r":
+                retx, cumm  = subst(retx, cumm, sep, "\r")
+            elif chh2 == "a":
+                retx, cumm  = subst(retx, cumm, sep, "\a")
+            elif chh2 == "b":
+                retx, cumm  = subst(retx, cumm, sep, "\b")
+            elif chh2 == '"':
+                retx, cumm  = subst(retx, cumm, sep, "\"")
+            #elif chh2 == '\\':
+            #    retx, cumm  = subst(retx, cumm, sep, "\\")
+            else:
+                # back off, put chars out
+                pos -= 1
+                if chh2 == "\\":
+                    cumm += chh
+                else:
+                    cumm += chh + chh2;
+        else:
+            if chh != sep:
+                cumm += chh
+        pos += 1
+    # Output last
+    if cumm:
+        retx += sep + cumm + sep + ", "
+    retx += "0"
+    if pvg.opt_debug > 0:
+        print("asmesc:", strx, "->", retx)
+    if pvg.opt_debug > 6:
+        for aa in retx:
+            print(ord(retx))
+
+    return retx
+
+def cesc_lite(strx):
+
+    ''' A simpler version for printing to terminal '''
+
+    retx = u""; pos = 0;
+
+    try:
+        lenx = len(strx)
+    except:
+        # Class does not have length
+        strx = str(strx)
+        lenx = len(strx)
+
+    while True:
+        if pos >= lenx:
+            break
+        chh = strx[pos]
+        if(chh == '\n'):
+            retx += '\\n'
+        elif(chh == '\r'):
+            retx += '\\r'
+        elif(chh == '\b'):
+            retx += '\\b'
+        elif(chh == '\a'):
+            retx += '\\a'
+        elif(chh == '\t'):
+            retx += '\\t'
+        else:
+            retx += chh
+        pos += 1
+
+    if pvg.opt_debug > 5:
+        print("cesc:", strx, "=>", retx)
 
     return retx
 
 def cesc(strx):
 
     ''' Expand 'C' sequences like: \n \\n
-        Thu 21.Aug.2025 added class is now stringized before processing
+        Thu 21.Aug.2025 added c l a s s is now stringized before processing
+
+    From doc:
+        \" \'
+    	\r \n \a \t \b \v \f \e
+    	\? \\
     '''
 
     retx = u""; pos = 0;
@@ -205,6 +300,8 @@ def cesc(strx):
             retx += '\\n'
         elif(chh == '\r'):
             retx += '\\r'
+        elif(chh == '\b'):
+            retx += '\\b'
         elif(chh == '\a'):
             retx += '\\a'
         elif(chh == '\t'):
@@ -213,13 +310,21 @@ def cesc(strx):
             retx += '\\f'
         elif(chh == '\v'):
             retx += '\\v'
-        #elif(chh == '\e'):
-        #    retx += '\\e'
+        elif(chh == '\''):
+            retx += '\\\''
+        elif(chh == '\"'):
+            retx += '\\"'
+        elif(chh == '\e'):
+            retx += '\\e'
         elif(chh == '\\'):
-            retx += '\\\\'
+            retx += '\\'
         else:
             retx += chh
         pos += 1
+
+    if pvg.opt_debug > 5:
+        print("cesc:", strx, "=>", retx)
+
     return retx
 
 # ------------------------------------------------------------------------
@@ -309,16 +414,6 @@ def unescape(strx):
 
     #print ("y[" + retx + "]y")
     return retx
-
-#try:
-#    cccc = strx[pos+1]
-#    print("second backslash", cccc)
-#    if cccc == '\\':
-#        retx += "\\"
-#        pos += 1
-#        continue
-#except:
-#    pass
 
 # ------------------------------------------------------------------------
 # Give the user the usual options for true / false - 1 / 0 - y / n ...

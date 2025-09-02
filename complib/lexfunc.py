@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+''' Called while parsing '''
+
+fpvg = None
+
+def funcpvg(xpvg):
+    global fpvg
+    fpvg = xpvg
+
+def func_start_esc(self2, tt):
+    if fpvg.opt_lexdebug > 2:
+        print("func_start_esc()", tt)
+
+def func_start_str(self2, tt):
+    if fpvg.opt_lexdebug > 2:
+        print("func_start_str()", tt)
+
+# EOF

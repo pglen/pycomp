@@ -10,8 +10,8 @@ import  complib.stack as stack
 import  complib.lexer as lexer
 import  complib.lexdef as lexdef
 import  complib.lindef as lindef
+import  complib.lexfunc as lexfunc
 import  codegen.codegen as codegen
-#import  complib.ptree as ptree
 
 from complib.ptree import *
 from complib.utils import *
@@ -35,7 +35,7 @@ opts =  (\
     ("rdocstr",     False,      False,  "Show document strings"),
     ("uresults",    False,      False,  "Show results"),
     ("workdir",     "./tmp",    False,  "Directory for temp files. Def=./tmp"),
-    ("ldebug",      0,          True,   "Lexer debug level. Def=0 0=>none 9=>noisy."),
+    ("lexdebug",    0,          True,   "Lexer debug level. Def=0 0=>none 9=>noisy."),
     ("animate",     False,      True,   "Animate (slow) output."),
     ("Target",      "x86_64",   True,   "Select target. Def: x86_64 (no other targets)"),
     ("state_show",  False,      True,   "Show parser states."),
@@ -95,14 +95,15 @@ def parsefile(strx):
         prarr(res, "lex res: ")
 
     if lpg.opt_xlexer_show:  # To show what the lexer did
+        print("Lexer res:", end = " ")
         for aa in res:
             if lpg.opt_verbose.cnt > 1:
                 print(aa.dump())
             elif lpg.opt_verbose.cnt > 0:
                 print(aa, end = " ")
             else:
-                print("[" + aa.stamp.xstr, pp(aa.mstr, 1),  end = "] ")
-        print()
+                print("[" + aa.stamp.xstr, pp(aa.mstr),  end = "] ")
+        print("End res.")
 
     if lpg.opt_just_lex:  # Only do lexer
         return
@@ -195,6 +196,9 @@ if __name__ == "__main__":
     if not os.access(lpg.opt_workdir, os.W_OK):
         print("Error - cannot write to work dir:", pp(lpg.opt_workdir))
         sys.exit(1)
+
+    upvg(lpg)                   # utils debug
+    lexfunc.funcpvg(lpg)
 
     while True:
         try:
