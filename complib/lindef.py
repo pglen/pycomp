@@ -149,8 +149,8 @@ stamps =  (  \
     # This will ignore comments
     Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"),   False,  func_comment),
     Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STIGN"),   False,  func_dcomment), # //
-    Stamp(ST.val("STATEANY"), "ecomm3",  ST.val("STIGN"),   False,  func_comment),  # /* */
-    Stamp(ST.val("STATEANY"), "ecomm3d", ST.val("STIGN"),   False,  func_dcomment2),
+    Stamp(ST.val("STATEANY"), "comm3",   ST.val("STIGN"),   False,  func_comment),  # /* */
+    Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STIGN"),   False,  func_dcomment2),
     Stamp(ST.val("STATEANY"), "comm4",   ST.val("STIGN"),   False,  func_comment),  # ##
     Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"),   False,  func_dcomment3),
 

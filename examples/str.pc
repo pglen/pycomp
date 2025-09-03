@@ -1,1 +1,1 @@
-u8:VAR="X\n"
+u8:VAR="xy\n"

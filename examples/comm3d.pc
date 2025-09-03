@@ -1,1 +1,1 @@
- /** 'C' DOC comment "here" again */
+ /** 'C' DOC comment  */

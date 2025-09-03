@@ -1,1 +1,1 @@
- /* 'C' comment "here" again */
+ /* 'C' comment */

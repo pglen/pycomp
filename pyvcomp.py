@@ -26,6 +26,7 @@ opts =  (\
     #   ----        -------     ------      -----------
     ("Define",      [],         False,  "Define variable. (multiple defines accepted)"),
     ("outfile",     "",         False,  "Name of output file."),
+    ("Code",        "",         False,  "Code to compile."),
     ("xlexer_show", False,      False,  "Show lexer output"),
     ("comp_only",   False,      False,  "Compile only."),
     ("emit",        False,      False,  "Emit parse string."),
@@ -102,7 +103,7 @@ def parsefile(strx):
             elif lpg.opt_verbose.cnt > 0:
                 print(aa, end = " ")
             else:
-                print("[" + aa.stamp.xstr, pp(aa.mstr),  end = "] ")
+                print("[" + aa.stamp.xstr, " -> ", pp(aa.mstr),  end = "] ")
         print("End res.")
 
     if lpg.opt_just_lex:  # Only do lexer
@@ -183,7 +184,8 @@ if __name__ == "__main__":
         sys.exit(0)
     if lpg.opt_verbose.cnt > 2:
         lpg.printme()
-    if not lpg.args:
+
+    if not lpg.args and not lpg.opt_Code:
         print("Missing file name(s). Use: -h option for help")
         sys.exit(0);
 
@@ -199,6 +201,15 @@ if __name__ == "__main__":
 
     upvg(lpg)                   # utils debug
     lexfunc.funcpvg(lpg)
+    tmpfile = ""
+    if lpg.opt_Code:
+        tmpfile = lpg.opt_workdir + os.sep + "tmp0000.pc"
+        #print("Compile", tmpfile)
+        fp = open(tmpfile, "w")
+        fp.write(lpg.opt_Code)
+        fp.close()
+        lpg.args.append(tmpfile)
+        #sys.exit(0)
 
     while True:
         try:
@@ -214,4 +225,6 @@ if __name__ == "__main__":
         parsefile(strx)
         cnt += 1
 
+    if lpg.opt_Code:
+        os.unlink(tmpfile)
 # EOF

@@ -26,7 +26,7 @@ class StI():
         self.reg  = stampx[2]
 
     def __str__(self):
-        return "[ " + str(self.num) + " " + pp(str(self.xstr)) + " " \
+        return "[ " + str(self.num) + " = " + pp(str(self.xstr)) + " " \
                 + pp(str(self.reg)) + " ]"
 
 # Quick into: The lexer creates a stack of tokens. The parser scans
@@ -85,7 +85,7 @@ class LexI():
 
     def __str__(self):
         '''   Deliver it in an easy to see format  '''
-        strx = "[ " + pp(self.stamp.xstr) + " = " + pp(self.mstr) + \
+        strx = "[ " + pp(self.stamp.xstr) + " -> " + pp(self.mstr) + \
                         " ival = " + pp(str(self.ival)) + \
                         " flag = " + pp(str(self.flag)) + \
                         " ] "
@@ -139,8 +139,9 @@ def state2str(state):
 IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
 HEX2    = "0x[0-9a-fA-F]+"
 NOIDEN  = "[^a-zA-Z0-9_]"
+FLOATX  = "[0-9]*\.[0-9]*([Ee][0-9]+)?"
 
-# Tokens that start with a keyword is still valid  like: func_hello
+# Tokens that start with a keyword are still valid. Like: func_hello
 IDEN3   = "[A-Za-z0-9_]+"
 
 # ------------------------------------------------------------------------
@@ -151,11 +152,11 @@ IDEN3   = "[A-Za-z0-9_]+"
 # items befors short ones.
 #
 # Elements of the list:
-#       parser state | token | token regex
+#       parser_state | token_val | token_regex | new_state_flag | call_action
 # Filled in automatically:
-#       compiled regex | state change
+#       compiled regex
 
-# The token (name) is an approximate texttual representation of
+# The token (name) is an approximate textual representation of
 # the token. This way it is eazy to see the kind of token in the parser.
 
 try:
@@ -224,7 +225,7 @@ try:
     (INI_STATE, "comm2d",       r"\/\/\/.*\n"     ,None ,None ),
     (INI_STATE, "comm2",        r"\/\/.*\n"       ,None ,None ),
 
-    (INI_STATE, "num2",         r"[0-9]*\.[0-9]*([Ee][0-9]+)?",None,None),
+    (INI_STATE, "num2",         FLOATX             ,None,None),
     (INI_STATE, "num",          r"[0-9]+"          ,None ,None),
 
     (INI_STATE, "bs",           "\b"               ,None ,None),
@@ -283,38 +284,40 @@ try:
 
     (INI_STATE, "caret",        r"\^"              ,None ,None),
     (INI_STATE, "cent",         r"%"               ,None ,None),
+
     # We parse white spaces, let the parser deal with it
     (INI_STATE, "sp",           r" "               ,None ,None),
     (INI_STATE, "tab",          r"\t"              ,None ,None),
     (INI_STATE, "nl",           r"\n"              ,None ,None),
     (INI_STATE, ",",            r","               ,None ,None),
 
-    # Callback here
     (INI_STATE, "any",          r"."               ,None ,None),
 
-    # String state
+    # String states
     (STR_STATE, "sbsla",        r"\\"              , ESC_STATE , lexfunc.func_start_esc),
-    (STR_STATE, "dquote",       r"\""              ,None ,None),
+    (STR_STATE, "dquote",       r"\""              ,POP_STATE ,None),
     (STR_STATE, "sany",         r"."               ,None ,None),
 
-    #string state
+    # string2 states
     (STR2_STATE, "sbsla2",     r"\\"               , ESC_STATE ,None),
-    (STR2_STATE, "dquote2",    r"\'"               ,None ,None),
-    (STR2_STATE, "sany2",      r"."                ,None ,None),
+    (STR2_STATE, "dquote2",    r"\'"               , POP_STATE ,None),
+    (STR2_STATE, "sany2",      r"."                , None ,None),
 
-    #comm states
-    (COMM_STATED, "ecomm3d",    r"\*\/"            ,None ,None ),
-    (COMM_STATE,  "ecomm3",     r"\*\/"            ,None ,None ),
-    (COMM_STATE,  "cany",      "(?s)."             ,None ,None ),
-    (COMM_STATED, "canyd",     r"(?s)."            ,None ,None ),
+    # comm states
+    (COMM_STATE,  "ecomm3",     r"\*\/"            , POP_STATE ,None ),
+    (COMM_STATE,  "cany",      "(?s)."             , None ,None ),
+    (COMM_STATED, "ecomm3d",    r"\*\/"            , POP_STATE ,None ),
+    (COMM_STATED, "canyd",     r"(?s)."            , None ,None ),
 
-    #escape state
+    # escape states
     #(ESC_STATE, "squote",      r"\'"              ,None ,None ),
     (ESC_STATE, "anyx",        r"."                ,None ,None ),
 
+    # unicode states
     (UNI_STATE, "unihex",      r"[0-9A-Fa-f]{4,8}" ,None ,None ),
     (UNI_STATE, "anyu",        r"."                ,None ,None ),
 
+    # hex characters
     (HEX_STATE, "eschex",      r"[0-9A-Fa-f]{1,2}" ,None ,None ),
     (HEX_STATE, "anyh",        r"."                ,None ,None ),
     )

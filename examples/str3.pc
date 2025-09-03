@@ -1,1 +1,1 @@
-strvar = "hello world \r again \n"
+strvar = 'hello world \r again \n'

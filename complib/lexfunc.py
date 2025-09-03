@@ -9,11 +9,11 @@ def funcpvg(xpvg):
     fpvg = xpvg
 
 def func_start_esc(self2, tt):
-    if fpvg.opt_lexdebug > 2:
+    if fpvg.opt_lexdebug > 6:
         print("func_start_esc()", tt)
 
 def func_start_str(self2, tt):
-    if fpvg.opt_lexdebug > 2:
+    if fpvg.opt_lexdebug > 6:
         print("func_start_str()", tt)
 
 # EOF

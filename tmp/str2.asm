@@ -56,6 +56,6 @@ hellodef:   db      "Start program", 10, 0
 endx:      db       "End program.", 10, 0
 ;endx:       db      10, 0
 
-VAR : db "xy\n", 0 ; line: 1 -- u8 : VAR = "xy\n"
+strvar : db "hello 'old' world", 0 ; line: 1 -- u8 : strvar = "hello 'old' world"
 
 ; EOF

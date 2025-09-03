@@ -83,26 +83,22 @@ class Lexer():
         self.state = state
         self.accum[self.state] = ""
 
-    def _pop_state(self, tt, typex):
+    def _pop_state(self, tt, typex = "None"):
 
-        ''' Done with a section, pop state '''
+        ''' Done with a state, pop state '''
 
         if self.pvg.opt_lexdebug > 2:
             print("  Dn:", lexdef.state2str(self.state),
                         " acc:", pp(self.accum[self.state]), "tt =", tt)
         ttt = self.startstack.pop()
         tt.start = ttt.start
-        print("pop:", "'" + self.accum[self.state] + "'")
-        tmp = self.accum[self.state] + tt.mstr
-        tt.mstr = tmp
-
+        #print("pop:", "'" + self.accum[self.state] + "'", "mstr:", tt.mstr)
+        tmp = self.accum[self.state] # + tt.mstr
         # Update stamp to reflect collected data
-        #sss = list(tt.stamp)
-        #sss[1] = typex
-        #tt.stamp = tuple(sss)   # Back to tuple (for read only)
-        tt.stamp.stampx = typex
+        #tt.stamp.xstr = typex
         self.state = self.statstack.pop()
-        self.accum[self.state] += tt.mstr
+        self.accum[self.state] += tmp
+        self.mstr = self.accum[self.state]
         if self.pvg.opt_lexdebug > 2:
             print("  Dn2:", lexdef.state2str(self.state),
                         " acc:", pp(self.accum[self.state]), "tt =", tt)
@@ -129,10 +125,12 @@ class Lexer():
             if self.pvg.opt_lexdebug > 3:
                 print("Token at:", pos, tt, "state =", lexdef.state2str(self.state))
 
-            # Change state if needed
-            if tt.wantstate:
+            # Change state if needed, except on pop state
+            if tt.wantstate and tt.wantstate != lexdef.POP_STATE:
+                #print("Push state:", lexdef.state2str(tt.wantstate))
                 self._push_state(tt, tt.wantstate)
 
+            # If function is specified, execute
             if tt.callit:
                 tt.callit(self, tt)
 
@@ -178,9 +176,9 @@ class Lexer():
                     print("hex_state:", tt.mstr)
                 self.accum[self.state] = ccc
                 # Copy up:
-                self.accum[self.statstack.pop2()] += self.accum[self.state]
+                self.accum[self.statstack.peek()] += self.accum[self.state]
                 self._pop_state(tt, "hex")
-                self.accum[self.statstack.pop2()] += self.accum[self.state]
+                self.accum[self.statstack.peek()] += self.accum[self.state]
                 self._pop_state(tt, "esc")
                 continue
             # Handle escapes:
@@ -218,32 +216,28 @@ class Lexer():
                         #self.accum[self.statstack.pop2()] += self.accum[self.state]
                         self._pop_state(tt, "esc")
                         continue
+
             # Handle back offs
-            if tt.stamp.xstr == "dquote":
-                self.accum[self.state] += '"';
+            if tt.wantstate == lexdef.POP_STATE:
+                #print("Pop state: ", lexdef.state2str(self.state))
                 self._pop_state(tt, "strx")
-                tt.stamp.xstr = "str"
-                #res.append(tt)    # Emit
-            elif tt.stamp.xstr == "dquote2":
-                self.accum[self.state] += "'";
-                self._pop_state(tt, "strx")
-                tt.stamp.xstr = "str"
-                #res.append(tt)    # Emit
-            elif tt.stamp.xstr == "ecomm3":
-                self.accum[self.state] += "*/";
-                if self.pvg.opt_lexdebug > 0:
-                    print(" Down:", self.accum[self.state], tt, lexdef.COMM_STATE)
-                self._pop_state(tt, "comm3")
-                #res.append(tt)    # Emit
-            elif tt.stamp.xstr == "ecomm3d":
-                self.accum[self.state] += "*/";
-                if self.pvg.opt_lexdebug > 0:
-                    print("Change comm state down:",
-                                self.accum[self.state], tt, lexdef.COMM_STATED)
-                self._pop_state(tt, "comm3d")
-                #res.append(tt)    # Emit
-            else:
-                pass
+                tt.mstr = self.accum[self.state]
+
+                if tt.stamp.xstr == "dquote":
+                    self.accum[self.state] += '"';
+                    tt.stamp.xstr = "str"
+                elif tt.stamp.xstr == "dquote2":
+                    self.accum[self.state] += "'";
+                    tt.stamp.xstr = "str"
+                elif tt.stamp.xstr == "ecomm3":
+                    self.accum[self.state] += "*/";
+                    tt.stamp.xstr = "comm3"
+                elif tt.stamp.xstr == "ecomm3d":
+                    self.accum[self.state] += "*/";
+                    tt.stamp.xstr = "comm3d"
+
+                else:
+                    pass
 
             # Default to fill accumulators:
             if  self.state == lexdef.STR_STATE:
@@ -261,7 +255,7 @@ class Lexer():
             if self.state == lexdef.INI_STATE:
                 res.append(tt)
 
-            #print(self.state, tt.stamp, lexdef.rtok[tt.stamp], "\t", tt[2])
+            #print("fin", self.state, "tt", tt, "acc", self.accum[self.state])
 
         return res
 
