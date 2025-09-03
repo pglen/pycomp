@@ -76,7 +76,10 @@ class Lexer():
         return ret;
 
     def _push_state(self, tt, state):
-        if self.pvg.opt_lexdebug > 2:
+
+        ''' Start new state  '''
+
+        if self.pvg.opt_lexdebug > 0:
             print("  To:", lexdef.state2str(state), tt)
         self.startstack.push(tt)
         self.statstack.push(self.state)
@@ -92,11 +95,9 @@ class Lexer():
                         " acc:", pp(self.accum[self.state]), "tt =", tt)
         ttt = self.startstack.pop()
         tt.start = ttt.start
-        #print("pop:", "'" + self.accum[self.state] + "'", "mstr:", tt.mstr)
         tmp = self.accum[self.state] # + tt.mstr
-        # Update stamp to reflect collected data
-        #tt.stamp.xstr = typex
         self.state = self.statstack.pop()
+        # Migrate collected data down
         self.accum[self.state] += tmp
         self.mstr = self.accum[self.state]
         if self.pvg.opt_lexdebug > 2:
@@ -162,11 +163,13 @@ class Lexer():
                     print("uni_state:", tt.mstr)
                 self.accum[self.state] = ccc
                 # Copy up:
-                self.accum[self.statstack.pop2()] += self.accum[self.state]
+                #self.accum[self.statstack.pop2()] += self.accum[self.state]
                 self._pop_state(tt, "uni")
-                self.accum[self.statstack.pop2()] += self.accum[self.state]
+                #self.accum[self.statstack.pop2()] += self.accum[self.state]
                 self._pop_state(tt, "esc")
             elif self.state == lexdef.HEX_STATE:
+                print("hex state", tt)
+
                 try:
                     ccc = chr(int(tt.mstr, 16))
                 except:
@@ -176,11 +179,13 @@ class Lexer():
                     print("hex_state:", tt.mstr)
                 self.accum[self.state] = ccc
                 # Copy up:
-                self.accum[self.statstack.peek()] += self.accum[self.state]
+                #self.accum[self.statstack.peek()] += self.accum[self.state]
                 self._pop_state(tt, "hex")
-                self.accum[self.statstack.peek()] += self.accum[self.state]
+                #self.accum[self.statstack.peek()] += self.accum[self.state]
                 self._pop_state(tt, "esc")
+
                 continue
+
             # Handle escapes:
             elif self.state == lexdef.ESC_STATE:
                 if self.pvg.opt_lexdebug > 4:

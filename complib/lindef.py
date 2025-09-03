@@ -155,6 +155,7 @@ stamps =  (  \
     Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"),   False,  func_dcomment3),
 
     # This will ignore white spaces
+    Stamp(ST.val("STATEANY"), "tab",     ST.val("STIGN"),   False,  func_tab),
     Stamp(ST.val("STATEANY"), "sp",      ST.val("STIGN"),   False,  func_space),
     Stamp(ST.val("STATEANY"), "nl",      ST.val("STIGN"),   False,  func_nl),
     )

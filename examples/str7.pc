@@ -1,1 +1,1 @@
-hello
+hello="this i|\\\"s \\a \s\"tring"

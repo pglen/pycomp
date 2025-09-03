@@ -50,8 +50,8 @@ def parsefile(strx):
     global buf, lpg
     start_time =  time.process_time()
 
-    if lpg.opt_verbose.cnt > 1:
-        print ("Processing file:", strx)
+    if lpg.opt_verbose.cnt > 0:
+        print ("Processing:", strx)
 
     #if lpg.opt_outfile == "":
     strx2 = os.path.basename(strx)

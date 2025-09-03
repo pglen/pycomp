@@ -4,6 +4,7 @@
 
 import complib.stack as stack
 import complib.lindef as lindef
+import complib.lexdef as lexdef
 import codegen.codegen as codegen
 
 try:
@@ -136,6 +137,10 @@ def func_space(self2, tprog):
     if pvg.opt_debug > 5:
         print("space()", "tprog =", tprog)
 
+def func_tab(self2, tprog):
+    if pvg.opt_debug > 5:
+        print("tab()", "tprog =", tprog)
+
 def func_nl(self2, tprog):
     if pvg.opt_debug > 5:
         print("nl()", "tprog =", tprog)
@@ -216,6 +221,7 @@ def func_func_end(self2, tprog):
 def func_arithstart(self2, tprog):
     if pvg.opt_debug > 1:
         print("func_arithstart()", "tprog =", tprog, self2.arrx[tprog])
+    astack.empty()
     astack.push(tprog)
 
 def func_arithop(self2, tprog):
@@ -283,6 +289,11 @@ def reduce(self2, filter):
             if  self2.arrx[idx].stamp.xstr == filter:
                 idx1 = bstack.get(loopx-1)
                 idx2 = bstack.get(loopx+1)
+
+                if not idx1 == None or idx2 == None:
+                    print("Syntax Error")
+                    return
+
                 if pvg.opt_debug > 5:
                     print("op", pp(filter), "pr:",
                         self2.arrx[idx1], self2.arrx[idx], self2.arrx[idx2])
@@ -322,8 +333,13 @@ def func_arit_stop(self2, tprog):
             print(self2.arrx[aa], end = " ")
         print()
 
-    strx =   self2.arrx[astack.get(0)].mstr + " = "
-    strx +=  self2.arrx[astack.get(1)].mstr
+    try:
+        strx =   self2.arrx[astack.get(0)].mstr + " = "
+        strx +=  self2.arrx[astack.get(1)].mstr
+    except:
+        linex = self2.arrx[astack.get(0)].linenum + 1
+        tok = self2.arrx[astack.get(0)].mstr
+        print("Syntax error on line:", linex, "near:", pp(tok))
     codegen.emit(strx)
 
     #strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
