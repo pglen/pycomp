@@ -82,14 +82,6 @@ def prclass(lpgx):
     print
 
 # ------------------------------------------------------------------------
-# Give a new integer value with every iteration
-#_gl_pcnt = 0
-#def punique():                       # create a unique temporary number
-#    global _gl_pcnt;
-#    _gl_pcnt += 10
-#    return _gl_pcnt
-
-# ------------------------------------------------------------------------
 # Convert octal string to integer
 
 def oct2int(strx):
@@ -174,6 +166,7 @@ def rcesc(strx):
         else:
             retx += chh
         pos += 1
+    return retx
 
 def asmesc(strx):
 
@@ -228,9 +221,9 @@ def asmesc(strx):
     if cumm:
         retx += sep + cumm + sep + ", "
     retx += "0"
-    if pvg.opt_debug > 0:
+    if pvg and pvg.opt_debug > 4:
         print("asmesc:", strx, "->", retx)
-    if pvg.opt_debug > 6:
+    if pvg and pvg.opt_debug > 6:
         for aa in retx:
             print(ord(retx))
 
@@ -267,19 +260,19 @@ def cesc_lite(strx):
             retx += chh
         pos += 1
 
-    if pvg.opt_debug > 5:
+    if pvg and pvg.opt_debug > 5:
         print("cesc:", strx, "=>", retx)
 
     return retx
 
 def cesc(strx):
 
-    ''' Expand 'C' sequences like: \n \\n
+    r''' Expand 'C' sequences like: \n \\n
         Thu 21.Aug.2025 added c l a s s is now stringized before processing
 
     From doc:
         \" \'
-    	\r \n \a \t \b \v \f \e
+    	\r \n \a \t \b \v \f \ e
     	\? \\
     '''
 
@@ -314,15 +307,15 @@ def cesc(strx):
             retx += '\\\''
         elif(chh == '\"'):
             retx += '\\"'
-        elif(chh == '\e'):
-            retx += '\\e'
+        #elif(chh == '\e'):
+        #    retx += '\\e'
         elif(chh == '\\'):
             retx += '\\'
         else:
             retx += chh
         pos += 1
 
-    if pvg.opt_debug > 5:
+    if pvg and pvg.opt_debug > 5:
         print("cesc:", strx, "=>", retx)
 
     return retx
@@ -492,6 +485,12 @@ class   xenum():
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
+    org = "12345678\r\n\a\tabcdef"
+    print(org)
+    sss = cesc(org)
+    print(sss)
+    uuu = rcesc(sss)
+    print(uuu)
 
 def test_xenum():
 

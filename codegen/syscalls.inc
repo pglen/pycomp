@@ -20,6 +20,7 @@
 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;
+; Regs:                 %rax ; %rdi ; %rsi ; %rdx ; %r10 ;  %r8                                  %r9
 ; SYSTEM CALL              equ %rax ; %rdi                              %rsi                                  %rdx                                 %r10                           %r8                                  %r9
 ;
 

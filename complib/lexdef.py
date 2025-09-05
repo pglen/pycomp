@@ -95,10 +95,10 @@ class LexI():
     def dump(self):
         strx = "[ Lex: " + padx("'" + str(self.stamp) + "' => '" + \
                         cesc(self.mstr) + "'", 20)  + \
-                        "flag = " + padx("%d" % (self.flag)) + \
-                        "pos = "  + padx("%d:%d" % (self.start, self.end), 8) +  \
-                        "val = "  + padx("%d" % (self.val)) + \
-                        "ival = " + padx("%d" % (self.ival)) + \
+                        " flag = " + padx("%d" % (self.flag)) + \
+                        " pos = "  + padx("%d:%d" % (self.start, self.end), 8) +  \
+                        " val = "  + padx("%d" % (self.val)) + \
+                        " ival = " + padx("%d" % (self.ival)) + \
                         "]"
         #" want = " + state2str(self.wantstate) + \
         return strx
@@ -213,6 +213,7 @@ try:
     (INI_STATE, "decl",         r"[uU]32"         ,None ,None ),
     (INI_STATE, "decl",         r"[uU]64"         ,None ,None ),
     (INI_STATE, "decl",         r"[uU]128"        ,None ,None ),
+    (INI_STATE, "decl",         r"arr"            ,None ,None ),
 
     (INI_STATE, "hex",          HEX2              ,None ,None ),
     (INI_STATE, "oct",          r"0o[0-7]+"       ,None ,None ),

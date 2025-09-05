@@ -26,41 +26,44 @@ prolstr = '''\
 ;                                                                         \n\
 ;   Automatically generated, will be overwritten.                         \n\
 ;                                                                         \n\
-                                                                          \n\
+        extern  printf                                                    \n\
+        extern  fflush                                                    \n\
+        extern  exit                                                      \n\
         global main                                                       \n\
-        extern printf                                                     \n\
-        section .text                                                     \n\
         bits 64
 
 %include "codegen/crt.inc"
 
- main:
+section .text                                                     \n\
+
+main:
 
     push    rbp
     mov     rbp, rsp
 
-    push    rax
-    and     rsp, 0xfffffffffffffff0
-    ;call   _print_regs
+    ;call    _print_regs
     ;mov     rdi, hellodef
+    ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
 '''
 
 epilstr = '''
-
-    ;mov     rsp, rbp
-    ;pop     rbp
-
-   \nenc_code:\n    ;End of program\n\n
-
-    ;call   _print_regs
-
+end_code:    ;  End of program\n
     ; This is just in case of no exit statement
     ;xor     rax,rax
     ;mov     rdi, endx
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
+
+    ; Flush stdout, in case of missing terminating newline
+    mov     rdi, 0
+    call    fflush
+
+    ; Exit here
+    ;mov     qword [exit_code], 44   ; test exit code
+    mov     rdi, [exit_code]
+    call    exit
 
     ; return value -> exit code
     mov     rax, 0
@@ -72,9 +75,10 @@ epilstr = '''
 
 section .data
 
+exit_code   dq      0
 hellodef:   db      "Start program", 10, 0
-endx:      db       "End program.", 10, 0
-;endx:       db      10, 0
+endx2:      db       "End program.", 10, 0
+endx:       db      10, 0
 
 '''
 

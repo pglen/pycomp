@@ -24,11 +24,14 @@ main:
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
-    mov  rdi  , strx
+    mov  rdi  , strz
+    mov eax, 0
+    mov al, byte [numz]
+    mov  rsi  , rax
     xor  rax, rax
     and     rsp, 0xfffffffffffffff0
     extern printf
-    call printf   ; line: 2 -- printf
+    call printf   ; line: 4 -- printf
 
 end_code:    ;  End of program
 
@@ -62,6 +65,7 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-strx : db "Hello World", 10, 0 ; line: 1 -- u8 : strx = "Hello World\n"
+numz : db 257 ; line: 1 -- u8 : numz = 257
+strz : db "Hello World %d", 10, 0 ; line: 2 -- arr : strz = "Hello World %d\n"
 
 ; EOF

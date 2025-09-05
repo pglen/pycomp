@@ -17,10 +17,58 @@ def funcpvg(xpvg):
     global pvg
     pvg = xpvg
 
+class TypI:
+
+    ''' Global type structure '''
+
+    def __init__(self, typex, namex, valx):
+        self.typex = typex
+        self.namex = namex
+        self.valx = valx
+
+    def __str__(self):
+        return str(self.typex) + " : " + str(self.namex) + \
+                " = " + str(self.valx)
+
+gpool = stack.pStack()
+
+def addtopool(self2):
+
+    # Add to global pool
+    typename = self2.arrx[dstack.get(0)].mstr
+    varname = self2.arrx[dstack.get(1)].mstr
+    varval = self2.arrx[dstack.get(2)].mstr
+
+    for aa in gpool:
+        if aa.namex == varname:
+            print("Duplicate definition:", varname)
+            sys.exit(1)
+
+    tpi = TypI(typename, varname, varval)
+    gpool.push(tpi)
+
+    #for aa in gpool:
+    #    print("gpool:", aa)
+
+    datatype = pctona(self2.arrx[dstack.get(0)].mstr)
+
+    return datatype
+
+def lookpool(self2, varname):
+
+    ret = None
+    for aa in gpool:
+        if aa.namex == varname:
+            #print("look pool:", aa)
+            ret = aa
+            break
+    return ret
+
+
 # Functions to call on stamp match
+dstack    = stack.pStack()             # Declaration
 
 astack    = stack.pStack()             # Arithmetic
-dstack    = stack.pStack()             # Declaration
 argstack  = stack.pStack()             # function arguments
 callstack = stack.pStack()             # Function call
 
@@ -66,7 +114,7 @@ def func_assn_stop(self2, tprog):
 
 def func_decl_start(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_decl_start()", "tprog =", tprog)
+        print("func_decl_start()", "tprog =", tprog, self2.arrx[tprog])
     dstack.empty()
     dstack.push(tprog)
     #codegen.emit(self2.arrx[tprog].mstr)
@@ -79,7 +127,7 @@ def func_decl_ident(self2, tprog):
 
 def func_decl_val(self2, tprog):
     if pvg.opt_debug > 1:
-        print("func_decl_val()", "tprog =", tprog)
+        print("func_decl_val()", "tprog =", tprog, self2.arrx[tprog])
     dstack.push(tprog)
     #codegen.emit(self2.arrx[tprog].mstr)
 
@@ -87,11 +135,12 @@ def func_decl_comma(self2, tprog):
     if pvg.opt_debug > 1:
         print("decl_comma()", "tprog =", tprog)
     print("\ndstack one:", end = " ")
-    for aa in dstack:
-        print(self2.arrx[aa], end = " ")
-    print()
+    if pvg.opt_debug > 2:
+        for aa in dstack:
+            print(self2.arrx[aa], end = " ")
+        print()
 
-    datatype = pctona(self2.arrx[dstack.get(0)].mstr)
+    datatype = addtopool(self2)
 
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
     strx +=  self2.arrx[dstack.get(2)].mstr
@@ -115,16 +164,20 @@ def func_decl_stop(self2, tprog):
             print(self2.arrx[aa], end = " ")
         print()
 
-    datatype = pctona(self2.arrx[dstack.get(0)].mstr)
+    datatype = addtopool(self2)
 
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
-    strx +=  self2.arrx[dstack.get(2)].mstr
+    #print("datatype =", pp(self2.arrx[dstack.get(0)].mstr), datatype)
 
-    # if str type, put trailing zero
+    # if str type, expand
+    if self2.arrx[dstack.get(0)].mstr == "arr":
+        strx +=  asmesc(self2.arrx[dstack.get(2)].mstr)
+    elif datatype == "u32":
+        strx +=  "[" + self2.arrx[dstack.get(2)].mstr + "[]"
+    else:
+        strx +=  self2.arrx[dstack.get(2)].mstr
 
-    if self2.arrx[dstack.get(2)].stamp.xstr == "str":
-        strx +=  ", 0"
-
+    #print("strx", strx)
     # Output comment as well
     linex = self2.arrx[dstack.get(0)].linenum + 1
     strx +=  " ; line: " + str(linex) + " -- "
@@ -186,7 +239,7 @@ def func_func_start(self2, tprog):
 
 def func_func_decl_val(self2, tprog):
         if pvg.opt_debug > 1:
-            print("func_func_decl_val()", pp(self2.arrx[tprog].mstr))
+            print("func_func_decl_val()", self2.arrx[tprog])
         argstack.push(tprog)
 
 def func_func_end(self2, tprog):
@@ -202,19 +255,41 @@ def func_func_end(self2, tprog):
 
         estr = ""
         for cnt, aa in enumerate(argstack):
-            if cnt > 6:
+            if cnt >= len(codegen.regorder):
                 print("Too many arguments to function:", funcname )
                 sys.exit(1)
-            # Skip first arg as syscall opcode is in rax
-            #estr += "   push   rbp\n"
-            estr += "   mov  " + codegen.regorder[cnt+1] + "  " + \
-                        ", " + self2.arrx[aa].mstr + "\n"
-            #estr += "   pop   rbp\n"
 
-        estr += "   extern " +  funcname + "\n"
-        estr += "   and     rsp, 0xfffffffffffffff0\n"
-        estr += "   call " +  funcname
-        estr +=  " ; line: " + str(linex) + " -- " + funcname
+            tpi = lookpool(self2, self2.arrx[aa].mstr)
+            print("lookpool tpi =>", tpi)
+
+            # Skip first arg as syscall opcode is in rax
+            print("arg arrx", self2.arrx[aa].dump())
+            # Expand types
+            if tpi.typex == "arr":
+                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                            ", " + self2.arrx[aa].mstr + "\n"
+            elif  tpi.typex == "u32" or tpi.typex == "s32" :
+                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                            ", [" + self2.arrx[aa].mstr + "]\n"
+            elif  tpi.typex == "u16" or tpi.typex == "s16":
+                estr += "    mov eax, 0\n"
+                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                    ", rax\n"
+            elif  tpi.typex == "u8" or tpi.typex == "s8":
+                estr += "    mov eax, 0\n"
+                estr += "    mov al, byte [" + self2.arrx[aa].mstr + "]\n"
+                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                    ", rax\n"
+
+            #print("estr:", estr)
+        estr += "    xor  rax, rax" + "\n"
+        # Exception on printf
+        if funcname == "printf":
+            estr += "    and     rsp, 0xfffffffffffffff0\n"
+        estr += "    extern " +  funcname + "\n"
+        estr += "    call " +  funcname
+        estr +=  "   ; line: " + str(linex) + " -- " + funcname
 
         codegen.emit(estr)
 
@@ -291,7 +366,7 @@ def reduce(self2, filter):
                 idx2 = bstack.get(loopx+1)
 
                 if not idx1 == None or idx2 == None:
-                    print("Syntax Error")
+                    print("Syntax Error near", )
                     return
 
                 if pvg.opt_debug > 5:

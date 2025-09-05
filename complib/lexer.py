@@ -168,8 +168,8 @@ class Lexer():
                 #self.accum[self.statstack.pop2()] += self.accum[self.state]
                 self._pop_state(tt, "esc")
             elif self.state == lexdef.HEX_STATE:
-                print("hex state", tt)
-
+                if self.pvg.opt_lexdebug > 2:
+                    print("hex state", tt)
                 try:
                     ccc = chr(int(tt.mstr, 16))
                 except:
@@ -179,11 +179,8 @@ class Lexer():
                     print("hex_state:", tt.mstr)
                 self.accum[self.state] = ccc
                 # Copy up:
-                #self.accum[self.statstack.peek()] += self.accum[self.state]
                 self._pop_state(tt, "hex")
-                #self.accum[self.statstack.peek()] += self.accum[self.state]
                 self._pop_state(tt, "esc")
-
                 continue
 
             # Handle escapes:
@@ -203,7 +200,7 @@ class Lexer():
                     elif tt.mstr == "\?": self.accum[self.state] += "\\?"
                     elif tt.mstr == "\"": self.accum[self.state] += "\""
                     elif tt.mstr == "\'": self.accum[self.state] += "\'"
-                    elif tt.mstr == "\\": self.accum[self.state] += "\\\\" # ; print("bsl")
+                    elif tt.mstr == "\\": self.accum[self.state] += "\\\\"
                     elif tt.mstr == "x":
                         self._push_state(tt, lexdef.HEX_STATE)
                         if self.pvg.opt_lexdebug > 2:
@@ -229,18 +226,17 @@ class Lexer():
                 tt.mstr = self.accum[self.state]
 
                 if tt.stamp.xstr == "dquote":
-                    self.accum[self.state] += '"';
+                    tt.mstr += '"';
                     tt.stamp.xstr = "str"
                 elif tt.stamp.xstr == "dquote2":
-                    self.accum[self.state] += "'";
+                    tt.mstr += "'";
                     tt.stamp.xstr = "str"
                 elif tt.stamp.xstr == "ecomm3":
-                    self.accum[self.state] += "*/";
+                    tt.mstr += "*/";
                     tt.stamp.xstr = "comm3"
                 elif tt.stamp.xstr == "ecomm3d":
-                    self.accum[self.state] += "*/";
+                    tt.mstr += "*/";
                     tt.stamp.xstr = "comm3d"
-
                 else:
                     pass
 

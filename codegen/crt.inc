@@ -63,7 +63,7 @@ bits 64
 extern  _print, _print_char, _print_mem, _print_regs
 extern  _printsp, _print_num, _print_args, _print_zstr, _print_lab
 extern  _printnl, _printsp, _printdot
-extern  _exit, _version, _sbrk, _getkey
+extern  _version, _sbrk, _getkey
 ;, main
 
 ; EOF

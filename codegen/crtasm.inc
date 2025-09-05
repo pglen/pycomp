@@ -1,10 +1,12 @@
+; ------------------------------------------------------------------------
+; This file contains CRT debug helpers
 ; Standard library CRT substitution; only including neccessary functions
 ; Named as an .inc so it is not cleaned with the generated assembly
 
 global _print, _print_char, _print_num, _print_lab
 global _print_dot, _print_regs, _print_args, _print_zstr
 global _printnl, _printsp, _printdot, _getkey
-global _exit, _start, _version, _sbrk
+global _version, _sbrk
 
 %include "crt.inc"
 
@@ -16,19 +18,6 @@ extern  printf
 
 section .text
 
-
-_start:     ; Main entry point
-
-        push      rbp
-        mov       rbx, rsp
-        mov       rbp, rsp
-
-        mov       [orgstack], rbx
-        mov       rbp, rsp
-        push      rbp
-
-        mov       rsp, stack_end
-        mov       rbp,rsp
 
         ;push      rbp
         ;call    _print_args
@@ -60,15 +49,6 @@ _start:     ; Main entry point
         ;mov     rcx, [format2_end]
         ;call    _print_mem
         ;call    _printnl
-
-        call    _main
-        ;call    _print_regs
-
-        mov     rsp, [orgstack]
-        pop     rbp
-
-        mov     rdi, rax                        ; transfer exit code
-        jmp     _exit
 
 _version:       ; Print version
          mov       rsi, message             ; Address of string to output
@@ -337,16 +317,6 @@ _print_num:                                 ; Number is in rax
         popall
         ret
 
-_exit0:
-          xor       rdi, rdi                ; Exit code 0
-_exit:
-          mov       rax, 60                 ; System call for exit
-          syscall                           ; Invoke operating system to exit
-          ret
-
-_dummy:
-    ret
-
 _print_regs:        ; print processor registers
 
         push        rbp
@@ -377,7 +347,6 @@ _print_regs:        ; print processor registers
         printx  "rbp",  rbp
         printx  "rsp",  rsp
         printnl
-        call    _dummy
         pop     rax
         pop     rbx
 
@@ -452,7 +421,6 @@ spx         db      ' '
 spx_len     dq      $-spx
 dot         db      '.'
 dot_len     dq      $-dot
-orgstack    dq      0
 
 format3:    db      "Hello world3.%d", 10, 0
 format2:    db      "Hello world2.", 10, 0
@@ -460,12 +428,5 @@ format2_end dq      $-format2
 format1:    db      "Hello world1.", 10, 0
 format1_end dq      $-format1
 
-section .bss
-
-align 64
-stack        resb 4096
-stack_end:
-
-section .txt
 
 ; EOF

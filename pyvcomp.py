@@ -148,7 +148,7 @@ def parsefile(strx):
     #print()
 
 def setheads(lpg):
-    prestr =    "PCOMP parallel compiler.\n" \
+    prestr =    "PYVCOMP parallel compiler.\n" \
                 "Usage: " + lpg.myname + \
                 " [options] filename [filename(s)] ... [options]\n" \
                 "Available options:"

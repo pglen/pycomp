@@ -1,0 +1,4 @@
+u8 : numz = 257
+arr : strz =  "Hello World %d\n"
+#arr : strz =  "Hello World %d\n"
+printf(strz, numz)
