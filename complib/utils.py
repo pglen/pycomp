@@ -450,6 +450,29 @@ def padx(strx, lenx = 4):
     #print("[[" + strx + "]]")
     return strx;
 
+def error(self2, errstr, newpos = -1, addstr = ""):
+
+    ''' Print compiler error, add more info if  requested '''
+
+    if newpos >= 0:
+        print("newpos", newpos)
+    eol = 0
+    posx = self2.arrx[self2.startx]
+    # From current pos till end of this line
+    for aa in range(posx.linestart, len(self2.buf)):
+        if self2.buf[aa] == "\n":
+            eol = aa
+            #print("Found pos", posx.linestart, eol)
+            break
+    print(self2.buf[posx.linestart:eol])
+    print("-" *  (posx.end - posx.linestart - 2), end = "" )
+    print("^", end = "")
+    print("-" *  (eol - posx.end) )
+    print(errstr, "\033[31;1merror:\033[0m", "line:", posx.linenum + 1,
+                    "col:", posx.start - posx.linestart, end = " " )
+    print(addstr)
+    sys.exit(1)
+
 class   xenum():
 
     ''' Simple autofill enum to use in parser '''

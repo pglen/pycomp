@@ -65,6 +65,7 @@ class Lexer():
                 tt = lexdef.LexI(dd, mstr, mmm.start(), mmm.end())
                 tt.linenum = self.linenum
                 tt.linestart = self.linestart
+                tt.lineoffs  = tt.start - self.linestart
                 tt.wantstate = ttt[3]
                 tt.callit = ttt[4]
                 ret = tt
@@ -83,6 +84,8 @@ class Lexer():
             print("  To:", lexdef.state2str(state), tt)
         self.startstack.push(tt)
         self.statstack.push(self.state)
+        # Clean accum as we are going up
+        #self.accum[self.state] = ""
         self.state = state
         self.accum[self.state] = ""
 
@@ -224,6 +227,7 @@ class Lexer():
                 #print("Pop state: ", lexdef.state2str(self.state))
                 self._pop_state(tt, "strx")
                 tt.mstr = self.accum[self.state]
+                self.accum[self.state] = ""
 
                 if tt.stamp.xstr == "dquote":
                     tt.mstr += '"';
@@ -239,6 +243,7 @@ class Lexer():
                     tt.stamp.xstr = "comm3d"
                 else:
                     pass
+                #continue
 
             # Default to fill accumulators:
             if  self.state == lexdef.STR_STATE:

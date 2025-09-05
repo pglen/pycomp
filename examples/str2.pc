@@ -1,1 +1,1 @@
-u8 : strvar = "hello 'old' world"
+arr : strvar = "hello 'old' world"

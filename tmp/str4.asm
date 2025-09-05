@@ -4,43 +4,43 @@
 ;                                                                         
 ;   Automatically generated, will be overwritten.                         
 ;                                                                         
-                                                                          
+        extern  printf                                                    
+        extern  fflush                                                    
+        extern  exit                                                      
         global main                                                       
-        extern printf                                                     
-        section .text                                                     
         bits 64
 
 %include "codegen/crt.inc"
 
- main:
+section .text                                                     
+
+main:
 
     push    rbp
     mov     rbp, rsp
 
-    push    rax
-    and     rsp, 0xfffffffffffffff0
-    ;call   _print_regs
+    ;call    _print_regs
     ;mov     rdi, hellodef
+    ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
 
-
-    ;mov     rsp, rbp
-    ;pop     rbp
-
-   
-enc_code:
-    ;End of program
-
-
-
-    ;call   _print_regs
+end_code:    ;  End of program
 
     ; This is just in case of no exit statement
     ;xor     rax,rax
     ;mov     rdi, endx
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
+
+    ; Flush stdout, in case of missing terminating newline
+    mov     rdi, 0
+    call    fflush
+
+    ; Exit here
+    ;mov     qword [exit_code], 44   ; test exit code
+    mov     rdi, [exit_code]
+    call    exit
 
     ; return value -> exit code
     mov     rax, 0
@@ -52,9 +52,11 @@ enc_code:
 
 section .data
 
+exit_code   dq      0
 hellodef:   db      "Start program", 10, 0
-endx:      db       "End program.", 10, 0
-;endx:       db      10, 0
+endx2:      db       "End program.", 10, 0
+endx:       db      10, 0
 
+strvar : db "hello world: \ff", 9, 13, 10, " ", 0 ; line: 1 -- arr : strvar = "hello world: \f\t\r\n "
 
 ; EOF

@@ -11,7 +11,8 @@ regorder = ( "rax", #arg0
              "rdi", #arg1
              "rsi", #arg2
              "rdx", #arg3
-             "r10", #arg4
+             "rcx", #arg4
+             # ???? "r10", #arg4
              "r8",  #arg5
              "r9",  #arg6
             )

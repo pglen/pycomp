@@ -1,4 +1,3 @@
-u8:str3="symbols: \u2700 \u2701 \u2702 \u2703 \u2704 \u2705 \u2706 "
-u8:str4="more symbols: \u2190 \u2191  \u2192 \u2193 \u2194 \u2195 \u2196 "
-u8:str5="weather: \u2600 \u2601 \u2602 \u2603 \u2604 \u2605 \u2606 \u2607 "
-
+arr:str3="symbols: \u2700 \u2701 \u2702 \u2703 \u2704 \u2705 \u2706 "
+arr:str4="more symbols: \u2190 \u2191  \u2192 \u2193 \u2194 \u2195 \u2196 "
+arr:str5="weather: \u2600 \u2601 \u2602 \u2603 \u2604 \u2605 \u2606 \u2607 "

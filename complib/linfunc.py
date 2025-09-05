@@ -38,20 +38,13 @@ def addtopool(self2):
     typename = self2.arrx[dstack.get(0)].mstr
     varname = self2.arrx[dstack.get(1)].mstr
     varval = self2.arrx[dstack.get(2)].mstr
-
     for aa in gpool:
         if aa.namex == varname:
-            print("Duplicate definition:", varname)
+            error(self2, "Duplicate definition", self2.arrx[dstack.get(0)].pos)
             sys.exit(1)
-
     tpi = TypI(typename, varname, varval)
     gpool.push(tpi)
-
-    #for aa in gpool:
-    #    print("gpool:", aa)
-
     datatype = pctona(self2.arrx[dstack.get(0)].mstr)
-
     return datatype
 
 def lookpool(self2, varname):
@@ -158,7 +151,7 @@ def func_decl_stop(self2, tprog):
     if pvg.opt_debug > 1:
         print("func_decl_stop()", "tprog =", tprog)
 
-    if pvg.opt_debug > 1:
+    if pvg.opt_debug > 0:
         print("\ndstack:", end = " ")
         for aa in dstack:
             print(self2.arrx[aa], end = " ")
@@ -253,40 +246,60 @@ def func_func_end(self2, tprog):
         funcname =  self2.arrx[idx].mstr
         linex = self2.arrx[idx].linenum + 1
 
+        # Exception on printf stack call
         estr = ""
-        for cnt, aa in enumerate(argstack):
-            if cnt >= len(codegen.regorder):
-                print("Too many arguments to function:", funcname )
-                sys.exit(1)
-
-            tpi = lookpool(self2, self2.arrx[aa].mstr)
-            print("lookpool tpi =>", tpi)
-
-            # Skip first arg as syscall opcode is in rax
-            print("arg arrx", self2.arrx[aa].dump())
-            # Expand types
-            if tpi.typex == "arr":
-                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                            ", " + self2.arrx[aa].mstr + "\n"
-            elif  tpi.typex == "u32" or tpi.typex == "s32" :
-                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                            ", [" + self2.arrx[aa].mstr + "]\n"
-            elif  tpi.typex == "u16" or tpi.typex == "s16":
-                estr += "    mov eax, 0\n"
-                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
-                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                                    ", rax\n"
-            elif  tpi.typex == "u8" or tpi.typex == "s8":
-                estr += "    mov eax, 0\n"
-                estr += "    mov al, byte [" + self2.arrx[aa].mstr + "]\n"
-                estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                                    ", rax\n"
-
-            #print("estr:", estr)
-        estr += "    xor  rax, rax" + "\n"
-        # Exception on printf
         if funcname == "printf":
             estr += "    and     rsp, 0xfffffffffffffff0\n"
+            estr += "    mov     rbp, rsp\n"
+        cnt = 0
+        for aa in argstack:
+            tpi = lookpool(self2, self2.arrx[aa].mstr)
+            #print("lookpool tpi =>", tpi)
+            if not tpi:
+                error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
+
+            if cnt  >= len(codegen.regorder) - 1:
+                #error(self2, "Too many arguments to function:") #, funcname )
+                #sys.exit(1)
+                pass
+
+            # Skip first arg as syscall opcode is in rax
+            #print("arg:", self2.arrx[aa].dump())
+            # Expand types
+            if tpi.typex == "arr":
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                             ", " + self2.arrx[aa].mstr + "\n"
+            elif  tpi.typex == "u32" or tpi.typex == "s32" :
+                estr += "    mov rax, 0\n"
+                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                             ", [" + self2.arrx[aa].mstr + "]\n"
+            elif  tpi.typex == "u16" or tpi.typex == "s16":
+                estr += "    mov rax, 0\n"
+                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                    ", rax\n"
+            elif  tpi.typex == "u8" or tpi.typex == "s8":
+                estr += "    mov rax, 0\n"
+                estr += "    mov al, byte [" + self2.arrx[aa].mstr + "]\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                     ", rax\n"
+            cnt += 1
+        estr += "    xor  rax, rax" + "\n"
+        #print("estr =\n", estr)
+
         estr += "    extern " +  funcname + "\n"
         estr += "    call " +  funcname
         estr +=  "   ; line: " + str(linex) + " -- " + funcname
@@ -366,7 +379,7 @@ def reduce(self2, filter):
                 idx2 = bstack.get(loopx+1)
 
                 if not idx1 == None or idx2 == None:
-                    print("Syntax Error near", )
+                    error("Syntax Error near", self2.arrx[idx].stamp.xstr)
                     return
 
                 if pvg.opt_debug > 5:
@@ -407,14 +420,14 @@ def func_arit_stop(self2, tprog):
         for aa in astack:
             print(self2.arrx[aa], end = " ")
         print()
-
     try:
         strx =   self2.arrx[astack.get(0)].mstr + " = "
         strx +=  self2.arrx[astack.get(1)].mstr
     except:
         linex = self2.arrx[astack.get(0)].linenum + 1
         tok = self2.arrx[astack.get(0)].mstr
-        print("Syntax error on line:", linex, "near:", pp(tok))
+        error(self2, "Syntax error",
+                    addstr =  "near: %s" % (pp(tok)))
     codegen.emit(strx)
 
     #strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "

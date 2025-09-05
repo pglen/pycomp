@@ -49,7 +49,9 @@ class LexI():
         # Init future vars (just to show what comes)
         self.flag = 0           # State information
         self.linenum = 0
+        self.linestart = 0
         self.lineoffs = 0
+        self.pos = 0
         self.val = 0.0          # if number
         self.ival = 0           # if integer
         self.wantstate = None
@@ -88,18 +90,21 @@ class LexI():
         strx = "[ " + pp(self.stamp.xstr) + " -> " + pp(self.mstr) + \
                         " ival = " + pp(str(self.ival)) + \
                         " flag = " + pp(str(self.flag)) + \
-                        " ] "
+                        " ]"
         #" want = " + state2str(self.wantstate) + \
         return strx
 
     def dump(self):
-        strx = "[ Lex: " + padx("'" + str(self.stamp) + "' => '" + \
+        strx = " [ Lex: " + padx("'" + str(self.stamp) + "' => '" + \
                         cesc(self.mstr) + "'", 20)  + \
-                        " flag = " + padx("%d" % (self.flag)) + \
-                        " pos = "  + padx("%d:%d" % (self.start, self.end), 8) +  \
-                        " val = "  + padx("%d" % (self.val)) + \
-                        " ival = " + padx("%d" % (self.ival)) + \
-                        "]"
+                        " flag = "  + padx("%d" % (self.flag)) + \
+                        " st/en = " + padx("%d:%d" % (self.start, self.end), 8) +  \
+                        " val = "   + ("%d" % (self.val)) + \
+                        " ival = "  + ("%d" % (self.ival)) + \
+                        " line = "  + ("%d" % (self.linenum+1)) + \
+                        " offs = "  + ("%d" % (self.lineoffs+1)) + \
+                        " lsta = "  + ("%d" % (self.linestart)) + \
+                        " ] "
         #" want = " + state2str(self.wantstate) + \
         return strx
 
@@ -231,7 +236,7 @@ try:
 
     (INI_STATE, "bs",           "\b"               ,None ,None),
     (INI_STATE, "quote",        r"\""              , STR_STATE , lexfunc.func_start_str),
-    (INI_STATE, "squote",       r"\'"              , STR2_STATE ,None),
+    (INI_STATE, "squote",       r"\'"              , STR2_STATE ,lexfunc.func_start_str),
     (INI_STATE, "ident",        IDEN2              ,None ,None),
 
     (INI_STATE, "peq",          r"\+=>"            ,None ,None),  # Add to

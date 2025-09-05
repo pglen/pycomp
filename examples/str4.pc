@@ -1,1 +1,1 @@
-strvar = "hello world: \f\t\r\n "
+arr : strvar = "hello world: \f\t\r\n "

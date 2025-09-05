@@ -24,11 +24,6 @@ main:
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
-    mov  rdi  , strx
-    xor  rax, rax
-    and     rsp, 0xfffffffffffffff0
-    extern printf
-    call printf   ; line: 2 -- printf
 
 end_code:    ;  End of program
 
@@ -62,6 +57,8 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-strx : db "Hello World", 10, 0 ; line: 1 -- arr : strx = "Hello World\n"
+str3 : db "symbols: ✀2700 ✁2701 ✂2702 ✃2703 ✄2704 ✅2705 ✆2706 ", 0 ; line: 1 -- arr : str3 = "symbols: ✀2700 ✁2701 ✂2702 ✃2703 ✄2704 ✅2705 ✆2706 "
+str4 : db "symbols: ✀2700 ✁2701 ✂2702 ✃2703 ✄2704 ✅2705 ✆2706 more symbols: ←2190 ↑2191  →2192 ↓2193 ↔2194 ↕2195 ↖2196 ", 0 ; line: 2 -- arr : str4 = "symbols: ✀2700 ✁2701 ✂2702 ✃2703 ✄2704 ✅2705 ✆2706 "more symbols: ←2190 ↑2191  →2192 ↓2193 ↔2194 ↕2195 ↖2196 "
+str5 : db "symbols: ✀2700 ✁2701 ✂2702 ✃2703 ✄2704 ✅2705 ✆2706 more symbols: ←2190 ↑2191  →2192 ↓2193 ↔2194 ↕2195 ↖2196 weather: ☀2600 ☁2601 ☂2602 ☃2603 ☄2604 ★2605 ☆2606 ☇2607 ", 0 ; line: 3 -- arr : str5 = "symbols: ✀2700 ✁2701 ✂2702 ✃2703 ✄2704 ✅2705 ✆2706 "more symbols: ←2190 ↑2191  →2192 ↓2193 ↔2194 ↕2195 ↖2196 "weather: ☀2600 ☁2601 ☂2602 ☃2603 ☄2604 ★2605 ☆2606 ☇2607 "
 
 ; EOF

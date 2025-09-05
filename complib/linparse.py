@@ -45,7 +45,6 @@ class LinParse():
                 else:
                     print(" [", aa.stamp.xstr, pp(aa.mstr), aa.flag, " ]", end = " ")
             print("\nend arrx.")
-
         startx = 0 ; endd = len(self.arrx)
         # Walk all locations, see if we have a match
         while True:
@@ -59,28 +58,11 @@ class LinParse():
                 break
             else:
                 startx += prog
-
         if startx >= endd:
             pass
         else:
             if not match:
-                posx = self.arrx[startx]
-                eol = 0
-                # Till end of this line
-                for aa in range(posx.linestart, len(self.buf)):
-                    if self.buf[aa] == "\n":
-                        eol = aa
-                        print("Found pos", posx.linestart, eol)
-                        break
-                #print("aa", self.buf[posx.linestart:posx.linestart+pos])
-                print(self.buf[posx.linestart:eol])
-                print("-" *  (posx.end - posx.linestart - 2), end = "" )
-                print("^", end = "")
-                print("-" *  (eol - posx.linestart), )
-                print("Parse \033[31;1merror:\033[0m", "line:", posx.linenum + 1,
-                                "col:", posx.start - posx.linestart )
-                #print("-" *  (pos - posx.end))
-
+                error(self, "Parse")
         #print("end scan")
 
     def stamps_iter(self, startx, endd):
@@ -91,6 +73,7 @@ class LinParse():
             print("stamps_iter()", "startx =", startx, "endd =", endd)
 
         matchx = 0 ; xprog = 0; stidx = 0
+        self.startx = startx
         while True:
             # Walk all stamps
             if  stidx >= len(stamps):

@@ -1,1 +1,2 @@
-# strvar = "Hello World"  intvar
+arr : strvar = "Hello World"
+arr : var = "No prob"

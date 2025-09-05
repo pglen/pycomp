@@ -1,1 +1,1 @@
-u8:VAR="xy\n"
+arr : sss = "xy\n" ;

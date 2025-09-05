@@ -15,5 +15,6 @@ def func_start_esc(self2, tt):
 def func_start_str(self2, tt):
     if fpvg.opt_lexdebug > 6:
         print("func_start_str()", tt)
+    #self2.accum[self2.state] = ""
 
 # EOF
