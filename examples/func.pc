@@ -1,6 +1,6 @@
 // Function definition
 arr : var2 = "Hello"
-func hello (u8 : var2 )
+func hello (u8 : var2)
 {
     printf(var2)
 }
