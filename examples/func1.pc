@@ -1,14 +1,8 @@
-// Test empty functions
-
-//debug 13
-
-function emptyfunc()
-
+// Test functions
+func emptyfunc()
 {
 }
-
-function emptyfunc2(u32 aa)
-
+func func2(u32 : aa)
 {
 }
 

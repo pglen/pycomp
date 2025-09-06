@@ -1,0 +1,5 @@
+func hello (u32 : name = defval)
+{
+    return val
+}
+

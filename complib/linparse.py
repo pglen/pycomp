@@ -99,16 +99,18 @@ class LinParse():
         currtoken = self.arrx[tprog]
 
         match = False ; iprog = 1   # Always advance
-
-        if stamps[sidx].state != ST.val("STATEANY"):
-            if  stamps[sidx].state != self.state:
+        #print("state", type(stamps[sidx].state), stamps[sidx].state)
+        if ST.val("STATEANY") not in stamps[sidx].state:
+            if  self.state not in stamps[sidx].state:
                 if self.pvg.opt_debug > 9:
-                    print("Out of state:", ST.get(stamps[sidx].state), "state:",
+                    sss = ""
+                    for aa in stamps[sidx].state:
+                        sss += ST.get(aa)
+                    print("Out of state:", "state: [",  sss, "]",
                             ST.get(self.state),
                                 "token:", stamps[sidx].token,
                                     "tprog", tprog)
                 return match, iprog
-
         #breakpoint()
         #print("stamp", stamps[idx])
 

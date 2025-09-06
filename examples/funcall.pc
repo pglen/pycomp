@@ -1,15 +1,15 @@
 // Test all functions
 
-u32 	aa;  u32  	bb;
+u32 : aa;  u32  :	bb;
 u32 cc; u32 ee; 	u32 ff;
 
 function emptyfunc()
 {
 }
 
-function emptyfunc2(u32 var)
+function emptyfunc2(u32 : var)
 {
-	u32 gg;
+	u32 : gg;
 }
 
 	u32 var1; u32 var3;

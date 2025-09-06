@@ -42,7 +42,7 @@ class Lexer():
         # Initial accum
         self.accum = {}
         self.accum[self.state] = ""
-
+        self.linearr = []
     def _lexiter(self, pos, strx):
 
         '''  Call this for every token '''
@@ -139,7 +139,13 @@ class Lexer():
                 tt.callit(self, tt)
 
             # Global actions
+            if  tt.stamp.xstr == "decl":
+                # Lower case declaration
+                tt.mstr = tt.mstr.lower()
+
             if  tt.stamp.xstr == "nl":
+                # Count lines
+                self.linearr.append(pos)
                 self.linestart = pos
                 self.linenum += 1
                 if self.pvg.opt_lexdebug > 6:

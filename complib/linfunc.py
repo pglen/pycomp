@@ -37,7 +37,12 @@ def addtopool(self2):
     # Add to global pool
     typename = self2.arrx[dstack.get(0)].mstr
     varname = self2.arrx[dstack.get(1)].mstr
-    varval = self2.arrx[dstack.get(2)].mstr
+
+    if  dstack.getlen() > 2:
+        varval = self2.arrx[dstack.get(2)].mstr
+    else:
+        varval = 0
+
     for aa in gpool:
         if aa.namex == varname:
             error(self2, "Duplicate definition", self2.arrx[dstack.get(0)].pos)
@@ -57,10 +62,8 @@ def lookpool(self2, varname):
             break
     return ret
 
-
 # Functions to call on stamp match
 dstack    = stack.pStack()             # Declaration
-
 astack    = stack.pStack()             # Arithmetic
 argstack  = stack.pStack()             # function arguments
 callstack = stack.pStack()             # Function call
@@ -151,8 +154,12 @@ def func_decl_stop(self2, tprog):
     if pvg.opt_debug > 1:
         print("func_decl_stop()", "tprog =", tprog)
 
+    # Add default token zero
+    #if  dstack.getlen() <= 2:
+    #        dstack.push(dstack.get(1))
+
     if pvg.opt_debug > 0:
-        print("\ndstack:", end = " ")
+        print("\ndstack: len =", dstack.getlen(), end = " ")
         for aa in dstack:
             print(self2.arrx[aa], end = " ")
         print()
@@ -162,13 +169,25 @@ def func_decl_stop(self2, tprog):
     strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
     #print("datatype =", pp(self2.arrx[dstack.get(0)].mstr), datatype)
 
-    # if str type, expand
+    # type dependent expand
     if self2.arrx[dstack.get(0)].mstr == "arr":
-        strx +=  asmesc(self2.arrx[dstack.get(2)].mstr)
-    elif datatype == "u32":
-        strx +=  "[" + self2.arrx[dstack.get(2)].mstr + "[]"
+        if dstack.getlen() <= 2:
+            # patch missing declaration argument with zero /empty
+            strx += ""
+        else:
+            strx +=  asmesc(self2.arrx[dstack.get(2)].mstr)
+    elif datatype == "u32" or datatype == "u16" or datatype == "u8":
+        if dstack.getlen() <= 2:
+            # patch missing declaration argument with zero /empty
+            strx += " 0 "
+        else:
+            strx +=  "[" + self2.arrx[dstack.get(2)].mstr + "[]"
     else:
-        strx +=  self2.arrx[dstack.get(2)].mstr
+        # This is where type expnsion takes place
+        if dstack.getlen() <= 2:
+            strx += " 0 "
+        else:
+            strx +=  self2.arrx[dstack.get(2)].mstr
 
     #print("strx", strx)
     # Output comment as well
@@ -176,7 +195,12 @@ def func_decl_stop(self2, tprog):
     strx +=  " ; line: " + str(linex) + " -- "
     strx +=  self2.arrx[dstack.get(0)].mstr + " : "
     strx += self2.arrx[dstack.get(1)].mstr + " = "
-    strx += self2.arrx[dstack.get(2)].mstr
+
+    if dstack.getlen() <= 2:
+        strx += " 0 "
+    else:
+        strx += self2.arrx[dstack.get(2)].mstr
+
     codegen.emitdata(strx)
 
 def func_space(self2, tprog):

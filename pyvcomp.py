@@ -11,13 +11,14 @@ import  complib.lexer as lexer
 import  complib.lexdef as lexdef
 import  complib.lindef as lindef
 import  complib.lexfunc as lexfunc
+import  complib.linfunc as linfunc
 import  codegen.codegen as codegen
 
 from complib.ptree import *
 from complib.utils import *
 
 Version = "Version: 1.0.0; "
-Build   = "Build date: Tue 26.Aug.2025"
+Build   = "Build date: Sat 06.Sep.2025"
 
 # Name is prepened opt_ and name's first letter is the option letter
 
@@ -37,8 +38,9 @@ opts =  (\
     ("uresults",    False,      False,  "Show results"),
     ("workdir",     "./tmp",    False,  "Directory for temp files. Def=./tmp"),
     ("lexdebug",    0,          True,   "Lexer debug level. Def=0 0=>none 9=>noisy."),
+    ("ymtab",       False,      True,   "Show symtab."),
     ("animate",     False,      True,   "Animate (slow) output."),
-    ("Target",      "x86_64",   True,   "Select target. Def: x86_64 (no other targets)"),
+    ("Target",      "x86_64",   True,   "Select target. Def: x86_64 (only target)"),
     ("state_show",  False,      True,   "Show parser states."),
     ("timing_show", False,      True,   "Show timings for program execution."),
     )
@@ -137,6 +139,11 @@ def parsefile(strx):
     # Output results
     if lpg.opt_emit:
         codegen.show_emit()
+
+    if lpg.opt_ymtab:
+        print("Symtab:")
+        for aa in linfunc.gpool:
+            print(aa)
 
     if not lpg.opt_comp_only:
         codegen.dep_assemble(lpg)
