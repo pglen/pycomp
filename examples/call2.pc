@@ -5,7 +5,11 @@ u16 : num4 = 7890 ;
 u16 : num5 = 9012 ;
 u16 : num6 = 1111 ;
 
+arr : strx =  "Hello World: %06d %d %d\n"
 arr : strz =  "Hello World: %s %d %d %d %d %d %d\n"
 arr : stry = "abcd" ;
 
 printf(strz, stry, num1, num2, num3, num4, num5, num6)
+printf(strx, num1, num2, num3, num4)
+
+# EOF

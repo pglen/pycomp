@@ -1,1 +1,7 @@
- func hello ( ) { }
+// Function definition
+arr : var2 = "Hello"
+func hello (u8 : var2 )
+{
+    printf(var2)
+}
+hello(var2)

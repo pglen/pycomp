@@ -98,11 +98,16 @@ def parsefile(strx):
     if lpg.opt_xlexer_show:  # To show what the lexer did
         print("Lexer res:", end = " ")
         for aa in res:
+
             if lpg.opt_verbose.cnt > 1:
                 print(aa.dump())
             elif lpg.opt_verbose.cnt > 0:
                 print(aa, end = " ")
             else:
+                # Do not show cmments
+                if aa.stamp.xstr == "comm2": continue
+                if aa.stamp.xstr == "comm3": continue
+                if aa.stamp.xstr == "comm4": continue
                 print("[" + aa.stamp.xstr, " -> ", pp(aa.mstr),  end = "] ")
         print("End res.")
 

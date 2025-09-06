@@ -191,10 +191,6 @@ def func_nl(self2, tprog):
     if pvg.opt_debug > 5:
         print("nl()", "tprog =", tprog)
 
-def func_dummy(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("match dummy()", "tprog =", tprog)
-
 def func_comment(self2, tprog):
     if pvg.opt_debug > 5:
         print("comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
@@ -223,9 +219,24 @@ def func_str(self2, idx, tprog):
         prarr(self2.arrx[tprog:tprog], "func_str pre: ")
     sys.exit(0)
 
+def func_func_call(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_call()", pp(self2.arrx[tprog].mstr))
+
 def func_func_start(self2, tprog):
         if pvg.opt_debug > 1:
             print("func_func_start()", pp(self2.arrx[tprog].mstr))
+        argstack.empty()
+        callstack.empty()
+        callstack.push(astack.pop())
+
+def func_func_arg_start(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_arg_start()", pp(self2.arrx[tprog].mstr))
+
+def func_func_args(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_args()", pp(self2.arrx[tprog].mstr))
         argstack.empty()
         callstack.empty()
         callstack.push(astack.pop())
@@ -238,6 +249,8 @@ def func_func_decl_val(self2, tprog):
 def func_func_end(self2, tprog):
         if pvg.opt_debug > 1:
             print("func_func_end()", pp(self2.arrx[tprog].mstr))
+
+        return
         #print("\nargtsack:", end = " ")
         #for aa in argstack:
         #    print(self2.arrx[aa], end = " ")
@@ -262,7 +275,6 @@ def func_func_end(self2, tprog):
                 #error(self2, "Too many arguments to function:") #, funcname )
                 #sys.exit(1)
                 pass
-
             # Skip first arg as syscall opcode is in rax
             #print("arg:", self2.arrx[aa].dump())
             # Expand types

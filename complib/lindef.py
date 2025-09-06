@@ -54,41 +54,51 @@ ST = xenum()
 #    -----       ---------   ----------  --------   -----
 
 stamps =  (  \
-    #Stamp(ST.val("STATEINI"), "func",   ST.val("STATEFUNC"), False, func_func),
-    #Stamp(ST.val("STATEFUNC"), "(",     ST.val("SFUNARG"),   False, None),
-    #Stamp(ST.val("SFUNARG"), "decl",    ST.val("SFUNARG2"),  True,  None),
-    #
-    #Stamp(ST.val("SFUNARG2"), ":",      ST.val("SFUNARG3"), False,  None),
-    #Stamp(ST.val("SFUNARG3"), "ident",  ST.val("SFUNARG3"), False,  None),
-    #Stamp(ST.val("SFUNARG3"), "=",      ST.val("SFUNARG4"), False,  None),
-    #Stamp(ST.val("SFUNARG4"), "ident",  ST.val("SFUNARG3"), False,  None),
-    #Stamp(ST.val("SFUNARG4"), "num",    ST.val("SFUNARG3"), False,  None),
-    #Stamp(ST.val("SFUNARG3"), ";",      ST.val("STPOP"),    False,  None),
-    #Stamp(ST.val("SFUNARG3"), "nl",     ST.val("STPOP"),    False,  None),
-    #Stamp(ST.val("SFUNARG3"), "comm2",  ST.val("STPOP"),    False,  None),
-    #Stamp(ST.val("SFUNARG"), ")",       ST.val("STIGN"),    False,  func_dummy),
-    #Stamp(ST.val("STATEFUNC"), "{",     ST.val("SFUNBODY"), False,  func_dummy),
-    #Stamp(ST.val("SFUNBODY"), "}",      ST.val("STIGN"),    False,  func_dummy),
+
+    # Function Declaration
+    Stamp(ST.val("STATEANY"),  "func",   ST.val("STATEFUNC"), False,  None),
+    Stamp(ST.val("STATEFUNC"), "ident",  ST.val("STATEFUNC2"), False,  func_func_start),
+    Stamp(ST.val("STATEFUNC2"), "(",     ST.val("SFUNARG"),   False, None),
+    Stamp(ST.val("SFUNARG"),  "decl",    ST.val("SFUNARG2"), True,   func_func_arg_start),
+    Stamp(ST.val("SFUNARG2"),  ":",      ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG3"),  "ident",  ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG3"),  ",",      ST.val("SFUNARG"),  False,  None),
+    Stamp(ST.val("SFUNARG3"),  "=",      ST.val("SFUNARG4"), False,  None),
+    Stamp(ST.val("SFUNARG4"),  "ident",  ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG4"),  "num",    ST.val("SFUNARG3"), False,  None),
+    Stamp(ST.val("SFUNARG3"),  "nl",     ST.val("STPOP"),    False,  None),
+    Stamp(ST.val("SFUNARG3"),  "comm2",  ST.val("STPOP"),    False,  None),
+
+    Stamp(ST.val("SFUNARG"),  ")",      ST.val("STATEFUNC3"), False,  func_func_args),
+    Stamp(ST.val("SFUNARG3"), ")",      ST.val("STATEFUNC3"), False,  func_func_args),
+    Stamp(ST.val("STATEFUNC3"), "{",    ST.val("SFUNBODY"),    False,  None),
+    Stamp(ST.val("SFUNBODY"),  "}",     ST.val("STATEINI"),    False,  func_func_end),
 
     # Assignments / Start of arithmetic
     Stamp(ST.val("STATEINI"), "num",    ST.val("SFARITH"),   True,  func_arithstart),
     Stamp(ST.val("STATEINI"), "ident",  ST.val("SFARITH"),   True,  func_arithstart),
 
-    # Declarations
+    # Function Declaration
     Stamp(ST.val("STATEINI"), "decl",   ST.val("DECL2"),    True,   func_decl_start),
     Stamp(ST.val("STATEINI"), "arr",    ST.val("DECL2"),    True,   func_decl_start),
     Stamp(ST.val("STATEINI"), "float",  ST.val("DECL2"),    True,   func_decl_start),
     Stamp(ST.val("STATEINI"), "dbl",    ST.val("DECL2"),    True,   func_decl_start),
     Stamp(ST.val("STATEINI"), "exten",  ST.val("DECL2"),    True,   func_decl_start),
 
-    # Functions
-    Stamp(ST.val("SFARITH"),  "(",      ST.val("FUNC3"),    False,  func_func_start),
-    Stamp(ST.val("FUNC3"),    "num",    ST.val("FUNC4"),    False,  func_func_decl_val),
-    Stamp(ST.val("FUNC3"),    "ident",  ST.val("FUNC4"),    False,  func_func_decl_val),
-    Stamp(ST.val("FUNC3"),    "str",    ST.val("FUNC4"),    False,  func_func_decl_val),
-    Stamp(ST.val("FUNC4"),    ",",      ST.val("FUNC3"),    False,  None),
-    Stamp(ST.val("FUNC4"),    ")",      ST.val("STPOP"),    False,  func_func_end),
+    # Function call
+    Stamp(ST.val("STATEINI"),  "ident",  ST.val("CFUNC2") ,   True,  None),
+    Stamp(ST.val("SFUNARG"),  "ident",  ST.val("CFUNC2") ,   True,  None),
+    Stamp(ST.val("SFUNBODY"),  "ident",  ST.val("CFUNC2") ,   True,  None),
+    Stamp(ST.val("SFARITH"),   "(",      ST.val("CFUNC3"),    False, func_func_call),
+    Stamp(ST.val("CFUNC2"),    "(",      ST.val("CFUNC3"),    False, func_func_call),
+    Stamp(ST.val("CFUNC3"),    "num",    ST.val("CFUNC4"),    False, func_func_decl_val),
+    Stamp(ST.val("CFUNC3"),    "ident",  ST.val("CFUNC4"),    False, func_func_decl_val),
+    Stamp(ST.val("CFUNC3"),    "str",    ST.val("CFUNC4"),    False, func_func_decl_val),
+    Stamp(ST.val("CFUNC3"),    ")",      ST.val("STPOP"),     False, func_func_end),
+    Stamp(ST.val("CFUNC4"),    ",",      ST.val("CFUNC3"),    False, None),
+    Stamp(ST.val("CFUNC4"),    ")",      ST.val("STPOP"),     False,  func_func_end),
 
+    # Declaration
     Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),    False,  None),
     Stamp(ST.val("DECL3"), "ident",     ST.val("DECL4"),    False,  func_decl_ident),
     Stamp(ST.val("DECL4"), "=",         ST.val("DECL5"),    False,  None),

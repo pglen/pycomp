@@ -1,0 +1,11 @@
+// Signal
+
+u16 : num1 = 1234 ;
+arr : strx =  "Hello World: %s\n"
+
+func handler () { }
+
+#signal(1, handler)
+printf(strx, num1)
+
+
