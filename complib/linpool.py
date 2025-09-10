@@ -127,17 +127,19 @@ def test_xenum():
 
 def test_pool():
 
-    import complib.lexdef as lexdef
-    # Syntesize array of tokens
     class testx():
         def __init__(self):
             self.arrx = []
     self2 = testx()
     xstack =  stack.pStack()
+
+    # Syntesize array of tokens
+    import complib.lexdef as lexdef
     ss = lexdef.LexI(lexdef.StI(lexdef.xtokens[0]), "test")
     rr = lexdef.LexI(lexdef.StI(lexdef.xtokens[1]), "test2")
-    self2.arrx.append(ss) ;  self2.arrx.append(rr)
-    xstack.push(0) ;  xstack.push(1)
+    self2.arrx.append(ss) ; self2.arrx.append(rr)
+    xstack.push(0) ; xstack.push(1)
+
     ret = addtopool(self2, xstack)
     #print(ret)
     assert ret == "dq"

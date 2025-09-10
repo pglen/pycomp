@@ -383,6 +383,16 @@ def func_mulexpr(self2, tprog):
 
     pastack.push(tprog)
 
+def func_assnexpr(self2, tprog):
+    if pvg.opt_debug > 5:
+        tprog2 = pastack.peek()
+        print("assnexpr: ",
+                "tprog  =", tprog,  self2.arrx[tprog],
+                "tprog2 =", tprog2, self2.arrx[tprog2] )
+
+    pastack.push(tprog)
+
+
 def execop(arg1, op, arg2):
     print("execop:", arg1, op, arg2)
     ret = 0
@@ -420,7 +430,7 @@ def reduce(self2, filter):
                 idx2 = bstack.get(loopx+1)
 
                 if not idx1 == None or idx2 == None:
-                    error("Syntax Error near", self2.arrx[idx].stamp.xstr)
+                    error(self2, "Syntax Error near %s" % self2.arrx[idx].stamp.xstr)
                     return
 
                 if pvg.opt_debug > 5:
@@ -443,9 +453,16 @@ def reduce(self2, filter):
         if loopx >= len(bstack):
             break
 
-def func_arit_stop(self2, tprog):
+def func_arith_stop(self2, tprog):
     if pvg.opt_debug > 2:
-        print("func_arit_stop()", "tprog =", tprog, self2.arrx[tprog])
+        print("func_arith_stop()", "tprog =", tprog, self2.arrx[tprog])
+
+    if pvg.opt_debug > 2:
+        print("\npastack:", end = " ")
+        for aa in pastack:
+            print(self2.arrx[aa], end = " ")
+        print()
+
     # Execute operator precedence
     reduce(self2, "sqr")
     reduce(self2, "*")
@@ -456,11 +473,6 @@ def func_arit_stop(self2, tprog):
     reduce(self2, "<<")
     reduce(self2, "=")
 
-    if pvg.opt_debug > 2:
-        print("\npastack:", end = " ")
-        for aa in pastack:
-            print(self2.arrx[aa], end = " ")
-        print()
     try:
         strx =   self2.arrx[pastack.get(0)].mstr + " = "
         strx +=  self2.arrx[pastack.get(1)].mstr
