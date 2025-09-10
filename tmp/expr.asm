@@ -57,6 +57,5 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-strx : db "Hello World", 10, 0 ; line: 1 -- arr : strx = "Hello World\n"
 
 ; EOF

@@ -24,6 +24,23 @@ main:
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
+    lea   rsi, aaa
+    mov   rax,  1
+    mov   [rsi] , rax 
+
+    lea   rsi, bbb
+    mov   rax,  0 
+    mov   eax,  1
+    mov   [rsi] , eax 
+
+    lea   rsi, ccc
+    mov   ax,  1
+    mov   [rsi] , ax 
+
+    lea   rsi, ddd
+    mov   al,  1
+    mov   [rsi] , al 
+
 
 end_code:    ;  End of program
 
@@ -57,6 +74,9 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-strx : db "Hello World", 10, 0 ; line: 1 -- arr : strx = "Hello World\n"
+aaa : dq  0  ; line: 1 -- u64 : aaa =  0 
+bbb : dd  0  ; line: 3 -- u32 : bbb =  0 
+ccc : dw  0  ; line: 5 -- u16 : ccc =  0 
+ddd : db  0  ; line: 7 -- u8 : ddd =  0 
 
 ; EOF

@@ -31,27 +31,6 @@ def time_ms(start_time):
     ttt = time.process_time() - start_time
     return "%.2f ms" % (ttt * 1000)
 
-def pctona(ddd):
-
-    ''' Transform data type string '''
-
-    #print("pctona:", ddd)
-
-    retx = "db"
-    if ddd == "u8":
-        retx = "db"
-    elif ddd == "u16":
-        retx = "dw"
-    elif ddd == "u32":
-        retx = "dd"
-    elif ddd == "float":
-        retx = "dd"
-    elif ddd == "double":
-        retx = "dq"
-    elif ddd == "extended":
-        retx = "dt"
-    return retx
-
 def prarr(xarr, pre = "", all = False):
 
     ''' Pretty Print array '''

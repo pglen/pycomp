@@ -204,9 +204,9 @@ try:
     (INI_STATE, "enum",         r"enum"  + IDEN3,   None, None ),
     (INI_STATE, "enum",         r"enum",            None, None ),
 
-    (INI_STATE, "float",        r"float",           None, None ),
-    (INI_STATE, "dbl",          r"double" ,         None, None ),
-    (INI_STATE, "exten",        r"extended",        None, None ),
+    (INI_STATE, "float",        r"float",           None, None ),    # Float
+    (INI_STATE, "dbl",          r"double" ,         None, None ),    # Double
+    (INI_STATE, "dbl2",         r"quad",            None, None ),    # Quad
 
     (INI_STATE, "decl",         r"[sS]8",            None, None ),
     (INI_STATE, "decl",         r"[sS]16" ,         None, None ),

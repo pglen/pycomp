@@ -4,6 +4,7 @@
 
 import complib.stack as stack
 import complib.lindef as lindef
+import complib.linpool as linpool
 import complib.lexdef as lexdef
 import codegen.codegen as codegen
 
@@ -17,191 +18,146 @@ def funcpvg(xpvg):
     global pvg
     pvg = xpvg
 
-class TypI:
-
-    ''' Global type structure '''
-
-    def __init__(self, typex, namex, valx):
-        self.typex = typex
-        self.namex = namex
-        self.valx = valx
-
-    def __str__(self):
-        return str(self.typex) + " : " + str(self.namex) + \
-                " = " + str(self.valx)
-
-gpool = stack.pStack()
-
-def addtopool(self2):
-
-    # Add to global pool
-    typename = self2.arrx[dstack.get(0)].mstr
-    varname = self2.arrx[dstack.get(1)].mstr
-
-    if  dstack.getlen() > 2:
-        varval = self2.arrx[dstack.get(2)].mstr
-    else:
-        varval = 0
-
-    for aa in gpool:
-        if aa.namex == varname:
-            error(self2, "Duplicate definition", self2.arrx[dstack.get(0)].pos)
-            sys.exit(1)
-    tpi = TypI(typename, varname, varval)
-    gpool.push(tpi)
-    datatype = pctona(self2.arrx[dstack.get(0)].mstr)
-    return datatype
-
-def lookpool(self2, varname):
-
-    ret = None
-    for aa in gpool:
-        if aa.namex == varname:
-            #print("look pool:", aa)
-            ret = aa
-            break
-    return ret
-
 # Functions to call on stamp match
-dstack    = stack.pStack()             # Declaration
-astack    = stack.pStack()             # Arithmetic
-argstack  = stack.pStack()             # function arguments
-callstack = stack.pStack()             # Function call
+
+# Stack definitions
+
+pastack    = stack.pStack()             # Arithmetic
+argstack  = stack.pStack()             # Function arguments
+callstack = stack.pStack()             # Function calls
+
+# ------------------------------------------------------------------------
 
 def func_rassn(self2, tprog):
     if pvg.opt_debug > 1:
-        print("rassn()", "tprog =", tprog)
-    dstack.push(tprog)
+        print("func_rassn()", "tprog =", tprog)
+    pastack.push(tprog)
 
 def func_rassn_stop(self2, tprog):
     if pvg.opt_debug > 1:
-        print("assnr_stop()", "tprog =", tprog)
-    astack.push(tprog)
-    strx =   "  lea  rsi, " + self2.arrx[astack.get(0)].mstr + "\n"
-    strx +=  "  mov rax, [rsi]" #self2.arrx[astack.get(1)].mstr
+        print("func_assnr_stop()", "tprog =", tprog)
+    #pastack.push(tprog)
 
-    strx +=   "; " + self2.arrx[astack.get(0)].mstr + " = "
-    strx +=  self2.arrx[astack.get(1)].mstr
+    if pvg.opt_debug > 2:
+        print("\npastack rassn:", end = " ")
+        for aa in pastack:
+            print(self2.arrx[aa], end = " ")
+        print()
 
+    strx =   "  lea  rsi, " + self2.arrx[pastack.get(0)].mstr + "\n"
+    strx +=  "  mov rax, " + self2.arrx[pastack.get(1)].mstr + "\n"
+    strx +=  "  mov [rsi], rax "
+    linex = self2.arrx[pastack.get(1)].linenum + 1
+    strx +=   " ; line " + str(linex) + " -- " + self2.arrx[pastack.get(0)].mstr + " => "
+    strx +=  self2.arrx[pastack.get(1)].mstr
     strx +=  "\n"
 
     codegen.emit(strx)
-    astack.empty()
+    pastack.empty()
+
+def func_assn_start(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_assn()", "tprog =", tprog, self2.arrx[tprog])
+    #pastack.empty()
+    pastack.push(tprog)
 
 def func_assn(self2, tprog):
     if pvg.opt_debug > 1:
-        print("assn()", "tprog =", tprog)
-    astack.push(tprog)
+        print("func_assn()", "tprog =", tprog, self2.arrx[tprog])
+    pastack.push(tprog)
 
 def func_assn_stop(self2, tprog):
     if pvg.opt_debug > 1:
-        print("assn_stop()", "tprog =", tprog)
-    dstack.push(tprog)
-    strx =   "lea  rsi, " + self2.arrx[dstack.get(0)].mstr + "\n"
-    strx +=  "mov rax, [rsi]" #self2.arrx[dstack.get(1)].mstr
+        print("func_assn_stop()", "tprog =", tprog)
+    pastack.push(tprog)
 
-    strx +=   "; " + self2.arrx[dstack.get(0)].mstr + " = "
-    strx +=  self2.arrx[dstack.get(1)].mstr
+    if pvg.opt_debug > 2:
+        print("\npastack assn:", end = " ")
+        for aa in pastack:
+            print(self2.arrx[aa], end = " ")
+        print()
+    tpi = linpool.lookpool(self2, self2.arrx[pastack.get(0)].mstr)
+    if not tpi:
+        print("Undeclared variable:", pp(self2.arrx[pastack.get(0)].mstr))
+        return
 
-    strx +=  "\n"
+    print("tpi:", tpi, self2.arrx[pastack.get(0)],
+                        self2.arrx[pastack.get(2)])
+
+    if tpi.typex == "arr":
+        strx =   "lea  rsi, " + self2.arrx[pastack.get(0)].mstr + "\n"
+        strx +=  "mov rax, [rsi]" #self2.arrx[pastack.get(1)].mstr
+        strx +=  self2.arrx[pastack.get(2)].mstr
+    elif tpi.typex == "u64":
+        strx =   "    lea   rsi, " + self2.arrx[pastack.get(0)].mstr + "\n"
+        strx +=  "    mov   rax,  " + self2.arrx[pastack.get(2)].mstr  + "\n"
+        strx +=  "    mov   [rsi] , rax \n"
+    elif tpi.typex == "u32":
+        strx =   "    lea   rsi, " + self2.arrx[pastack.get(0)].mstr + "\n"
+        strx +=  "    mov   rax,  0 \n"
+        strx +=  "    mov   eax,  " + self2.arrx[pastack.get(2)].mstr  + "\n"
+        strx +=  "    mov   [rsi] , eax \n"
+    elif tpi.typex == "u16":
+        strx =   "    lea   rsi, " + self2.arrx[pastack.get(0)].mstr + "\n"
+        strx +=  "    mov   ax,  " + self2.arrx[pastack.get(2)].mstr  + "\n"
+        strx +=  "    mov   [rsi] , ax \n"
+    elif tpi.typex == "u8":
+        strx =   "    lea   rsi, " + self2.arrx[pastack.get(0)].mstr + "\n"
+        strx +=  "    mov   al,  " + self2.arrx[pastack.get(2)].mstr  + "\n"
+        strx +=  "    mov   [rsi] , al \n"
+    else:
+        pass
+        strx = "; No code for assignment."
+
+    #print("assn:\n", strx)
+
+    #strx +=   "; " + self2.arrx[pastack.get(0)].mstr + " = "
+    #strx +=  "\n"
 
     codegen.emit(strx)
-    astack.empty()
+    pastack.empty()
 
 def func_decl_start(self2, tprog):
     if pvg.opt_debug > 1:
         print("func_decl_start()", "tprog =", tprog, self2.arrx[tprog])
-    dstack.empty()
-    dstack.push(tprog)
+    #pastack.empty()
+    pastack.push(tprog)
     #codegen.emit(self2.arrx[tprog].mstr)
 
 def func_decl_ident(self2, tprog):
     if pvg.opt_debug > 1:
         print("funct_decl_ident()", "tprog =", tprog)
-    dstack.push(tprog)
+    pastack.push(tprog)
     #codegen.emit(self2.arrx[tprog].mstr)
 
 def func_decl_val(self2, tprog):
     if pvg.opt_debug > 1:
         print("func_decl_val()", "tprog =", tprog, self2.arrx[tprog])
-    dstack.push(tprog)
+    pastack.push(tprog)
     #codegen.emit(self2.arrx[tprog].mstr)
 
 def func_decl_comma(self2, tprog):
     if pvg.opt_debug > 1:
         print("decl_comma()", "tprog =", tprog)
-    print("\ndstack one:", end = " ")
+    print("\npastack one:", end = " ")
     if pvg.opt_debug > 2:
-        for aa in dstack:
+        for aa in pastack:
             print(self2.arrx[aa], end = " ")
         print()
 
-    datatype = addtopool(self2)
+    datatype = linpool.addtopool(self2, pastack)
 
-    strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
-    strx +=  self2.arrx[dstack.get(2)].mstr
+    strx =   self2.arrx[pastack.get(1)].mstr + " : " + datatype + " "
+    strx +=  self2.arrx[pastack.get(2)].mstr
     #codegen.emitdata(strx)
 
-    strx +=  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
-    strx += self2.arrx[dstack.get(1)].mstr + " = "
-    strx += self2.arrx[dstack.get(2)].mstr
+    strx +=  " ; " + self2.arrx[pastack.get(0)].mstr + " : "
+    strx += self2.arrx[pastack.get(1)].mstr + " = "
+    strx += self2.arrx[pastack.get(2)].mstr
     codegen.emitdata(strx)
 
     # Back off of last variable
-    dstack.pop(); dstack.pop()
-
-def func_decl_stop(self2, tprog):
-    if pvg.opt_debug > 1:
-        print("func_decl_stop()", "tprog =", tprog)
-
-    # Add default token zero
-    #if  dstack.getlen() <= 2:
-    #        dstack.push(dstack.get(1))
-
-    if pvg.opt_debug > 0:
-        print("\ndstack: len =", dstack.getlen(), end = " ")
-        for aa in dstack:
-            print(self2.arrx[aa], end = " ")
-        print()
-
-    datatype = addtopool(self2)
-
-    strx =   self2.arrx[dstack.get(1)].mstr + " : " + datatype + " "
-    #print("datatype =", pp(self2.arrx[dstack.get(0)].mstr), datatype)
-
-    # type dependent expand
-    if self2.arrx[dstack.get(0)].mstr == "arr":
-        if dstack.getlen() <= 2:
-            # patch missing declaration argument with zero /empty
-            strx += ""
-        else:
-            strx +=  asmesc(self2.arrx[dstack.get(2)].mstr)
-    elif datatype == "u32" or datatype == "u16" or datatype == "u8":
-        if dstack.getlen() <= 2:
-            # patch missing declaration argument with zero /empty
-            strx += " 0 "
-        else:
-            strx +=  "[" + self2.arrx[dstack.get(2)].mstr + "[]"
-    else:
-        # This is where type expnsion takes place
-        if dstack.getlen() <= 2:
-            strx += " 0 "
-        else:
-            strx +=  self2.arrx[dstack.get(2)].mstr
-
-    #print("strx", strx)
-    # Output comment as well
-    linex = self2.arrx[dstack.get(0)].linenum + 1
-    strx +=  " ; line: " + str(linex) + " -- "
-    strx +=  self2.arrx[dstack.get(0)].mstr + " : "
-    strx += self2.arrx[dstack.get(1)].mstr + " = "
-
-    if dstack.getlen() <= 2:
-        strx += " 0 "
-    else:
-        strx += self2.arrx[dstack.get(2)].mstr
-
-    codegen.emitdata(strx)
+    pastack.pop(); pastack.pop()
 
 def func_space(self2, tprog):
     if pvg.opt_debug > 5:
@@ -252,7 +208,7 @@ def func_func_start(self2, tprog):
             print("func_func_start()", pp(self2.arrx[tprog].mstr))
         argstack.empty()
         callstack.empty()
-        callstack.push(astack.pop())
+        callstack.push(pastack.pop())
 
 def func_func_arg_start(self2, tprog):
         if pvg.opt_debug > 1:
@@ -263,12 +219,61 @@ def func_func_args(self2, tprog):
             print("func_func_args()", pp(self2.arrx[tprog].mstr))
         argstack.empty()
         callstack.empty()
-        callstack.push(astack.pop())
+        callstack.push(pastack.pop())
 
 def func_func_decl_val(self2, tprog):
         if pvg.opt_debug > 1:
             print("func_func_decl_val()", self2.arrx[tprog])
         argstack.push(tprog)
+
+def func_decl_stop(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_decl_stop()", "tprog =", tprog)
+
+    if pvg.opt_debug > 0:
+        print("\npastack: len =", pastack.getlen(), end = " ")
+        for aa in pastack:
+            print(self2.arrx[aa], end = " ")
+        print()
+
+    datatype = linpool.addtopool(self2, pastack)
+
+    strx =   self2.arrx[pastack.get(1)].mstr + " : " + datatype + " "
+    #print("datatype =", pp(self2.arrx[pastack.get(0)].mstr), datatype)
+
+    # type dependent expand
+    if self2.arrx[pastack.get(0)].mstr == "arr":
+        if pastack.getlen() <= 2:
+            # patch missing declaration argument with zero /empty
+            strx += ""
+        else:
+            strx +=  asmesc(self2.arrx[pastack.get(2)].mstr)
+    elif datatype == "u32" or datatype == "u16" or datatype == "u8":
+        if pastack.getlen() <= 2:
+            # patch missing declaration argument with zero /empty
+            strx += " 0 "
+        else:
+            strx +=  "[" + self2.arrx[pastack.get(2)].mstr + "[]"
+    else:
+        # This is where type expnsion takes place
+        if pastack.getlen() <= 2:
+            strx += " 0 "
+        else:
+            strx +=  self2.arrx[pastack.get(2)].mstr
+
+    #print("strx", strx)
+    # Output comment as well
+    linex = self2.arrx[pastack.get(0)].linenum + 1
+    strx +=  " ; line: " + str(linex) + " -- "
+    strx +=  self2.arrx[pastack.get(0)].mstr + " : "
+    strx += self2.arrx[pastack.get(1)].mstr + " = "
+
+    if pastack.getlen() <= 2:
+        strx += " 0 "
+    else:
+        strx += self2.arrx[pastack.get(2)].mstr
+
+    codegen.emitdata(strx)
 
 def func_func_end(self2, tprog):
         if pvg.opt_debug > 1:
@@ -290,8 +295,8 @@ def func_func_end(self2, tprog):
             estr += "    mov     rbp, rsp\n"
         cnt = 0
         for aa in argstack:
-            tpi = lookpool(self2, self2.arrx[aa].mstr)
-            #print("lookpool tpi =>", tpi)
+            tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
+            #print("linpool.lookpool tpi =>", tpi)
             if not tpi:
                 error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
 
@@ -338,45 +343,45 @@ def func_func_end(self2, tprog):
 
         estr += "    extern " +  funcname + "\n"
         estr += "    call " +  funcname
-        estr +=  "   ; line: " + str(linex) + " -- " + funcname
+        estr +=  " ; line: " + str(linex + 1) + " -- " + funcname
 
         codegen.emit(estr)
 
 def func_arithstart(self2, tprog):
     if pvg.opt_debug > 1:
         print("func_arithstart()", "tprog =", tprog, self2.arrx[tprog])
-    astack.empty()
-    astack.push(tprog)
+    pastack.empty()
+    pastack.push(tprog)
 
 def func_arithop(self2, tprog):
     if pvg.opt_debug > 5:
         print("arithop: ()", "tprog =", tprog, self2.arrx[tprog])
-    astack.push(tprog)
+    pastack.push(tprog)
 
 def func_addexpr(self2, tprog):
     if pvg.opt_debug > 5:
-        tprog2 = astack.peek()
+        tprog2 = pastack.peek()
         print("addexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
-    astack.push(tprog)
+    pastack.push(tprog)
 
 def func_expexpr(self2, tprog):
     if pvg.opt_debug > 5:
-        tprog2 = astack.peek()
+        tprog2 = pastack.peek()
         print("func_expexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
-    astack.push(tprog)
+    pastack.push(tprog)
 
 def func_mulexpr(self2, tprog):
     if pvg.opt_debug > 5:
-        tprog2 = astack.peek()
+        tprog2 = pastack.peek()
         print("mulexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
 
-    astack.push(tprog)
+    pastack.push(tprog)
 
 def execop(arg1, op, arg2):
     print("execop:", arg1, op, arg2)
@@ -399,8 +404,8 @@ def reduce(self2, filter):
         bstack = stack.pStack()
         loopx = 0
         # Make a clean index:
-        for bb in range(len(astack)):
-            idx = astack.get(bb)
+        for bb in range(len(pastack)):
+            idx = pastack.get(bb)
             if self2.arrx[idx].flag == 0:
                 bstack.push(idx)
         #print("bstack:", filter)
@@ -452,23 +457,23 @@ def func_arit_stop(self2, tprog):
     reduce(self2, "=")
 
     if pvg.opt_debug > 2:
-        print("\nastack:", end = " ")
-        for aa in astack:
+        print("\npastack:", end = " ")
+        for aa in pastack:
             print(self2.arrx[aa], end = " ")
         print()
     try:
-        strx =   self2.arrx[astack.get(0)].mstr + " = "
-        strx +=  self2.arrx[astack.get(1)].mstr
+        strx =   self2.arrx[pastack.get(0)].mstr + " = "
+        strx +=  self2.arrx[pastack.get(1)].mstr
     except:
-        linex = self2.arrx[astack.get(0)].linenum + 1
-        tok = self2.arrx[astack.get(0)].mstr
+        linex = self2.arrx[pastack.get(0)].linenum + 1
+        tok = self2.arrx[pastack.get(0)].mstr
         error(self2, "Syntax error",
                     addstr =  "near: %s" % (pp(tok)))
     codegen.emit(strx)
 
-    #strx =  " ; " + self2.arrx[dstack.get(0)].mstr + " : "
-    #strx += self2.arrx[dstack.get(1)].mstr + " = "
-    #strx += self2.arrx[dstack.get(2)].mstr + " \n"
+    #strx =  " ; " + self2.arrx[pastack.get(0)].mstr + " : "
+    #strx += self2.arrx[pastack.get(1)].mstr + " = "
+    #strx += self2.arrx[pastack.get(2)].mstr + " \n"
     #codegen.emit(strx)
 
 def func_brace(self2, tprog):

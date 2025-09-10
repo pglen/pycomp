@@ -13,6 +13,7 @@ import  complib.lindef as lindef
 import  complib.lexfunc as lexfunc
 import  complib.linfunc as linfunc
 import  codegen.codegen as codegen
+import  complib.linpool as linpool
 
 from complib.ptree import *
 from complib.utils import *
@@ -142,7 +143,7 @@ def parsefile(strx):
 
     if lpg.opt_ymtab:
         print("Symtab:")
-        for aa in linfunc.gpool:
+        for aa in linpool.gpool:
             print(aa)
 
     if not lpg.opt_comp_only:
