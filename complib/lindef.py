@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 
-''' Definitions for the linear parser '''
+''' Definitions for the linear parser
+
+# We initialize parser variables in the context of the parser module.
+#
+# Parse table consists of:
+#       a.) Parser states
+#       b.) Token definition
+#       c.) New parser state
+#       d.) Parser function
+#
+# To create a custom parser, just add new tokens / states here
+#
+# The parser will look up if current state is in the list of parser states.
+# If there is a match, the token is compared. If there is a match, the new
+# parser state is set, and the specified parser function is executed.
+#
+'''
 
 from complib.utils import *
 from complib.linfunc  import *
@@ -13,15 +29,19 @@ def defpvg(xpvg):
 
 class Stamp:
 
+    ''' The class that holds the token descriptions for the parser '''
+
     def __init__(self, state, token, nstate, pushx, call, group = None, flags = None):
 
-        # Extend to array
+        # Extend to array if a number passed
         if type(state) == type(0):
             self.state = (state,)
             #print("type cast", self.state)
         else:
             self.state  = state
+
         self.token  = token
+
         self.nstate = nstate
         self.push   = pushx
         self.call   = call
@@ -67,9 +87,9 @@ funcx = ( \
     Stamp(ST.val("STFUNC2"),   "(",      ST.val("SFUNARG"),   False,  None),
     Stamp(ST.val("SFUNARG"),   "decl",   ST.val("SFUNARG2"),  True,   func_func_arg_start),
     Stamp(ST.val("SFUNARG2"),  ":",      ST.val("SFUNARG3"),  False,  None),
-    Stamp(ST.val("SFUNARG3"),  "ident",  ST.val("SFUNARG3"),  False,  None),
-    Stamp(ST.val("SFUNARG3"),  ",",      ST.val("SFUNARG"),   False,  None),
-    Stamp(ST.val("SFUNARG3"),  "=",      ST.val("SFUNARG4"),  False,  None),
+    Stamp(ST.val("SFUNARG3"),  "ident",  ST.val("SFUNARG4"),  False,  None),
+    Stamp(ST.val("SFUNARG4"),  ",",      ST.val("SFUNARG3"),   False,  None),
+    Stamp(ST.val("SFUNARG4"),  "=",      ST.val("SFUNARG4"),  False,  None),
     Stamp(ST.val("SFUNARG4"),  "ident",  ST.val("SFUNARG3"),  False,  None),
     Stamp(ST.val("SFUNARG4"),  "num",    ST.val("SFUNARG3"),  False,  None),
     Stamp(ST.val("SFUNARG3"),  "nl",     ST.val("STPOP"),     False,  None),
@@ -93,16 +113,7 @@ rassn  = (
     Stamp(ST.val("STRASSN4"),  "nl",    ST.val("STPOP"),     False,  func_rassn_stop),
     )
 
-# These are the entries to be matched agains the parse array.
-#    state       item        new_state   function   group
-#    -----       ---------   ----------  --------   -----
-
-stamps =  (  \
-
-    # Assignments / Start of arithmetic
-    Stamp(ST.val("STATEINI"), "num",    ST.val("STARITH"),  True,  func_arithstart),
-    Stamp(ST.val("STATEINI"), "ident",  ST.val("STARITH"),  True,  func_arithstart),
-
+fcall  = (
     # Function call
     Stamp(ST.val("STATEINI"),  "ident",  ST.val("CFUNC2"),  True,  None),
     Stamp(ST.val("SFUNARG"),   "ident",  ST.val("CFUNC2"),  True,  None),
@@ -115,26 +126,13 @@ stamps =  (  \
     Stamp(ST.val("CFUNC3"),    ")",      ST.val("STPOP"),   False, func_func_end),
     Stamp(ST.val("CFUNC4"),    ",",      ST.val("CFUNC3"),  False, None),
     Stamp(ST.val("CFUNC4"),    ")",      ST.val("STPOP"),   False,  func_func_end),
-
-    # Declarations
-    Stamp(STBASE,  "decl",   ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "arr",    ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "float",  ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "dbl",    ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "dbl2",   ST.val("DECL2"),   True,   func_decl_start),
-
-    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),     False,  None),
-    Stamp(ST.val("DECL3"), "ident",     ST.val("STARITH"),    False,  func_decl_ident),
+    )
 
     #Stamp(ST.val("DECL4"), "=",         ST.val("STARITH"),  False,  None),
     #Stamp(ST.val("DECL5"), "ident",     ST.val("DECL6"),    False,  func_decl_val),
     #Stamp(ST.val("DECL5"), "num",       ST.val("DECL6"),    False,  func_decl_val),
     #Stamp(ST.val("DECL5"), "num2",      ST.val("DECL6"),    False,  func_decl_val),
     #Stamp(ST.val("DECL5"), "str",       ST.val("DECL6"),    False,  func_decl_val),
-
-    Stamp(ST.val("DECL4"), ",",         ST.val("DECL3"),    False,  func_decl_comma),
-    Stamp(ST.val("DECL4"), ";",         ST.val("STPOP"),    False,  func_decl_stop),
-    Stamp(ST.val("DECL4"), "nl",        ST.val("STPOP"),    False,  func_decl_stop),
 
     #Stamp(ST.val("DECL6"), ",",         ST.val("DECL3"),    False,  func_decl_comma),
     #Stamp(ST.val("DECL6"), ";",         ST.val("STPOP"),    False,  func_decl_stop),
@@ -151,10 +149,11 @@ stamps =  (  \
     #Stamp(ST.val("STARITH"),  ";",      ST.val("STPOP"),   False,   func_assn_stop),
     #Stamp(ST.val("STARITH"),  "nl",     ST.val("STPOP"),   False,   func_assn_stop),
 
+arith = (
     # Arithmetics (+ - * / sqr assn)
-    Stamp(ST.val("STARITH"), "=",        ST.val("SFASSN"),   False,  func_arithop),
-    Stamp(ST.val("SFASSN"), "ident",     ST.val("STARITH"),  False,  func_assnexpr),
-    Stamp(ST.val("SFASSN"), "num",       ST.val("STARITH"),  False,  func_assnexpr),
+    Stamp(ST.val("STARITH"), "=",       ST.val("SFASSN"),   False,  func_arithop),
+    Stamp(ST.val("SFASSN"), "ident",    ST.val("STARITH"),  False,  func_assnexpr),
+    Stamp(ST.val("SFASSN"), "num",      ST.val("STARITH"),  False,  func_assnexpr),
 
     Stamp(ST.val("STARITH"), "=>",      ST.val("SFPUT"),    False,  func_arithop),
     Stamp(ST.val("SFPUT"), "ident",     ST.val("STARITH"),  False,  func_mulexpr),
@@ -169,20 +168,57 @@ stamps =  (  \
     Stamp(ST.val("SFMUL"), "num",       ST.val("STARITH"),  False,  func_mulexpr),
 
     Stamp(ST.val("STARITH"), "/",       ST.val("SFDIV"),    False,  func_arithop),
-    Stamp(ST.val("SFDIV"), "ident",     ST.val("STARITH"),  False,   None),
-    Stamp(ST.val("SFDIV"), "num",       ST.val("STARITH"),  False,   None),
+    Stamp(ST.val("SFDIV"), "ident",     ST.val("STARITH"),  False,  func_divexpr),
+    Stamp(ST.val("SFDIV"), "num",       ST.val("STARITH"),  False,  func_divexpr),
 
     Stamp(ST.val("STARITH"), "+",       ST.val("SFADD"),    False,  func_arithop),
     Stamp(ST.val("SFADD"),   "ident",   ST.val("STARITH"),  False,  func_addexpr),
     Stamp(ST.val("SFADD"),   "num",     ST.val("STARITH"),  False,  func_addexpr),
 
-    Stamp(ST.val("STARITH"), "-",       ST.val("SFSUB"),    False,  func_arithop),
-    Stamp(ST.val("SFSUB"), "ident",     ST.val("STPOP"),    False,  None),
-    Stamp(ST.val("SFSUB"), "num",       ST.val("STPOP"),    False,  None),
+    Stamp(ST.val("STARITH"), "-",       ST.val("SFSUB"),     False,  func_arithop),
+    Stamp(ST.val("SFSUB"), "ident",     ST.val("STARITH"),   False,  func_subexpr),
+    Stamp(ST.val("SFSUB"), "num",       ST.val("STARITH"),   False,  func_subexpr),
+
+    Stamp(ST.val("STARITH"), "<<",      ST.val("SFSHIFT"),  False,    func_arithop),
+    Stamp(ST.val("SFSHIFT"), "ident",   ST.val("STARITH"),  False,    func_expr),
+    Stamp(ST.val("SFSHIFT"), "num",     ST.val("STARITH"),  False,    func_expr),
+
+    Stamp(ST.val("STARITH"),  ">>",     ST.val("SFRSHIFT"), False,    func_arithop),
+    Stamp(ST.val("SFRSHIFT"), "ident",  ST.val("STARITH"),  False,    func_expr),
+    Stamp(ST.val("SFRSHIFT"), "num",    ST.val("STARITH"),  False,    func_expr),
 
     Stamp(ST.val("STARITH"), ";",       ST.val("STPOP"),    False,  func_arith_stop),
     Stamp(ST.val("STARITH"), "nl",      ST.val("STPOP"),    False,  func_arith_stop),
+    )
 
+decl = (
+    # Declarations
+    Stamp(STBASE,  "decl",   ST.val("DECL2"),   True,   func_decl_start),
+    Stamp(STBASE,  "arr",    ST.val("DECL2"),   True,   func_decl_start),
+    Stamp(STBASE,  "float",  ST.val("DECL2"),   True,   func_decl_start),
+    Stamp(STBASE,  "dbl",    ST.val("DECL2"),   True,   func_decl_start),
+    Stamp(STBASE,  "dbl2",   ST.val("DECL2"),   True,   func_decl_start),
+
+    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),      False,  None),
+    Stamp(ST.val("DECL3"), "ident",     ST.val("STARITH"),    False,  func_decl_ident),
+
+    #Stamp(ST.val("STARITH"), ",",       ST.val("STPOP"),     False,  func_decl_comma),
+    #Stamp(ST.val("DECL4"), ";",         ST.val("STPOP2"),    False,  func_decl_stop),
+    #Stamp(ST.val("DECL4"), "nl",        ST.val("STPOP2"),    False,  func_decl_stop),
+    )
+
+# These are the entries to be matched agains the parse array.
+#    states     token       new_state       push_marker     function
+#    ------     -----       ----------      -----------     --------
+
+stamps =  (  \
+
+    # Assignments / Start of arithmetic
+    #Stamp(ST.val("STATEINI"), "num",    ST.val("STARITH"),  True,  func_arithstart),
+    Stamp(ST.val("STATEINI"), "ident",  ST.val("STARITH"),  True,  func_arithstart),
+
+    *decl,
+    *arith,
     *funcx,
     *rassn,
 

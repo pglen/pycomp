@@ -239,6 +239,13 @@ try:
     (INI_STATE, "squote",       r"\'"   ,  STR2_STATE,lexfunc.func_start_str),
     (INI_STATE, "ident",        IDEN2   ,           None, None),
 
+    (INI_STATE, "<<",           r"<<"   ,           None, None),  # Shift left <<
+    (INI_STATE, ">>",           r">>"   ,           None, None),  # Shift right >>
+    (INI_STATE, "<<<",          r"<<<"  ,           None, None),  # Rotate left <<<
+    (INI_STATE, ">>>",          r">>>"  ,           None, None),  # Rotate right >>>
+    (INI_STATE, "++",           r"\+\+" ,           None, None),
+    (INI_STATE, "--",           r"\-\-" ,           None, None),
+
     (INI_STATE, "peq",          r"\+=>" ,           None, None),  # Add to
     (INI_STATE, "meq",          r"\-=>" ,           None, None),  # Sub from
     (INI_STATE, "deq",          r"=="   ,           None, None),  # Equal
@@ -280,13 +287,6 @@ try:
     (INI_STATE, ":",            r":"    ,           None, None),  # Colon
     (INI_STATE, "::",           r"::"   ,           None, None),  # Double colon
     (INI_STATE, "dot",          r"\."   ,           None, None),
-
-    (INI_STATE, "<<",           r"<<"   ,           None, None),  # Shift left <<
-    (INI_STATE, ">>",           r">>"   ,           None, None),  # Shift right >>
-    (INI_STATE, "<<<",          r"<<<"  ,           None, None),  # Rotate left <<<
-    (INI_STATE, ">>>",          r">>>"  ,           None, None),  # Rotate right >>>
-    (INI_STATE, "++",           r"\+\+" ,           None, None),
-    (INI_STATE, "--",           r"\-\-" ,           None, None),
 
     (INI_STATE, "caret",        r"\^"   ,           None, None),
     (INI_STATE, "cent",         r"%"    ,           None, None),

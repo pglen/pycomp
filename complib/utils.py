@@ -443,7 +443,7 @@ def error(self2, errstr, newpos = -1, addstr = ""):
             eol = aa
             #print("Found pos", posx.linestart, eol)
             break
-    print(self2.buf[posx.linestart:eol])
+    print("\n" + self2.buf[posx.linestart:eol])
     print("-" *  (posx.end - posx.linestart - 2), end = "" )
     print("^", end = "")
     print("-" *  (eol - posx.end) )

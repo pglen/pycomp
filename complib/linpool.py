@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-''' syntab functions for the parser '''
+''' syntab functions for the lin parser '''
 
 import complib.stack as stack
 

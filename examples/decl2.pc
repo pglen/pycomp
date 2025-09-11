@@ -1,4 +1,5 @@
 // Declarations
 u32 : aaa = 2; /* + bbb + 120; */
-u32 : bbb = 3 //; u32 : bbb = 3
-u8  : ccc = aaa
+u32 : bbb = 3 ;
+u32 : ccc ; ddd
+u8  : ddd = aaa

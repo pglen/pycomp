@@ -133,8 +133,10 @@ class LinParse():
                             #"stamp:", pp(currstamp.token),
                             "tok:", #padx(pp(currtoken.stamp.xstr), 7),
                             #" =",
-                            padx(pp(currtoken.mstr, 6), 5),
-                            end = " ")
+                            #padx(pp(currtoken.mstr, 6), 5),
+                            currtoken.mstr,
+                            )
+                            #end = " ")
                     global row
                     rrr =  6
                     if row % rrr == rrr - 1:
@@ -152,7 +154,7 @@ class LinParse():
                         print("pop state", ST.get(self.state), end = " ")
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
-                        print("to:", ST.get(self.state))
+                        print("to:", ST.get(self.state), end = " \n")
 
                 elif currstamp.nstate == ST.val("STPOP2"):
                     if self.pvg.opt_debug > 4:
@@ -160,7 +162,7 @@ class LinParse():
                     self.state = self.statestack.pop()
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
-                        print("to:", ST.get(self.state))
+                        print("to:", ST.get(self.state), end = " ")
                 else:
                     if  currstamp.push:
                         if self.pvg.opt_debug > 4:
@@ -169,7 +171,7 @@ class LinParse():
 
                     self.state = currstamp.nstate
                     if self.pvg.opt_debug > 4:
-                        print("to:", ST.get(self.state))
+                        print("to:", ST.get(self.state), end = "\n")
 
             #if self.pvg.opt_debug > 4:
             #    if currstamp.nstate != ST.val("STIGN"):

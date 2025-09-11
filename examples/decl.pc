@@ -1,3 +1,1 @@
-u32 : aaa = 4 /* comment */
-#u16 : bbb = 5, ccc = 6
-#S8 : ddd  ; u16 : eee
+u32 : aaa = 4 ; u16 : bbb = 8
