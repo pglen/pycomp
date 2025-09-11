@@ -4,18 +4,18 @@
 
 # We initialize parser variables in the context of the parser module.
 #
-# Parse table consists of:
-#       a.) Parser states
-#       b.) Token definition
-#       c.) New parser state
-#       d.) Parser function
-#
-# To create a custom parser, just add new tokens / states here
-#
 # The parser will look up if current state is in the list of parser states.
-# If there is a match, the token is compared. If there is a match, the new
-# parser state is set, and the specified parser function is executed.
-#
+#   If there is a match, the tokens are compared. If there is a match, the
+#   new parser state is set, and the specified parser function is executed.
+#   This parser has limited need for backtracking, as the grammer concept
+#   is sentence based. The termination of the sentence is either a new
+#   line or a semi colon.
+# Examples:
+#    u32 : varname = varval ;
+#    func callme("hello World")
+# Space / Tab is skipped / ignored, newline and ';' is interpretd as a
+# sequence terminator,  See grammer spec for more details.
+
 '''
 
 from complib.utils import *
@@ -31,22 +31,28 @@ class Stamp:
 
     ''' The class that holds the token descriptions for the parser '''
 
-    def __init__(self, state, token, nstate, pushx, call, group = None, flags = None):
+    def __init__(self, statex, tokenx, nstatex, pushx, callx,
+                                        groupx = None, flagsx = None):
 
         # Extend to array if a number passed
-        if type(state) == type(0):
-            self.state = (state,)
+        if type(statex) == type(0):
+            self.state = (statex,)
             #print("type cast", self.state)
         else:
-            self.state  = state
+            self.state  = statex
 
-        self.token  = token
+        # Extend to array if a number passed
+        if type(tokenx) == type(""):
+            self.tokens  = (tokenx,)
+            #print("token type cast", self.token)
+        else:
+            self.tokens  = tokenx
 
-        self.nstate = nstate
+        self.nstate = nstatex
         self.push   = pushx
-        self.call   = call
-        self.group  = group
-        self.flags  = flags
+        self.call   = callx
+        self.group  = groupx
+        self.flags  = flagsx
 
     def dump(self):
 
@@ -80,12 +86,25 @@ ST = linpool.Xenum()
 # Compund states for matching multiple states
 STBASE =  ST.val("STATEINI"), ST.val("SFUNBODY")
 
-funcx = ( \
+# Parse tables consist of:
+#       a.) Parser states
+#       b.) Token(s) definition
+#       c.) New parser state
+#       d.) Parser function to call
+#
+# To create a custom parser, just add new tokens / states in
+#   the definition section. the D* declarations are etracte subsections.
+
+# These are the entries to be matched agains the parse array.
+#    states     token or list       new_state       push_marker     function
+#    ------     -------------       ----------      -----------     --------
+
+Dfuncx = ( \
     # Function Declaration
     Stamp(ST.val("STATEANY"),  "func",   ST.val("STFUNC"),    False,  None),
-    Stamp(ST.val("STFUNC"),    "ident",  ST.val("STFUNC2"),   False,  func_func_start),
+    Stamp(ST.val("STFUNC"),    "ident",  ST.val("STFUNC2"),   False,  funcs.func_start),
     Stamp(ST.val("STFUNC2"),   "(",      ST.val("SFUNARG"),   False,  None),
-    Stamp(ST.val("SFUNARG"),   "decl",   ST.val("SFUNARG2"),  True,   func_func_arg_start),
+    Stamp(ST.val("SFUNARG"),   "decl",   ST.val("SFUNARG2"),  True,   funcs.func_arg_start),
     Stamp(ST.val("SFUNARG2"),  ":",      ST.val("SFUNARG3"),  False,  None),
     Stamp(ST.val("SFUNARG3"),  "ident",  ST.val("SFUNARG4"),  False,  None),
     Stamp(ST.val("SFUNARG4"),  ",",      ST.val("SFUNARG3"),   False,  None),
@@ -95,15 +114,15 @@ funcx = ( \
     Stamp(ST.val("SFUNARG3"),  "nl",     ST.val("STPOP"),     False,  None),
     Stamp(ST.val("SFUNARG3"),  "comm2",  ST.val("STPOP"),     False,  None),
 
-    Stamp(ST.val("SFUNARG"),  ")",      ST.val("STFUNC3"),    False,  func_func_args),
-    Stamp(ST.val("SFUNARG3"), ")",      ST.val("STFUNC3"),    False,  func_func_args),
+    Stamp(ST.val("SFUNARG"),  ")",      ST.val("STFUNC3"),    False,  funcs.func_args),
+    Stamp(ST.val("SFUNARG3"), ")",      ST.val("STFUNC3"),    False,  funcs.func_args),
     Stamp(ST.val("STFUNC3"),  "{",      ST.val("SFUNBODY"),   False,  None),
     Stamp(ST.val("SFUNBODY"), "return", ST.val("SFUNCRET"),   False,  None),
     Stamp(ST.val("SFUNCRET"), "ident",  ST.val("SFUNBODY"),   False,  None),
-    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEINI"),   False,  func_func_end),
+    Stamp(ST.val("SFUNBODY"), "}",      ST.val("STATEINI"),   False,  funcs.func_end),
     )
 
-rassn  = (
+Drassn  = (
     # Right side assignment
     Stamp(ST.val("STARITH"),  "=>",     ST.val("STRASSN3"),  False,  None),
     Stamp(ST.val("STRASSN3"), "num",    ST.val("STRASSN4"),  False,  func_rassn),
@@ -113,21 +132,23 @@ rassn  = (
     Stamp(ST.val("STRASSN4"),  "nl",    ST.val("STPOP"),     False,  func_rassn_stop),
     )
 
-fcall  = (
+Dfcall  = (
     # Function call
-    Stamp(ST.val("STATEINI"),  "ident",  ST.val("CFUNC2"),  True,  None),
-    Stamp(ST.val("SFUNARG"),   "ident",  ST.val("CFUNC2"),  True,  None),
-    Stamp(ST.val("SFUNBODY"),  "ident",  ST.val("CFUNC2"),  True,  None),
-    Stamp(ST.val("STARITH"),   "(",      ST.val("CFUNC3"),  False, func_func_call),
-    Stamp(ST.val("CFUNC2"),    "(",      ST.val("CFUNC3"),  False, func_func_call),
-    Stamp(ST.val("CFUNC3"),    "num",    ST.val("CFUNC4"),  False, func_func_decl_val),
-    Stamp(ST.val("CFUNC3"),    "ident",  ST.val("CFUNC4"),  False, func_func_decl_val),
-    Stamp(ST.val("CFUNC3"),    "str",    ST.val("CFUNC4"),  False, func_func_decl_val),
-    Stamp(ST.val("CFUNC3"),    ")",      ST.val("STPOP"),   False, func_func_end),
+    #Stamp(ST.val("STARITH"),   "(",      ST.val("SFUNARG"),  True,  None),
+    #Stamp(ST.val("SFUNARG"),   "ident",  ST.val("CFUNC2"),  True,  None),
+    #Stamp(ST.val("SFUNBODY"),  "ident",  ST.val("CFUNC2"),  True,  None),
+
+    Stamp(ST.val("STARITH"),   "(",      ST.val("CFUNC3"),  False, funcs.call_start),
+    #Stamp(ST.val("CFUNC2"),    "(",      ST.val("CFUNC3"),  False, funcs.func_call),
+    Stamp(ST.val("CFUNC3"),    "num",    ST.val("CFUNC4"),  False, funcs.call_decl_val),
+    Stamp(ST.val("CFUNC3"),    "ident",  ST.val("CFUNC4"),  False, funcs.call_decl_val),
+    Stamp(ST.val("CFUNC3"),    "str",    ST.val("CFUNC4"),  False, funcs.call_decl_val),
+    Stamp(ST.val("CFUNC3"),    ")",      ST.val("STPOP"),   False, funcs.call_end),
     Stamp(ST.val("CFUNC4"),    ",",      ST.val("CFUNC3"),  False, None),
-    Stamp(ST.val("CFUNC4"),    ")",      ST.val("STPOP"),   False,  func_func_end),
+    Stamp(ST.val("CFUNC4"),    ")",      ST.val("STPOP"),   False,  funcs.call_end),
     )
 
+Dtest = (
     #Stamp(ST.val("DECL4"), "=",         ST.val("STARITH"),  False,  None),
     #Stamp(ST.val("DECL5"), "ident",     ST.val("DECL6"),    False,  func_decl_val),
     #Stamp(ST.val("DECL5"), "num",       ST.val("DECL6"),    False,  func_decl_val),
@@ -148,12 +169,14 @@ fcall  = (
     #Stamp(ST.val("STASSN"),   "str",    ST.val("STARITH"),  False,  func_assn),
     #Stamp(ST.val("STARITH"),  ";",      ST.val("STPOP"),   False,   func_assn_stop),
     #Stamp(ST.val("STARITH"),  "nl",     ST.val("STPOP"),   False,   func_assn_stop),
+)
 
-arith = (
+Darith = (
     # Arithmetics (+ - * / sqr assn)
     Stamp(ST.val("STARITH"), "=",       ST.val("SFASSN"),   False,  func_arithop),
     Stamp(ST.val("SFASSN"), "ident",    ST.val("STARITH"),  False,  func_assnexpr),
     Stamp(ST.val("SFASSN"), "num",      ST.val("STARITH"),  False,  func_assnexpr),
+    Stamp(ST.val("SFASSN"), "str",      ST.val("STARITH"),  False,  func_assnexpr),
 
     Stamp(ST.val("STARITH"), "=>",      ST.val("SFPUT"),    False,  func_arithop),
     Stamp(ST.val("SFPUT"), "ident",     ST.val("STARITH"),  False,  func_mulexpr),
@@ -191,7 +214,7 @@ arith = (
     Stamp(ST.val("STARITH"), "nl",      ST.val("STPOP"),    False,  func_arith_stop),
     )
 
-decl = (
+Ddecl = (
     # Declarations
     Stamp(STBASE,  "decl",   ST.val("DECL2"),   True,   func_decl_start),
     Stamp(STBASE,  "arr",    ST.val("DECL2"),   True,   func_decl_start),
@@ -207,20 +230,18 @@ decl = (
     #Stamp(ST.val("DECL4"), "nl",        ST.val("STPOP2"),    False,  func_decl_stop),
     )
 
-# These are the entries to be matched agains the parse array.
-#    states     token       new_state       push_marker     function
-#    ------     -----       ----------      -----------     --------
-
 stamps =  (  \
 
     # Assignments / Start of arithmetic
     #Stamp(ST.val("STATEINI"), "num",    ST.val("STARITH"),  True,  func_arithstart),
     Stamp(ST.val("STATEINI"), "ident",  ST.val("STARITH"),  True,  func_arithstart),
 
-    *decl,
-    *arith,
-    *funcx,
-    *rassn,
+    # include sub systems
+    *Ddecl,
+    *Darith,
+    *Dfcall,
+    *Dfuncx,
+    *Drassn,
 
     # This will ignore comments
     Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"),   False,  func_comment),

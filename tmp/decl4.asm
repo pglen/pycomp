@@ -57,8 +57,5 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-name : db 12 ; S32 : name = 12
-var : db 00 ; line: 1 -- S32 : var = 00
-aa : db name ; line: 1 -- u64 : aa = name
 
 ; EOF

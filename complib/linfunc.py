@@ -26,6 +26,141 @@ paStack   = stack.pStack()             # Arithmetic
 argstack  = stack.pStack()             # Function arguments
 callstack = stack.pStack()             # Function calls
 
+class   Funcs():
+
+    def __init__(self):
+        pass
+
+    def call_start(self, self2, tprog):
+            if pvg.opt_debug > 1:
+                print("funcs.call()", pp(self2.arrx[tprog].mstr))
+                #print("func paStack: len =", paStack.getlen(), end = " ")
+                #for aa in paStack:
+                #    print(self2.arrx[aa], end = " ")
+                #print()
+            pass
+
+    def call_decl_val(self, self2, tprog):
+            if pvg.opt_debug > 1:
+                print("func_call_decl_val()", self2.arrx[tprog])
+            argstack.push(tprog)
+
+    def call_end(self, self2, tprog):
+            if pvg.opt_debug > 1:
+                print("func_call_end()", pp(self2.arrx[tprog].mstr))
+
+
+    def func_start(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_start()", pp(self2.arrx[tprog].mstr))
+        argstack.empty()
+        callstack.empty()
+        callstack.push(paStack.pop())
+        print("call stack", str(callstack))
+
+    def func_arg_start(self2, tprog):
+            if pvg.opt_debug > 1:
+                print("func_func_arg_start()", pp(self2.arrx[tprog].mstr))
+
+    def func_args(self2, tprog):
+            if pvg.opt_debug > 1:
+                print("func_func_args()", pp(self2.arrx[tprog].mstr))
+            argstack.empty()
+            callstack.empty()
+            callstack.push(paStack.pop())
+
+    def func_end(self2, tprog):
+        if pvg.opt_debug > 1:
+            print("func_func_end()", pp(self2.arrx[tprog].mstr))
+
+        print("\nargtsack:", end = " ")
+        for aa in argstack:
+            print(self2.arrx[aa], end = " ")
+        print()
+
+        print("\ncalltsack:", end = " ")
+        for aa in callstack:
+            print(self2.arrx[aa], end = " ")
+        print()
+
+        idx  =   callstack.get(0)
+        funcname =  self2.arrx[idx].mstr
+        linex = self2.arrx[idx].linenum + 1
+
+        # Exception on printf stack call
+        estr = ""
+        if funcname == "printf":
+            estr += "    and     rsp, 0xfffffffffffffff0\n"
+            estr += "    mov     rbp, rsp\n"
+        cnt = 0
+        for aa in argstack:
+            tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
+            #print("linpool.lookpool tpi =>", tpi)
+            if not tpi:
+                error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
+
+            if cnt  >= len(codegen.regorder) - 1:
+                #error(self2, "Too many arguments to function:") #, funcname )
+                #sys.exit(1)
+                pass
+            # Skip first arg as syscall opcode is in rax
+            #print("arg:", self2.arrx[aa].dump())
+            # Expand types
+            if tpi.typex == "arr":
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                             ", " + self2.arrx[aa].mstr + "\n"
+            elif  tpi.typex == "u32" or tpi.typex == "s32" :
+                estr += "    mov rax, 0\n"
+                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                             ", [" + self2.arrx[aa].mstr + "]\n"
+            elif  tpi.typex == "u16" or tpi.typex == "s16":
+                estr += "    mov rax, 0\n"
+                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                    ", rax\n"
+            elif  tpi.typex == "u8" or tpi.typex == "s8":
+                estr += "    mov rax, 0\n"
+                estr += "    mov al, byte [" + self2.arrx[aa].mstr + "]\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                     ", rax\n"
+            cnt += 1
+        estr += "    xor  rax, rax" + "\n"
+        #print("estr =\n", estr)
+
+        estr += "    extern " +  funcname + "\n"
+        estr += "    call " +  funcname
+        estr +=  " ; line: " + str(linex + 1) + " -- " + funcname
+
+        codegen.emit(estr)
+
+funcs = Funcs()
+
+class Arith():
+
+    def __init__(self):
+        pass
+
+def arithstart(self2, tprog):
+    if pvg.opt_debug > 1:
+        print("func_arithstart()", "tprog =", tprog, self2.arrx[tprog])
+    paStack.empty()
+    paStack.push(tprog)
+
+arith = Arith()
+
 # ------------------------------------------------------------------------
 
 def func_rassn(self2, tprog):
@@ -201,32 +336,6 @@ def func_str(self2, idx, tprog):
         prarr(self2.arrx[tprog:tprog], "func_str pre: ")
     sys.exit(0)
 
-def func_func_call(self2, tprog):
-        if pvg.opt_debug > 1:
-            print("func_func_call()", pp(self2.arrx[tprog].mstr))
-
-def func_func_start(self2, tprog):
-        if pvg.opt_debug > 1:
-            print("func_func_start()", pp(self2.arrx[tprog].mstr))
-        argstack.empty()
-        callstack.empty()
-        callstack.push(paStack.pop())
-
-def func_func_arg_start(self2, tprog):
-        if pvg.opt_debug > 1:
-            print("func_func_arg_start()", pp(self2.arrx[tprog].mstr))
-
-def func_func_args(self2, tprog):
-        if pvg.opt_debug > 1:
-            print("func_func_args()", pp(self2.arrx[tprog].mstr))
-        argstack.empty()
-        callstack.empty()
-        callstack.push(paStack.pop())
-
-def func_func_decl_val(self2, tprog):
-        if pvg.opt_debug > 1:
-            print("func_func_decl_val()", self2.arrx[tprog])
-        argstack.push(tprog)
 
 def func_decl_stop(self2, tprog):
     if pvg.opt_debug > 1:
@@ -276,78 +385,6 @@ def func_decl_stop(self2, tprog):
         strx += self2.arrx[paStack.get(2)].mstr
 
     codegen.emitdata(strx)
-
-def func_func_end(self2, tprog):
-        if pvg.opt_debug > 1:
-            print("func_func_end()", pp(self2.arrx[tprog].mstr))
-
-        return
-        #print("\nargtsack:", end = " ")
-        #for aa in argstack:
-        #    print(self2.arrx[aa], end = " ")
-        #print()
-        idx  =   callstack.get(0)
-        funcname =  self2.arrx[idx].mstr
-        linex = self2.arrx[idx].linenum + 1
-
-        # Exception on printf stack call
-        estr = ""
-        if funcname == "printf":
-            estr += "    and     rsp, 0xfffffffffffffff0\n"
-            estr += "    mov     rbp, rsp\n"
-        cnt = 0
-        for aa in argstack:
-            tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
-            #print("linpool.lookpool tpi =>", tpi)
-            if not tpi:
-                error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
-
-            if cnt  >= len(codegen.regorder) - 1:
-                #error(self2, "Too many arguments to function:") #, funcname )
-                #sys.exit(1)
-                pass
-            # Skip first arg as syscall opcode is in rax
-            #print("arg:", self2.arrx[aa].dump())
-            # Expand types
-            if tpi.typex == "arr":
-                if cnt  >= len(codegen.regorder) - 1:
-                    estr += "    push   rax \n"
-                else:
-                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                             ", " + self2.arrx[aa].mstr + "\n"
-            elif  tpi.typex == "u32" or tpi.typex == "s32" :
-                estr += "    mov rax, 0\n"
-                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
-                if cnt  >= len(codegen.regorder) - 1:
-                    estr += "    push   rax \n"
-                else:
-                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                             ", [" + self2.arrx[aa].mstr + "]\n"
-            elif  tpi.typex == "u16" or tpi.typex == "s16":
-                estr += "    mov rax, 0\n"
-                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
-                if cnt  >= len(codegen.regorder) - 1:
-                    estr += "    push   rax \n"
-                else:
-                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                                    ", rax\n"
-            elif  tpi.typex == "u8" or tpi.typex == "s8":
-                estr += "    mov rax, 0\n"
-                estr += "    mov al, byte [" + self2.arrx[aa].mstr + "]\n"
-                if cnt  >= len(codegen.regorder) - 1:
-                    estr += "    push   rax \n"
-                else:
-                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                                     ", rax\n"
-            cnt += 1
-        estr += "    xor  rax, rax" + "\n"
-        #print("estr =\n", estr)
-
-        estr += "    extern " +  funcname + "\n"
-        estr += "    call " +  funcname
-        estr +=  " ; line: " + str(linex + 1) + " -- " + funcname
-
-        codegen.emit(estr)
 
 def func_arithstart(self2, tprog):
     if pvg.opt_debug > 1:
@@ -403,7 +440,6 @@ def func_mulexpr(self2, tprog):
         print("mulexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
-
     paStack.push(tprog)
 
 def func_assnexpr(self2, tprog):
@@ -412,7 +448,6 @@ def func_assnexpr(self2, tprog):
         print("assnexpr: ",
                 "tprog  =", tprog,  self2.arrx[tprog],
                 "tprog2 =", tprog2, self2.arrx[tprog2] )
-
     paStack.push(tprog)
 
 def execop(self2, arg1, op, arg2):

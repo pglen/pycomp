@@ -26,7 +26,7 @@ class LinParse():
 
         # Print stamps:
         #for ss in range(len(stamps)):
-        #    print("st", stamps[ss].token)
+        #    print("st", stamps[ss].tokens)
 
     def feed(self, arrx, buf):
 
@@ -108,19 +108,19 @@ class LinParse():
                         sss += ST.get(aa)
                     print("Out of state:", "state: [",  sss, "]",
                             ST.get(self.state),
-                                "token:", stamps[sidx].token,
+                                "token:", stamps[sidx].tokens,
                                     "tprog", tprog)
                 return match, iprog
         #breakpoint()
         #print("stamp", stamps[idx])
 
         if self.pvg.opt_debug > 5:
-            print("    stamp:", pp(currstamp.token), "token:", pp(currtoken.stamp.xstr))
+            print("    stamp:", pp(currstamp.tokens), "token:", pp(currtoken.stamp.xstr))
 
         # ----------------------------------------------------------------
         # Compare current position to ONE stamp
 
-        if currstamp.token == currtoken.stamp.xstr:
+        if currtoken.stamp.xstr in currstamp.tokens:
             match = True
             if self.pvg.opt_debug > 6:
                 if currstamp.nstate != ST.val("STIGN"):

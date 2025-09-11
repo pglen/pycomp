@@ -24,49 +24,6 @@ main:
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
-    and     rsp, 0xfffffffffffffff0
-    mov     rbp, rsp
-    mov  rdi  , strz
-    mov  rsi  , stry
-    mov rax, 0
-    mov ax, word [num1]
-    mov  rdx  , rax
-    mov rax, 0
-    mov ax, word [num2]
-    mov  rcx  , rax
-    mov rax, 0
-    mov ax, word [num3]
-    mov  r8  , rax
-    mov rax, 0
-    mov ax, word [num4]
-    mov  r9  , rax
-    mov rax, 0
-    mov ax, word [num5]
-    push   rax 
-    mov rax, 0
-    mov ax, word [num6]
-    push   rax 
-    xor  rax, rax
-    extern printf
-    call printf   ; line: 12 -- printf
-    and     rsp, 0xfffffffffffffff0
-    mov     rbp, rsp
-    mov  rdi  , strx
-    mov rax, 0
-    mov ax, word [num1]
-    mov  rsi  , rax
-    mov rax, 0
-    mov ax, word [num2]
-    mov  rdx  , rax
-    mov rax, 0
-    mov ax, word [num3]
-    mov  rcx  , rax
-    mov rax, 0
-    mov ax, word [num4]
-    mov  r8  , rax
-    xor  rax, rax
-    extern printf
-    call printf   ; line: 13 -- printf
 
 end_code:    ;  End of program
 
@@ -100,14 +57,5 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-num1 : dw 1234 ; line: 1 -- u16 : num1 = 1234
-num2 : dw 5678 ; line: 2 -- u16 : num2 = 5678
-num3 : dw 2345 ; line: 3 -- u16 : num3 = 2345
-num4 : dw 7890 ; line: 4 -- u16 : num4 = 7890
-num5 : dw 9012 ; line: 5 -- u16 : num5 = 9012
-num6 : dw 1111 ; line: 6 -- u16 : num6 = 1111
-strx : db "Hello World: %06d %d %d", 10, 0 ; line: 8 -- arr : strx = "Hello World: %06d %d %d\n"
-strz : db "Hello World: %s %d %d %d %d %d %d", 10, 0 ; line: 9 -- arr : strz = "Hello World: %s %d %d %d %d %d %d\n"
-stry : db "abcd", 0 ; line: 10 -- arr : stry = "abcd"
 
 ; EOF
