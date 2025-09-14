@@ -60,7 +60,10 @@ class Stamp:
         for aa in self.state:
             states += ST.get(aa) + " "
         strx  =  "[ " + states + " "
-        strx +=  pp(str(self.token)) + " "
+        tokens = ""
+        for aa in self.tokens:
+            tokens += aa + " "
+        strx +=  pp(tokens) + " "
         strx +=  ST.get(self.nstate) + " ]"
         return strx
 
@@ -124,12 +127,12 @@ Dfuncx = ( \
 
 Drassn  = (
     # Right side assignment
-    Stamp(ST.val("STARITH"),  "=>",     ST.val("STRASSN3"),  False,  None),
-    Stamp(ST.val("STRASSN3"), "num",    ST.val("STRASSN4"),  False,  func_rassn),
-    Stamp(ST.val("STRASSN3"), "num2",   ST.val("STRASSN4"),  False,  func_rassn),
-    Stamp(ST.val("STRASSN3"), "ident",  ST.val("STRASSN4"),  False,  func_rassn),
-    Stamp(ST.val("STRASSN4"),  ";",     ST.val("STPOP"),     False,  func_rassn_stop),
-    Stamp(ST.val("STRASSN4"),  "nl",    ST.val("STPOP"),     False,  func_rassn_stop),
+    #Stamp(ST.val("STARITH"),  "=>",     ST.val("STRASSN3"),  False,  None),
+    #Stamp(ST.val("STRASSN3"), "num",    ST.val("STRASSN4"),  False,  assn.rassn),
+    #Stamp(ST.val("STRASSN3"), "num2",   ST.val("STRASSN4"),  False,  assn.rassn),
+    #Stamp(ST.val("STRASSN3"), "ident",  ST.val("STRASSN4"),  False,  assn.rassn),
+    #Stamp(ST.val("STRASSN4"),  ";",     ST.val("STPOP"),     False,  assn.rassn_stop),
+    #Stamp(ST.val("STRASSN4"),  "nl",    ST.val("STPOP"),     False,  assn.rassn_stop),
     )
 
 Dfcall  = (
@@ -149,6 +152,7 @@ Dfcall  = (
     )
 
 Dtest = (
+    # Assignments / Start of arithmetic
     #Stamp(ST.val("DECL4"), "=",         ST.val("STARITH"),  False,  None),
     #Stamp(ST.val("DECL5"), "ident",     ST.val("DECL6"),    False,  func_decl_val),
     #Stamp(ST.val("DECL5"), "num",       ST.val("DECL6"),    False,  func_decl_val),
@@ -173,68 +177,75 @@ Dtest = (
 
 Darith = (
     # Arithmetics (+ - * / sqr assn)
-    Stamp(ST.val("STARITH"), "=",       ST.val("SFASSN"),   False,  func_arithop),
-    Stamp(ST.val("SFASSN"), "ident",    ST.val("STARITH"),  False,  func_assnexpr),
-    Stamp(ST.val("SFASSN"), "num",      ST.val("STARITH"),  False,  func_assnexpr),
-    Stamp(ST.val("SFASSN"), "str",      ST.val("STARITH"),  False,  func_assnexpr),
+    Stamp(ST.val("STARITH"), "=",       ST.val("SFASSN"),   False,  arith.arithop),
+    Stamp(ST.val("SFASSN"), "ident",    ST.val("STARITH"),  False,  arith.assnexpr),
+    Stamp(ST.val("SFASSN"), "num",      ST.val("STARITH"),  False,  arith.assnexpr),
+    Stamp(ST.val("SFASSN"), "str",      ST.val("STARITH"),  False,  arith.assnexpr),
 
-    Stamp(ST.val("STARITH"), "=>",      ST.val("SFPUT"),    False,  func_arithop),
-    Stamp(ST.val("SFPUT"), "ident",     ST.val("STARITH"),  False,  func_mulexpr),
-    Stamp(ST.val("SFPUT"), "num",       ST.val("STARITH"),  False,  func_mulexpr),
+    Stamp(ST.val("STARITH"), "=>",      ST.val("SFPUT"),    False,  arith.arithop),
+    Stamp(ST.val("SFPUT"), "ident",     ST.val("STARITH"),  False,  arith.mulexpr),
+    Stamp(ST.val("SFPUT"), "num",       ST.val("STARITH"),  False,  arith.mulexpr),
 
-    Stamp(ST.val("STARITH"), "expo",    ST.val("SFSQR"),    False,  func_arithop),
-    Stamp(ST.val("SFSQR"),   "ident",   ST.val("STARITH"),  False,  func_expexpr),
-    Stamp(ST.val("SFSQR"),   "num",     ST.val("STARITH"),  False,  func_expexpr),
+    Stamp(ST.val("STARITH"), "expo",    ST.val("SFSQR"),    False,  arith.arithop),
+    Stamp(ST.val("SFSQR"),   "ident",   ST.val("STARITH"),  False,  arith.expexpr),
+    Stamp(ST.val("SFSQR"),   "num",     ST.val("STARITH"),  False,  arith.expexpr),
 
-    Stamp(ST.val("STARITH"), "*",       ST.val("SFMUL"),    False,  func_arithop),
-    Stamp(ST.val("SFMUL"), "ident",     ST.val("STARITH"),  False,  func_mulexpr),
-    Stamp(ST.val("SFMUL"), "num",       ST.val("STARITH"),  False,  func_mulexpr),
+    Stamp(ST.val("STATEANY"),   "(",     ST.val("STIGN"),    False,  misc.func_parent),
+    Stamp(ST.val("STATEANY"),   ")",     ST.val("STIGN"),    False,  misc.func_parent),
+    #Stamp(ST.val("SFPAR"), "ident",     ST.val("STARITH"),  False,  None),
+    #Stamp(ST.val("SFPAR"), "num",       ST.val("STARITH"),  False,  None),
 
-    Stamp(ST.val("STARITH"), "/",       ST.val("SFDIV"),    False,  func_arithop),
-    Stamp(ST.val("SFDIV"), "ident",     ST.val("STARITH"),  False,  func_divexpr),
-    Stamp(ST.val("SFDIV"), "num",       ST.val("STARITH"),  False,  func_divexpr),
+    #Stamp(ST.val("STARITH"), ")",       ST.val("SFPAR2"),   False,  misc.func_parent),
+    #Stamp(ST.val("SFPAR2"), "ident",    ST.val("STARITH"),  False,  arith.mulexpr),
+    #Stamp(ST.val("SFPAR2"), "num",      ST.val("STARITH"),  False,  arith.mulexpr),
 
-    Stamp(ST.val("STARITH"), "+",       ST.val("SFADD"),    False,  func_arithop),
-    Stamp(ST.val("SFADD"),   "ident",   ST.val("STARITH"),  False,  func_addexpr),
-    Stamp(ST.val("SFADD"),   "num",     ST.val("STARITH"),  False,  func_addexpr),
+    Stamp(ST.val("STARITH"), "*",       ST.val("SFMUL"),    False,  arith.arithop),
+    Stamp(ST.val("SFMUL"), "ident",     ST.val("STARITH"),  False,  arith.mulexpr),
+    Stamp(ST.val("SFMUL"), "num",       ST.val("STARITH"),  False,  arith.mulexpr),
 
-    Stamp(ST.val("STARITH"), "-",       ST.val("SFSUB"),     False,  func_arithop),
-    Stamp(ST.val("SFSUB"), "ident",     ST.val("STARITH"),   False,  func_subexpr),
-    Stamp(ST.val("SFSUB"), "num",       ST.val("STARITH"),   False,  func_subexpr),
+    Stamp(ST.val("STARITH"), "/",       ST.val("SFDIV"),    False,  arith.arithop),
+    Stamp(ST.val("SFDIV"), "ident",     ST.val("STARITH"),  False,  arith.divexpr),
+    Stamp(ST.val("SFDIV"), "num",       ST.val("STARITH"),  False,  arith.divexpr),
 
-    Stamp(ST.val("STARITH"), "<<",      ST.val("SFSHIFT"),  False,    func_arithop),
-    Stamp(ST.val("SFSHIFT"), "ident",   ST.val("STARITH"),  False,    func_expr),
-    Stamp(ST.val("SFSHIFT"), "num",     ST.val("STARITH"),  False,    func_expr),
+    Stamp(ST.val("STARITH"), "+",       ST.val("SFADD"),    False,  arith.arithop),
+    Stamp(ST.val("SFADD"),   "ident",   ST.val("STARITH"),  False,  arith.addexpr),
+    Stamp(ST.val("SFADD"),   "num",     ST.val("STARITH"),  False,  arith.addexpr),
 
-    Stamp(ST.val("STARITH"),  ">>",     ST.val("SFRSHIFT"), False,    func_arithop),
-    Stamp(ST.val("SFRSHIFT"), "ident",  ST.val("STARITH"),  False,    func_expr),
-    Stamp(ST.val("SFRSHIFT"), "num",    ST.val("STARITH"),  False,    func_expr),
+    Stamp(ST.val("STARITH"), "-",       ST.val("SFSUB"),     False, arith.arithop),
+    Stamp(ST.val("SFSUB"), "ident",     ST.val("STARITH"),   False, arith.subexpr),
+    Stamp(ST.val("SFSUB"), "num",       ST.val("STARITH"),   False, arith.subexpr),
 
-    Stamp(ST.val("STARITH"), ";",       ST.val("STPOP"),    False,  func_arith_stop),
-    Stamp(ST.val("STARITH"), "nl",      ST.val("STPOP"),    False,  func_arith_stop),
+    Stamp(ST.val("STARITH"), "<<",      ST.val("SFSHIFT"),  False,  arith.arithop),
+    Stamp(ST.val("SFSHIFT"), "ident",   ST.val("STARITH"),  False,  arith.expr),
+    Stamp(ST.val("SFSHIFT"), "num",     ST.val("STARITH"),  False,  arith.expr),
+
+    Stamp(ST.val("STARITH"),  ">>",     ST.val("SFRSHIFT"), False,  arith.arithop),
+    Stamp(ST.val("SFRSHIFT"), "ident",  ST.val("STARITH"),  False,  arith.expr),
+    Stamp(ST.val("SFRSHIFT"), "num",    ST.val("STARITH"),  False,  arith.expr),
+
+    Stamp(ST.val("STARITH"), ";",       ST.val("STPOP"),    False,  arith.arith_stop),
+    Stamp(ST.val("STARITH"), "nl",      ST.val("STPOP"),    False,  arith.arith_stop),
     )
 
 Ddecl = (
     # Declarations
-    Stamp(STBASE,  "decl",   ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "arr",    ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "float",  ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "dbl",    ST.val("DECL2"),   True,   func_decl_start),
-    Stamp(STBASE,  "dbl2",   ST.val("DECL2"),   True,   func_decl_start),
+    Stamp(STBASE,  "decl",   ST.val("DECL2"),   False,   decl.decl_start),
+    Stamp(STBASE,  "arr",    ST.val("DECL2"),   False,   decl.decl_start),
+    Stamp(STBASE,  "float",  ST.val("DECL2"),   False,   decl.decl_start),
+    Stamp(STBASE,  "dbl",    ST.val("DECL2"),   False,   decl.decl_start),
+    Stamp(STBASE,  "dbl2",   ST.val("DECL2"),   False,   decl.decl_start),
 
-    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),      False,  None),
-    Stamp(ST.val("DECL3"), "ident",     ST.val("STARITH"),    False,  func_decl_ident),
-
-    #Stamp(ST.val("STARITH"), ",",       ST.val("STPOP"),     False,  func_decl_comma),
-    #Stamp(ST.val("DECL4"), ";",         ST.val("STPOP2"),    False,  func_decl_stop),
-    #Stamp(ST.val("DECL4"), "nl",        ST.val("STPOP2"),    False,  func_decl_stop),
+    Stamp(ST.val("DECL2"), ":",         ST.val("DECL3"),    True,   decl.decl_col),
+    Stamp(ST.val("DECL3"), "ident",     ST.val("STARITH"),  False,  decl.decl_ident),
+    Stamp(ST.val("STARITH"), ",",       ST.val("DECL3"),    False,  decl.decl_comma),
+    Stamp(ST.val("DECL2"), ";",         ST.val("STPOP"),    False,  decl.decl_stop),
+    Stamp(ST.val("DECL2"), "nl",        ST.val("STPOP"),    False,  decl.decl_stop),
     )
 
 stamps =  (  \
 
-    # Assignments / Start of arithmetic
-    #Stamp(ST.val("STATEINI"), "num",    ST.val("STARITH"),  True,  func_arithstart),
-    Stamp(ST.val("STATEINI"), "ident",  ST.val("STARITH"),  True,  func_arithstart),
+    #Stamp(ST.val("STATEINI"), "num",    ST.val("STARITH"),  True,  arith.arithstart),
+    Stamp(ST.val("STATEINI"), "ident",  ST.val("STARITH"),  True,  arith.arithstart),
 
     # include sub systems
     *Ddecl,

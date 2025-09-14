@@ -64,13 +64,15 @@ class LinParse():
             if not match:
                 error(self, "Parse")
         #print("end scan")
+        if self.state !=  ST.val("STATEINI"):
+            print("Warn: unexpected parse state:", pp(ST.get(self.state)), "on exit.")
 
     def stamps_iter(self, startx, endd):
 
         ''' Iterate all stamps at startx offset '''
 
-        if self.pvg.opt_debug > 5:
-            print("stamps_iter()", "startx =", startx, "endd =", endd)
+        #if self.pvg.opt_debug > 4:
+        #    print("stamps_iter()", "startx =", startx, "endd =", endd)
 
         matchx = 0 ; xprog = 0; stidx = 0
         self.startx = startx
@@ -114,7 +116,7 @@ class LinParse():
         #breakpoint()
         #print("stamp", stamps[idx])
 
-        if self.pvg.opt_debug > 5:
+        if self.pvg.opt_debug > 6:
             print("    stamp:", pp(currstamp.tokens), "token:", pp(currtoken.stamp.xstr))
 
         # ----------------------------------------------------------------
@@ -128,13 +130,13 @@ class LinParse():
 
             if self.pvg.opt_debug > 2:
                 if  currtoken.stamp.xstr != "sp":    # no sp display
-                    xprintf(#"tprog =", tprog,
+                    xprintf( \
                             #"state:",  ST.get(self.state),
                             #"stamp:", pp(currstamp.token),
-                            "tok:", #padx(pp(currtoken.stamp.xstr), 7),
-                            #" =",
+                            #padx(pp(currtoken.stamp.xstr), 7),
                             #padx(pp(currtoken.mstr, 6), 5),
-                            currtoken.mstr,
+                            "tok:", pp(currtoken.mstr),
+                            "tprog =", tprog,
                             )
                             #end = " ")
                     global row
@@ -150,11 +152,19 @@ class LinParse():
             if currstamp.nstate != ST.val("STATEANY") and \
                     currstamp.nstate != ST.val("STIGN"):
                 if currstamp.nstate == ST.val("STPOP"):
+                    #if self.pvg.opt_debug > 4:
+                    #    for aa in self.statestack:
+                    #        print("statestack:", aa)
                     if self.pvg.opt_debug > 4:
                         print("pop state", ST.get(self.state), end = " ")
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
-                        print("to:", ST.get(self.state), end = " \n")
+                        print("pop to:", ST.get(self.state), end = " \n")
+
+                    # Re-feed this token to the stack:
+                    if  self.statestack.getlen() > 0:
+                        #print("re-feed", ST.get(self.state))
+                        self.stamps_iter(tprog, endd )
 
                 elif currstamp.nstate == ST.val("STPOP2"):
                     if self.pvg.opt_debug > 4:
@@ -162,20 +172,18 @@ class LinParse():
                     self.state = self.statestack.pop()
                     self.state = self.statestack.pop()
                     if self.pvg.opt_debug > 4:
-                        print("to:", ST.get(self.state), end = " ")
+                        print("pop to:", ST.get(self.state), end = " ")
                 else:
                     if  currstamp.push:
                         if self.pvg.opt_debug > 4:
                             print("push:", ST.get(self.state), end = " ")
                         self.statestack.push(self.state)
-
+                        #if self.pvg.opt_debug > 4:
+                        #    for aa in self.statestack:
+                        #        print("statestack:", aa)
                     self.state = currstamp.nstate
                     if self.pvg.opt_debug > 4:
-                        print("to:", ST.get(self.state), end = "\n")
-
-            #if self.pvg.opt_debug > 4:
-            #    if currstamp.nstate != ST.val("STIGN"):
-            #        print(" State to;", ST.get(self.state))
+                        print("state to:", ST.get(self.state), end = "\n")
 
             global lastnode
             if currstamp.nstate != ST.val("STIGN"):

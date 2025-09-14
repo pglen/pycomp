@@ -239,7 +239,7 @@ def cesc_lite(strx):
             retx += chh
         pos += 1
 
-    if pvg and pvg.opt_debug > 5:
+    if pvg and pvg.opt_debug > 8:
         print("cesc:", strx, "=>", retx)
 
     return retx

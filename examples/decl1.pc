@@ -1,1 +1,1 @@
-u32:aaa ; u16 : bbb // Hello
+u32:aaa, bbb

@@ -8,9 +8,7 @@ import complib.linpool as linpool
 import complib.lexdef as lexdef
 import codegen.codegen as codegen
 
-# End it with empty "" operator for cleanup
-#ops_prec = "**", "*", "/", "+", "-", ">>", "<<" #, "="
-ops_prec = "*","+", ""
+ops_prec = "**", "*", "/", "+", "-", ">>", "<<" #, "="
 
 try:
     from complib.utils import *
@@ -26,7 +24,6 @@ def funcpvg(xpvg):
 arithstack = stack.pStack()            # Arithmetic
 argstack  = stack.pStack()             # Function arguments
 callstack = stack.pStack()             # Function calls
-gllevel = 0
 
 def execop(self2, arg1, op, arg2):
     ret = 0
@@ -39,26 +36,22 @@ def execop(self2, arg1, op, arg2):
     elif op ==   ">>":  ret = arg1 >> arg2
     elif op ==   "=":   ret = arg2
     else:  error(self2, "Invalid operator '%s': " % op )
-
-    if pvg.opt_debug > 7:
-        print(" execop:", arg1, op, arg2, "; ret = ", ret, )
-
+    print(" execop:", arg1, op, arg2, "; ret = ", ret, )
     return ret
 
-def reduce(self2, xstack, filter, pos = 0):
+def reduce_const(self2, filter, xstack, pos = 0):
 
-    if pvg.opt_debug > 4:
-        print("reduce():", "filter =", pp(filter), "pos =", pos)
+    print("reduce_const():", filter, "pos =", pos)
 
-    #if pvg.opt_debug > 4:
-    #    print("\narithstack pre reduce:", end = " ")
-    #    for aa in arithstack:
-    #        print(self2.arrx[aa], end = " ")
-    #    print()
+    if pvg.opt_debug > 6:
+        print("\narithstack pre reduce:", pp(filter), end = " ")
+        for aa in arithstack:
+            print(self2.arrx[aa], end = " ")
+        print()
 
     # Walk the stack
-    loopx = pos ; wasop = False
-    statex = 0 ; numidx = -1 ; opidx = -1 ;  num2idx = -1
+    loopx = pos ;
+    statex = 0 ; numidx = -1 ; opidx = -1 ;  wasop = False
     while True:
         if loopx >= len(xstack):
             break
@@ -67,83 +60,55 @@ def reduce(self2, xstack, filter, pos = 0):
             loopx += 1
             continue
 
-        if pvg.opt_debug > 7:
-            print("pos:", loopx, pp(self2.arrx[idx].stamp.xstr),
-                        pp(self2.arrx[idx].mstr), end = " -- ")
-        if pvg.opt_debug > 7:
-            print("arithstack: [", self2.arrx[idx].stamp.xstr,
-                            pp(self2.arrx[idx].mstr), end = "] " )
-
-        if self2.arrx[idx].stamp.xstr == "(":
-            self2.arrx[idx].flag = 1
-            # Recurse into parenthases
-            print("\n ** recurse:", "idx:", idx, pp(self2.arrx[idx].mstr))
-            global gllevel
-            gllevel += 1
-            for aa in ops_prec:
-                reduce(self2, xstack, aa, idx)
-            #print("\n ** after recurse" )
-            gllevel -= 1
-            #print("\nxstack post recurse:", end = " ")
-            for aa in xstack:
-                if 1: #self2.arrx[aa].flag == 0:
-                    print(self2.arrx[aa], end = " ")
-            print()
-            #return
-
-        if self2.arrx[idx].stamp.xstr == ")":
-            print("\nparen2:", idx, pp(self2.arrx[idx].stamp.xstr), loopx)
-            #if gllevel == 0:
-            if filter == "":
-                self2.arrx[idx].flag = 1
-            else:
-                return
-
-        #if self2.arrx[idx].stamp.xstr in ops_prec:
-        #    if pvg.opt_debug > 5:
-        #        print(" op: ", pp(self2.arrx[idx].mstr))
-        #    opidx = idx;
-
-        # Blind assign first number
+        print(loopx, pp(self2.arrx[idx].mstr), end = " -- ")
+        #print("arithstack: [", self2.arrx[idx].stamp.xstr,
+        #                    pp(self2.arrx[idx].mstr), end = "] " )
         if statex == 0:
             if self2.arrx[idx].stamp.xstr == "num":
-                numidx = idx
-                if pvg.opt_debug > 7:
-                    print(" arg1: ", pp(self2.arrx[numidx].mstr))
-
-        elif statex == 1:
-            #print("statex", statex)
-            if self2.arrx[idx].stamp.xstr == "num":
-                #statex = 0
-                num2idx = idx
                 if pvg.opt_debug > 5:
-                    print(" arg1", pp(self2.arrx[numidx].mstr),
-                            " op", pp(self2.arrx[opidx].mstr),
-                            " arg2", pp(self2.arrx[num2idx].mstr))
-                    if pvg.opt_debug > 7:
-                        print("numidx =", numidx, "opidx =", opidx)
-                if numidx >= 0 and opidx >= 0:
-                    bb =  execop(self2, self2.arrx[numidx].ival,
-                            self2.arrx[opidx].mstr,
-                            self2.arrx[idx].ival)
-                    self2.arrx[numidx].ival = bb
-                    self2.arrx[numidx].mstr = str(bb)
-                    self2.arrx[idx].flag = 1
-                    self2.arrx[opidx].flag = 1
-                    wasop = True
+                    print(" arg1: ", pp(self2.arrx[idx].mstr), filter)
+                numidx = idx
+            elif self2.arrx[idx].stamp.xstr == "(":
+                self2.arrx[idx].flag = 1
+                # Recurse into stack
+                print("\n ** recurse:", self2.arrx[idx].mstr)
+                for aa in ops_prec:
+                    reduce_const(self2, aa, xstack, idx)
+                print("\n ** after recurse")
+                #break
+
+            elif self2.arrx[idx].stamp.xstr == ")":
+                self2.arrx[idx].flag = 1
+                print("paren2:", idx, self2.arrx[idx].stamp.xstr)
+                break
+            else:
                 pass
 
-         # If filter match, step state
+        elif statex == 1:
+            if self2.arrx[idx].stamp.xstr == "num":
+                if pvg.opt_debug > 5:
+                    print(" arg2", pp(self2.arrx[idx].mstr))
+                if numidx >= 0:
+                    self2.arrx[numidx].ival =  execop(self2, self2.arrx[numidx].ival,
+                                filter, self2.arrx[idx].ival)
+                    self2.arrx[numidx].mstr = str(self2.arrx[numidx].ival)
+                    self2.arrx[idx].flag = 1
+                    self2.arrx[opidx].flag = 1
+                statex = 0;
+                wasop = True
+        else:
+            pass
+
         if self2.arrx[idx].mstr == filter:
-            if pvg.opt_debug > 7:
-                print(" op: ", pp(filter), pp(self2.arrx[idx].mstr))
+            if pvg.opt_debug > 2:
+                print(" op: filter =", filter, pp(self2.arrx[idx].mstr))
             opidx = idx
             statex = 1
         loopx += 1
 
     if pvg.opt_debug > 6:
         if wasop:
-            print("\nxstack post reduce:", end = " ")
+            print("\nxstack post reduce:", pp(filter), end = " ")
             for aa in xstack:
                 print(self2.arrx[aa], end = " ")
             print()
@@ -284,7 +249,7 @@ class Arith():
 
         # Execute as operator precedence
         for aa in ops_prec:
-            reduce(self2, arithstack, aa)
+            reduce_const(self2, aa, arithstack)
 
         #if self2.statestack.getlen() > 1:
         #    sss =  self2.statestack[self2.statestack.getlen() - 1]
@@ -510,11 +475,10 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl_stop()", "tprog =", tprog, self2.arrx[tprog])
 
-        if pvg.opt_debug > 4:
+        if pvg.opt_debug > 0:
             print("arithstack: len =", arithstack.getlen(), end = " ")
             for aa in arithstack:
-                if self2.arrx[aa].flag == 0:
-                    print(self2.arrx[aa], end = " ")
+                print(self2.arrx[aa], end = " ")
             print()
 
         return
@@ -720,3 +684,5 @@ class Misc():
 misc = Misc()
 
 # EOF
+
+

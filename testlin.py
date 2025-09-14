@@ -20,15 +20,16 @@ for cnt, aa in enumerate(lindef.stamps):
         pass
     for cnt2, aa2 in enumerate(lindef.stamps):
         if aa == aa2:
-            #print("stateidentical skip", aa)
+            #print("state identical skip", aa)
             continue
         if aa2.nstate in aa.state :
             for cnt3, aa3 in enumerate(lindef.stamps):
                 if  aa2 == aa3:
-                    #print("stateidentical2 skip", aa)
+                    #print("state identical2 skip", aa)
                     continue
                 #print("aa2", aa2.state, "aa3", aa3.state)
                 for bb in aa2.state:
                     if bb in aa3.state :
-                        print("st:", cnt, aa2.dump(), "to st2:", cnt2, aa3.dump())
+                        #print(cnt3, aa2.dump(), "to:", cnt2, aa3.dump())
+                        print(aa2.dump(), aa3.dump())
 # EOF
