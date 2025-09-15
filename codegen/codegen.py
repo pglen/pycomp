@@ -7,6 +7,7 @@ import os, sys, subprocess
 cummulate  = ""
 cummulate2 = ""
 
+# ABI 64 bit
 regorder = ( "rax", #arg0
              "rdi", #arg1
              "rsi", #arg2
@@ -16,7 +17,6 @@ regorder = ( "rax", #arg0
              "r8",  #arg5
              "r9",  #arg6
             )
-
 reglist = ( "rax", #arg0
             )
 
@@ -165,7 +165,7 @@ def assemble(fname, lpg):
     outname = os.path.splitext(fname)[0] + ".o"
 
     linprog = ["nasm", "-felf64", fname, "-o", outname]
-    if lpg.opt_verbose.cnt:
+    if lpg.opt_verbose.cnt > 2:
         print("assemble:",  linprog)
     try:
         ret = subprocess.Popen(linprog, stdout=subprocess.PIPE)
@@ -173,14 +173,13 @@ def assemble(fname, lpg):
     except:
         print("assemble", sys.exc_info())
 
-def link(fname, lpg):
+def link(fname, outname, lpg):
 
     objname = os.path.splitext(fname)[0] + ".o"
-    outname = os.path.splitext(fname)[0]
     linprog = ["ld", objname, "codegen/main.o", "codegen/crtasm.o",
                 "-o", outname, "-dynamic-linker",
                 "/lib64/ld-linux-x86-64.so.2", "-lc"]
-    if lpg.opt_verbose.cnt:
+    if lpg.opt_verbose.cnt > 2:
         print("link:",  linprog)
     try:
         ret = subprocess.Popen(linprog, stdout=subprocess.PIPE)

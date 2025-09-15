@@ -192,6 +192,7 @@ Darith = (
 
     Stamp(ST.val("STATEANY"),   "(",     ST.val("STIGN"),    False,  misc.func_parent),
     Stamp(ST.val("STATEANY"),   ")",     ST.val("STIGN"),    False,  misc.func_parent),
+
     #Stamp(ST.val("SFPAR"), "ident",     ST.val("STARITH"),  False,  None),
     #Stamp(ST.val("SFPAR"), "num",       ST.val("STARITH"),  False,  None),
 

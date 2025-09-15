@@ -19,7 +19,7 @@ from complib.ptree import *
 from complib.utils import *
 
 Version = "Version: 1.0.0; "
-Build   = "Build date: Sat 06.Sep.2025"
+Build   = "Build date: Mon 15.Sep.2025"
 
 # Name is prepened opt_ and name's first letter is the option letter
 
@@ -38,6 +38,7 @@ opts =  (\
     ("rdocstr",     False,      False,  "Show document strings"),
     ("uresults",    False,      False,  "Show results"),
     ("workdir",     "./tmp",    False,  "Directory for temp files. Def=./tmp"),
+    ("Outdir",      "./out",    False,  "Directory for out files. Def=./out"),
     ("lexdebug",    0,          True,   "Lexer debug level. Def=0 0=>none 9=>noisy."),
     ("ymtab",       False,      True,   "Show symtab."),
     ("animate",     False,      True,   "Animate (slow) output."),
@@ -107,7 +108,7 @@ def parsefile(strx):
             elif lpg.opt_verbose.cnt > 0:
                 print(aa, end = " ")
             else:
-                # Do not show cmments
+                # Do not show comments
                 if aa.stamp.xstr == "comm2": continue
                 if aa.stamp.xstr == "comm3": continue
                 if aa.stamp.xstr == "comm4": continue
@@ -149,12 +150,17 @@ def parsefile(strx):
     if not lpg.opt_comp_only:
         codegen.dep_assemble(lpg)
         outfile = lpg.opt_workdir + os.sep + lpg.opt_outfile
-        #print("outfile:", outfile)
+        if lpg.opt_verbose.cnt > 1:
+            print("Outfile:   ", outfile)
         #return
 
         codegen.output(outfile, codegen.cummulate, codegen.cummulate2)
         codegen.assemble(outfile , lpg)
-        codegen.link(outfile, lpg)
+        outname = os.path.splitext(lpg.opt_outfile)[0]
+        exefile = lpg.opt_Outdir + os.sep + outname
+        if lpg.opt_verbose.cnt > 1:
+            print("Exefile:   ", exefile)
+        codegen.link(outfile, exefile, lpg)
 
     #if lpg.opt_verbose.cnt:
     #    print(treeroot)
@@ -195,7 +201,7 @@ if __name__ == "__main__":
     if lpg.opt_Target != "x86_64":
         print("Error: only x86_64 is supported (for now)")
         sys.exit(0)
-    if lpg.opt_verbose.cnt > 2:
+    if lpg.opt_verbose.cnt > 3:
         lpg.printme()
 
     if not lpg.args and not lpg.opt_Code:
@@ -204,11 +210,18 @@ if __name__ == "__main__":
 
     cnt = 0 ; strx = "None"
 
-    # Set up environment
+    # Set up dir environment
     if not os.path.isdir(lpg.opt_workdir):
         os.mkdir(lpg.opt_workdir)
 
+    if not os.path.isdir(lpg.opt_Outdir):
+        os.mkdir(lpg.opt_Outdir)
+
     if not os.access(lpg.opt_workdir, os.W_OK):
+        print("Error - cannot write to work dir:", pp(lpg.opt_workdir))
+        sys.exit(1)
+
+    if not os.access(lpg.opt_Outdir, os.W_OK):
         print("Error - cannot write to work dir:", pp(lpg.opt_workdir))
         sys.exit(1)
 

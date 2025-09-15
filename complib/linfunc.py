@@ -77,42 +77,36 @@ def reduce(self2, xstack, filter, pos = 0):
         if self2.arrx[idx].stamp.xstr == "(":
             self2.arrx[idx].flag = 1
             # Recurse into parenthases
-            print("\n ** recurse:", "idx:", idx, pp(self2.arrx[idx].mstr))
+            if pvg.opt_debug > 7:
+                print("\n ** recurse:", "idx:", idx, pp(self2.arrx[idx].mstr))
             global gllevel
             gllevel += 1
             for aa in ops_prec:
                 reduce(self2, xstack, aa, idx)
-            #print("\n ** after recurse" )
+            if pvg.opt_debug > 7:
+                print("\n ** after recurse" )
             gllevel -= 1
-            #print("\nxstack post recurse:", end = " ")
-            for aa in xstack:
-                if 1: #self2.arrx[aa].flag == 0:
-                    print(self2.arrx[aa], end = " ")
-            print()
-            #return
-
+            if pvg.opt_debug > 7:
+                print("\nxstack post recurse:", end = " ")
+                for aa in xstack:
+                    if 1: #self2.arrx[aa].flag == 0:
+                        print(self2.arrx[aa], end = " ")
+                print()
         if self2.arrx[idx].stamp.xstr == ")":
-            print("\nparen2:", idx, pp(self2.arrx[idx].stamp.xstr), loopx)
+            if pvg.opt_debug > 7:
+                print("\nparen2:", idx, pp(self2.arrx[idx].stamp.xstr), loopx)
             #if gllevel == 0:
             if filter == "":
                 self2.arrx[idx].flag = 1
             else:
                 return
-
-        #if self2.arrx[idx].stamp.xstr in ops_prec:
-        #    if pvg.opt_debug > 5:
-        #        print(" op: ", pp(self2.arrx[idx].mstr))
-        #    opidx = idx;
-
         # Blind assign first number
         if statex == 0:
             if self2.arrx[idx].stamp.xstr == "num":
                 numidx = idx
                 if pvg.opt_debug > 7:
                     print(" arg1: ", pp(self2.arrx[numidx].mstr))
-
         elif statex == 1:
-            #print("statex", statex)
             if self2.arrx[idx].stamp.xstr == "num":
                 #statex = 0
                 num2idx = idx
@@ -133,7 +127,6 @@ def reduce(self2, xstack, filter, pos = 0):
                     wasop = True
                     opidx = -1
                 pass
-
          # If filter match, step state
         if self2.arrx[idx].mstr == filter:
             if pvg.opt_debug > 7:
@@ -141,15 +134,13 @@ def reduce(self2, xstack, filter, pos = 0):
             opidx = idx
             statex = 1
         loopx += 1
-
-    if pvg.opt_debug > 6:
+    if pvg.opt_debug > 7:
         if wasop:
             print("\nxstack post reduce:", end = " ")
             for aa in xstack:
                 print(self2.arrx[aa], end = " ")
             print()
-
-    return loopx
+    return
 
 class   Funcs():
 
@@ -511,7 +502,7 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl_stop()", "tprog =", tprog, self2.arrx[tprog])
 
-        if pvg.opt_debug > 4:
+        if pvg.opt_debug > 1:
             print("arithstack: len =", arithstack.getlen(), end = " ")
             for aa in arithstack:
                 if self2.arrx[aa].flag == 0:
