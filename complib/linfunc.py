@@ -40,7 +40,7 @@ def execop(self2, arg1, op, arg2):
     elif op ==   "=":   ret = arg2
     else:  error(self2, "Invalid operator '%s': " % op )
 
-    if pvg.opt_debug > 7:
+    if pvg.opt_debug > 5:
         print(" execop:", arg1, op, arg2, "; ret = ", ret, )
 
     return ret
@@ -116,7 +116,7 @@ def reduce(self2, xstack, filter, pos = 0):
             if self2.arrx[idx].stamp.xstr == "num":
                 #statex = 0
                 num2idx = idx
-                if pvg.opt_debug > 5:
+                if pvg.opt_debug > 7:
                     print(" arg1", pp(self2.arrx[numidx].mstr),
                             " op", pp(self2.arrx[opidx].mstr),
                             " arg2", pp(self2.arrx[num2idx].mstr))
@@ -131,6 +131,7 @@ def reduce(self2, xstack, filter, pos = 0):
                     self2.arrx[idx].flag = 1
                     self2.arrx[opidx].flag = 1
                     wasop = True
+                    opidx = -1
                 pass
 
          # If filter match, step state
