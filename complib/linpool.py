@@ -21,9 +21,7 @@ def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
 
     typename = self2.arrx[xstack.get(0)].mstr
     varname = self2.arrx[xstack.get(2)].mstr
-    #varval  = self2.arrx[xstack.get(4)].mstr
-
-    if  xstack.getlen() > 2:
+    if  xstack.getlen() > 4:
         varval = self2.arrx[xstack.get(4)].mstr
     else:
         varval = 0
@@ -74,7 +72,7 @@ def pctona(ddd):
         retx = "dd"
     elif ddd == "double":
         retx = "dq"
-    elif ddd == "extended":
+    elif ddd == "quad":
         retx = "dt"
     return retx
 

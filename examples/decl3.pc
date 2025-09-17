@@ -1,6 +1,5 @@
 // Declarations
 u32 :aaa = 2; u16 : bbb = 3; u8 : ccc = 4
 s32 :ddd = 5; s16 : eee = 6; s8 : fff = 7
-float : ggg = 0; double : hhh = 0
-u16 : ggg=8; hhh=9
-u8 : iii=11; jjj=12
+u16 : ggg=8; u32 : hhh=9
+u8 : iii=11; u8 : jjj=12

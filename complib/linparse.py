@@ -104,16 +104,16 @@ class LinParse():
 
         match = False ; iprog = 1   # Always advance
         #print("state", type(stamps[sidx].state), stamps[sidx].state)
-        if ST.val("STATEANY") not in stamps[sidx].state:
+        if ST.val("STATEANY") not in currstamp.state:
             #print("stateany", stamps[sidx])
-            if  self.state not in stamps[sidx].state:
+            if  self.state not in currstamp.state:
                 if self.pvg.opt_debug > 8:
                     sss = ""
-                    for aa in stamps[sidx].state:
+                    for aa in currstamp.state:
                         sss += ST.get(aa)
                     print("Out of state:", "state: [",  sss, "]",
                             ST.get(self.state),
-                                "token:", stamps[sidx].tokens,
+                                "token:", currstamp.tokens,
                                     "tprog", tprog)
                 return match, iprog
         #breakpoint()
@@ -178,7 +178,9 @@ class LinParse():
                     if self.pvg.opt_debug > 4:
                         print("push:", ST.get(self.state), end = " ")
 
-                    self.statestack.push(self.state)
+                    if currstamp.push:
+                        self.statestack.push(self.state)
+
                     self.state = currstamp.nstate
 
                     #    #if self.pvg.opt_debug > 4:

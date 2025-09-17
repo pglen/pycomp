@@ -12,6 +12,7 @@ import codegen.codegen as codegen
 #ops_prec = "**", "*", "/", "+", "-", ">>", "<<" #, "="
 ops_prec = "*","+", ""
 int_types = "u32", "s32", "u16", "s16", "u8", "s8",
+float_types = "float", "double", "quad"
 
 try:
     from complib.utils import *
@@ -481,23 +482,13 @@ class Decl():
     def comma(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.comma()", "tprog =", tprog)
-        print("arithstack comma:", end = " ")
-        if pvg.opt_debug > 2:
+        if pvg.opt_debug > 7:
+            print("arithstack comma:", end = " ")
             for aa in arithstack:
                 print(self2.arrx[aa], end = " ")
             print()
-        return
-        datatype = linpool.addtopool(self2, arithstack)
-        strx =   self2.arrx[arithstack.get(2)].mstr + " : " + datatype + " "
-        strx +=  self2.arrx[arithstack.get(4)].mstr
-        #codegen.emitdata(strx)
-        strx +=  " ; " + self2.arrx[arithstack.get(0)].mstr + " : "
-        strx += self2.arrx[arithstack.get(2)].mstr + " = "
-        strx += self2.arrx[arithstack.get(4)].mstr
-        codegen.emitdata(strx)
-
-        # Back off of last variable
-        arithstack.pop(); arithstack.pop()
+        #if arithstack.getlen() <= 3:
+        #    print("Padding ??? for zero fill", len(arithstack))
 
     def down(self, self2, tprog):
 
@@ -520,14 +511,24 @@ class Decl():
 
         # type dependent expand
         if self2.arrx[arithstack.get(0)].mstr == "arr":
-            if arithstack.getlen() <= 2:
+            #print("arr type")
+            if arithstack.getlen() <= 3:
                 # patch missing declaration argument with zero /empty
-                #strx += ""
+                strx += "hello"
                 pass
             else:
                 strx +=  asmesc(self2.arrx[arithstack.get(4)].mstr)
+
         elif datatype.lower() in int_types:
-            if arithstack.getlen() <= 2:
+            #print("int type")
+            if arithstack.getlen() <= 3:
+                # patch missing declaration argument with zero /empty
+                strx += " 0 "
+            else:
+                strx +=  self2.arrx[arithstack.get(4)].mstr
+        elif datatype.lower() in float_types:
+            #print("float type")
+            if arithstack.getlen() <= 3:
                 # patch missing declaration argument with zero /empty
                 strx += " 0 "
             else:
@@ -538,7 +539,7 @@ class Decl():
             if arithstack.getlen() <= 2:
                 strx += " 0 "
             else:
-                strx +=  self2.arrx[arithstack.get(2)].mstr
+                strx +=  self2.arrx[arithstack.get(4)].mstr
 
         #print("data decl:", pp(strx))
 
@@ -547,6 +548,7 @@ class Decl():
         strx +=  " ; line: " + str(linex) + " -- "
         for aa in range(arithstack.getlen()):
             strx +=  self2.arrx[arithstack.get(aa)].mstr + " "
+        strx += "\n"
 
         #if arithstack.getlen() <= 2:
         #    strx += " 0 "
