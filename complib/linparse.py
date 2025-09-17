@@ -162,7 +162,7 @@ class LinParse():
                 if self.pvg.opt_debug > 4:
                     print("pop state", ST.get(self.state), end = " ")
 
-                # Catch underflow by virtue of re-feed
+                # Catch underflow
                 #if self.statestack.getlen() > 0:
                 self.state = self.statestack.pop()
 
@@ -175,15 +175,15 @@ class LinParse():
                 if currstamp.upcall:
                     currstamp.upcall(self, tprog)
 
-                    #if  currstamp.push:
-                    #    if self.pvg.opt_debug > 4:
-                    #        print("push:", ST.get(self.state), end = " ")
-                    #    self.statestack.push(self.state)
+                    if self.pvg.opt_debug > 4:
+                        print("push:", ST.get(self.state), end = " ")
+
+                    self.statestack.push(self.state)
+                    self.state = currstamp.nstate
+
                     #    #if self.pvg.opt_debug > 4:
                     #    #    for aa in self.statestack:
                     #    #        print("statestack:", aa)
-
-                    self.state = currstamp.nstate
 
                     #if self.pvg.opt_debug > 4:
                     #    print("state to:", ST.get(self.state), end = "\n")

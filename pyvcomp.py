@@ -96,8 +96,8 @@ def parsefile(strx):
     if lpg.opt_timing_show:
         print  ("lexer time:", time_ms(start_time) )
 
-    if lpg.opt_debug > 5:
-        prarr(res, "lex res: ")
+    #if lpg.opt_debug > 5:
+    #    prarr(res, "lex res: ")
 
     if lpg.opt_xlexer_show:  # To show what the lexer did
         print("Lexer res:", end = " ")

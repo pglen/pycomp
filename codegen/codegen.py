@@ -94,7 +94,7 @@ def emit(*argx):
     global cummulate;
     for strx in argx:
         cummulate += strx
-    cummulate += "\n"
+    #cummulate += "\n"
 
 def emitdata(*argx):
 
@@ -103,7 +103,7 @@ def emitdata(*argx):
     global cummulate2;
     for strx in argx:
         cummulate2 += strx
-    cummulate2 += "\n"
+    #cummulate2 += "\n"
 
 def show_emit():
     print("emit code results:")
