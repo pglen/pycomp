@@ -72,11 +72,11 @@ class Stamp:
         states =  ""
         for aa in self.state:
             states += ST.get(aa) + " "
-        if self.call:
-            fname = str(self.call.__name__)
+        if self.upcall:
+            fname = str(self.upcall.__name__)
         else:
             fname = "No Func"
-        strx = "cState: " + states + " "  + pp(str(self.token)) \
+        strx = "cState: " + states + " "  + pp(str(self.tokens)) \
                 + " nState: " + ST.get(self.nstate) + " " + fname
         return strx
 
@@ -259,17 +259,17 @@ stamps =  (  \
     *Drassn,
 
     # This will ignore comments
-    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"),   None,  func_comment),
-    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STIGN"),   None,  func_dcomment), # //
-    Stamp(ST.val("STATEANY"), "comm3",   ST.val("STIGN"),   None,  func_comment),  # /* */
-    Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STIGN"),   None,  func_dcomment2),
-    Stamp(ST.val("STATEANY"), "comm4",   ST.val("STIGN"),   None,  func_comment),  # ##
-    Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"),   None,  func_dcomment3),
+    Stamp(ST.val("STATEANY"), "comm2",   ST.val("STIGN"),   None,  misc.comment),
+    Stamp(ST.val("STATEANY"), "comm2d",  ST.val("STIGN"),   None,  misc.dcomment), # //
+    Stamp(ST.val("STATEANY"), "comm3",   ST.val("STIGN"),   None,  misc.comment),  # /* */
+    Stamp(ST.val("STATEANY"), "comm3d",  ST.val("STIGN"),   None,  misc.dcomment2),
+    Stamp(ST.val("STATEANY"), "comm4",   ST.val("STIGN"),   None,  misc.comment),  # ##
+    Stamp(ST.val("STATEANY"), "comm4d",  ST.val("STIGN"),   None,  misc.dcomment3),
 
     # This will ignore white spaces
-    Stamp(ST.val("STATEANY"), "tab",     ST.val("STIGN"),   None,  func_tab),
-    Stamp(ST.val("STATEANY"), "sp",      ST.val("STIGN"),   None,  func_space),
-    Stamp(ST.val("STATEANY"), "nl",      ST.val("STIGN"),   None,  func_nl),
+    Stamp(ST.val("STATEANY"), "tab",     ST.val("STIGN"),   None,  misc.tab),
+    Stamp(ST.val("STATEANY"), "sp",      ST.val("STIGN"),   None,  misc.space),
+    Stamp(ST.val("STATEANY"), "nl",      ST.val("STIGN"),   None,  misc.nl),
     )
 
 if __name__ == "__main__":

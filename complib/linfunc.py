@@ -560,53 +560,52 @@ decl = Decl()
 
 # ------------------------------------------------------------------------
 
-def func_space(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("space()", "tprog =", tprog)
-
-def func_tab(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("tab()", "tprog =", tprog)
-
-def func_nl(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("nl()", "tprog =", tprog)
-
-def func_comment(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
-
-def func_dcomment(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("dcomment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
-    if pvg.opt_rdocstr:
-        print(self2.arrx[tprog].mstr[3:], end = "")
-
-def func_dcomment2(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("dcomment2()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
-    if pvg.opt_rdocstr:
-        print(self2.arrx[tprog].mstr[3:-2], end = "")
-
-def func_dcomment3(self2, tprog):
-    if pvg.opt_debug > 5:
-        print("dcomment3()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
-    if pvg.opt_rdocstr:
-        print(self2.arrx[tprog].mstr[2:], end = "")
-
 class Misc():
 
-    def func_str(self, self2, idx, tprog):
-        print("func_str() idx =", idx, "tprog =", tprog, "iprog=", "slen =", len(stamps[idx][0]))
+    def space(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.space()", "tprog =", tprog)
+
+    def tab(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.tab()", "tprog =", tprog)
+
+    def nl(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.nl()", "tprog =", tprog)
+
+    def comment(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.comment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+
+    def dcomment(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.dcomment()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        if pvg.opt_rdocstr:
+            print(self2.arrx[tprog].mstr[3:], end = "")
+
+    def dcomment2(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.dcomment2()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        if pvg.opt_rdocstr:
+            print(self2.arrx[tprog].mstr[3:-2], end = "")
+
+    def dcomment3(self, self2, tprog):
+        if pvg.opt_debug > 5:
+            print("misc.dcomment3()", "tprog =", tprog, pp(self2.arrx[tprog].mstr) )
+        if pvg.opt_rdocstr:
+            print(self2.arrx[tprog].mstr[2:], end = "")
+
+    def str(self, self2, idx, tprog):
+        print("misc.str() idx =", idx, "tprog =", tprog, "iprog=", "slen =", len(stamps[idx][0]))
         if pvg.opt_debug > 5:
             prarr(self2.arrx[tprog:tprog], "func_str pre: ")
         sys.exit(0)
 
+    def brace(self, self2, tprog):
 
-    def func_brace(self, self2, tprog):
-
-        #if pvg.opt_debug > 5:
-        #    print("match brack tprog =", tprog, "iprog=")
+        if pvg.opt_debug > 5:
+            print("misc.brace", "tprog =", tprog, "iprog=")
 
         if pvg.opt_debug > 5:
             prarr(self2.arrx[tprog:tprog], "func brace pre: ")
@@ -629,10 +628,10 @@ class Misc():
         # Force rescan
         return True
 
-    def func_parent(self, self2, tprog):
+    def parent(self, self2, tprog):
 
         if pvg.opt_debug > 3:
-            print("func_parent()", tprog, self2.arrx[tprog])
+            print("misc.parent()", tprog, self2.arrx[tprog])
 
         if pvg.opt_debug > 5:
             prarr(self2.arrx, "func pre par feed:", True)
@@ -646,6 +645,9 @@ class Misc():
         #if pvg.opt_debug > 6:
         #    prarr(self2.arrx, "func paren post:", True)
 
+misc = Misc()
+
+class Fdecl():
 
     def _func_arith(self, self2, opstr, tprog):
 
@@ -716,6 +718,5 @@ class Misc():
         if pvg.opt_debug > 6:
             prarr(self2.arrx[tprog:tprog], "add post: ")
 
-misc = Misc()
 
 # EOF

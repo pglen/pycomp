@@ -1,4 +1,8 @@
-/// Doc Comment C++
-/** Doc Comment C++ inline */
-///
-## Doc Comment SH
+// Outputs verbatim after doc comment marker
+///Doc Comment C++
+/** * Doc Comment C++ inline
+ * inline another line
+*/
+//
+///Doc comment again
+##Doc Comment SH

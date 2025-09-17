@@ -105,8 +105,9 @@ class LinParse():
         match = False ; iprog = 1   # Always advance
         #print("state", type(stamps[sidx].state), stamps[sidx].state)
         if ST.val("STATEANY") not in stamps[sidx].state:
+            #print("stateany", stamps[sidx])
             if  self.state not in stamps[sidx].state:
-                if self.pvg.opt_debug > 9:
+                if self.pvg.opt_debug > 8:
                     sss = ""
                     for aa in stamps[sidx].state:
                         sss += ST.get(aa)
@@ -133,7 +134,7 @@ class LinParse():
             if self.pvg.opt_debug > 2:
                 if  currtoken.stamp.xstr != "sp":    # no sp display
                     xprintf( \
-                            #"state:",  ST.get(self.state),
+                            "state:",  ST.get(self.state),
                             #"stamp:", pp(currstamp.token),
                             "tok:", pp(currtoken.mstr),
                             "tprog =", tprog,
@@ -147,28 +148,32 @@ class LinParse():
                         print()
                     row += 1
 
-            # Switch state as instructed
-            if currstamp.nstate != ST.val("STATEANY") and \
-                    currstamp.nstate != ST.val("STIGN"):
-                if currstamp.nstate == ST.val("STPOP"):
-                    #if self.pvg.opt_debug > 4:
-                    #    for aa in self.statestack:
-                    #        print("statestack:", aa)
-                    if self.pvg.opt_debug > 4:
-                        print("pop state", ST.get(self.state), end = " ")
+            if currstamp.nstate == ST.val("STIGN"):
+                # No state change, but call function
+                if self.pvg.opt_debug > 4:
+                    print("sti ign", ST.get(self.state), end = " ")
+                if currstamp.upcall:
+                    currstamp.upcall(self, tprog)
 
-                    # Catch underflow by virtue of re-feed
-                    #if self.statestack.getlen() > 0:
-                    self.state = self.statestack.pop()
+            elif currstamp.nstate == ST.val("STPOP"):
+                #if self.pvg.opt_debug > 4:
+                #    for aa in self.statestack:
+                #        print("statestack:", aa)
+                if self.pvg.opt_debug > 4:
+                    print("pop state", ST.get(self.state), end = " ")
 
-                    if currstamp.dncall:
-                        currstamp.dncall(self, tprog)
+                # Catch underflow by virtue of re-feed
+                #if self.statestack.getlen() > 0:
+                self.state = self.statestack.pop()
 
-                    if self.pvg.opt_debug > 4:
-                        print("pop to:", ST.get(self.state), end = " \n")
-                else:
-                    if currstamp.upcall:
-                        currstamp.upcall(self, tprog)
+                if currstamp.dncall:
+                    currstamp.dncall(self, tprog)
+
+                if self.pvg.opt_debug > 4:
+                    print("pop to:", ST.get(self.state), end = " \n")
+            else:
+                if currstamp.upcall:
+                    currstamp.upcall(self, tprog)
 
                     #if  currstamp.push:
                     #    if self.pvg.opt_debug > 4:
