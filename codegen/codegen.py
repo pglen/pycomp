@@ -172,6 +172,7 @@ def assemble(fname, lpg):
         res = ret.wait()
     except:
         print("assemble", sys.exc_info())
+    return res
 
 def link(fname, outname, lpg):
 
@@ -186,6 +187,7 @@ def link(fname, outname, lpg):
         res = ret.wait()
     except:
         print("link", sys.exc_info())
+    return res
 
 def output(fname, codex, datax):
 

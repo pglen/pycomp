@@ -57,6 +57,6 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-aaa : dd 4 ; line: 1 -- u32 : aaa = 4 
+strx : dq "Hello World", 10, 0 ; line: 1 -- arr : : = strx
 
 ; EOF

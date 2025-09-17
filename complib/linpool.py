@@ -4,6 +4,15 @@
 
 import complib.stack as stack
 
+try:
+    from complib.utils import *
+except:
+    from utils import *
+
+def funcpvg(xpvg):
+    global pvg
+    pvg = xpvg
+
 gpool = stack.pStack()                 # Symtab pool
 
 def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
@@ -11,17 +20,26 @@ def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
     ''' Add to global pool -- parse stack / symbol lookup table '''
 
     typename = self2.arrx[xstack.get(0)].mstr
-    varname = self2.arrx[xstack.get(1)].mstr
+    varname = self2.arrx[xstack.get(2)].mstr
+    #varval  = self2.arrx[xstack.get(4)].mstr
 
     if  xstack.getlen() > 2:
-        varval = self2.arrx[xstack.get(2)].mstr
+        varval = self2.arrx[xstack.get(4)].mstr
     else:
         varval = 0
 
+    if pvg.opt_debug > 7:
+        print("addtopool:", "type:", pp(typename),
+                        "var:", pp(varname), "val:", pp(varval))
     for aa in gpool:
         if aa.namex == varname:
+            if pvg.opt_debug > 3:
+                print("Dumping pool:")
+                for aa in gpool:
+                    print(" pool:", aa)
             error(self2, "Duplicate definition", self2.arrx[xstack.get(0)].pos)
             sys.exit(1)
+
     tpi = TypI(typename, varname, varval)
     gpool.push(tpi)
     datatype = pctona(self2.arrx[xstack.get(0)].mstr)
@@ -32,7 +50,8 @@ def lookpool(self2, varname):
     ''' Get symbol from name '''
     ret = None
     for aa in gpool:
-        print("lookpool:", "'" + aa.namex + "'")
+        if pvg.opt_debug > 7:
+            print("lookpool:", "'" + aa.namex + "'")
         if aa.namex == varname:
             ret = aa
             break

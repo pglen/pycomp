@@ -11,6 +11,7 @@ import codegen.codegen as codegen
 # End it with empty "" operator for cleanup
 #ops_prec = "**", "*", "/", "+", "-", ">>", "<<" #, "="
 ops_prec = "*","+", ""
+int_types = "u32", "s32", "u16", "s16", "u8", "s8",
 
 try:
     from complib.utils import *
@@ -47,7 +48,7 @@ def execop(self2, arg1, op, arg2):
 
 def reduce(self2, xstack, filter, pos = 0):
 
-    if pvg.opt_debug > 4:
+    if pvg.opt_debug > 7:
         print("reduce():", "filter =", pp(filter), "pos =", pos)
 
     #if pvg.opt_debug > 4:
@@ -168,7 +169,7 @@ class   Funcs():
             for aa in argstack:
                 print(self2.arrx[aa], end = " ")
             print()
-            print("calltsack:", end = " ")
+            print("callstack:", end = " ")
             for aa in callstack:
                 print(self2.arrx[aa], end = " ")
             print()
@@ -236,7 +237,6 @@ class   Funcs():
 
         codegen.emit(estr)
 
-
     def func_start(self2, tprog):
         if pvg.opt_debug > 1:
             print("func_func_start()", pp(self2.arrx[tprog].mstr))
@@ -268,11 +268,11 @@ class Arith():
         #    for aa in self2.statestack:
         #        print("statestack:", lindef.ST.get(aa))
 
-        #if pvg.opt_debug > 2:
-        #    print("arithstack:", end = " ")
-        #    for aa in arithstack:
-        #        print(self2.arrx[aa], end = " ")
-        #    print()
+        if pvg.opt_debug > 2:
+            print("arithstack:", end = " ")
+            for aa in arithstack:
+                print(self2.arrx[aa], end = " ")
+            print()
 
         # Execute as operator precedence
         for aa in ops_prec:
@@ -450,36 +450,37 @@ assn = Assn()
 
 class Decl():
 
-    def decl_start(self, self2, tprog):
+    def start(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl_start()", "tprog =", tprog, self2.arrx[tprog])
+            print("decl.start()", "tprog =", tprog, self2.arrx[tprog])
+
+        arithstack.empty()
         arithstack.push(tprog)
 
-    def decl_end(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl_end()", "tprog =", tprog, self2.arrx[tprog])
-        #arithstack.push(tprog)
+        if pvg.opt_debug > 2:
+            print("arithstack start:", end = " ")
+            for aa in arithstack:
+                print(self2.arrx[aa], end = " ")
+            print()
 
-    def decl_col(self, self2, tprog):
+    def col(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl_col()", "tprog =", tprog, self2.arrx[tprog])
+            print("decl.col()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
-    def decl_ident(self, self2, tprog):
+    def ident(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl_ident()", "tprog =", tprog, self2.arrx[tprog])
+            print("decl.ident()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
-        #codegen.emit(self2.arrx[tprog].mstr)
 
-    def decl_val(self, self2, tprog):
+    def val(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl_val()", "tprog =", tprog, self2.arrx[tprog])
+            print("decl.val()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
-        #codegen.emit(self2.arrx[tprog].mstr)
 
-    def decl_comma(self, self2, tprog):
+    def comma(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl_comma()", "tprog =", tprog)
+            print("decl.comma()", "tprog =", tprog)
         print("arithstack comma:", end = " ")
         if pvg.opt_debug > 2:
             for aa in arithstack:
@@ -487,67 +488,73 @@ class Decl():
             print()
         return
         datatype = linpool.addtopool(self2, arithstack)
-        strx =   self2.arrx[arithstack.get(1)].mstr + " : " + datatype + " "
-        strx +=  self2.arrx[arithstack.get(2)].mstr
+        strx =   self2.arrx[arithstack.get(2)].mstr + " : " + datatype + " "
+        strx +=  self2.arrx[arithstack.get(4)].mstr
         #codegen.emitdata(strx)
         strx +=  " ; " + self2.arrx[arithstack.get(0)].mstr + " : "
-        strx += self2.arrx[arithstack.get(1)].mstr + " = "
-        strx += self2.arrx[arithstack.get(2)].mstr
+        strx += self2.arrx[arithstack.get(2)].mstr + " = "
+        strx += self2.arrx[arithstack.get(4)].mstr
         codegen.emitdata(strx)
 
         # Back off of last variable
         arithstack.pop(); arithstack.pop()
 
-    def decl_stop(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl_stop()", "tprog =", tprog, self2.arrx[tprog])
+    def down(self, self2, tprog):
 
         if pvg.opt_debug > 1:
+            print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
+
+        if pvg.opt_debug > 0:
             print("arithstack: len =", arithstack.getlen(), end = " ")
             for aa in arithstack:
                 if self2.arrx[aa].flag == 0:
                     print(self2.arrx[aa], end = " ")
             print()
 
-        return
-        datatype = linpool.addtopool(self2, arithstack)
+        datatype = self2.arrx[arithstack.get(0)].mstr
+        asmtype = linpool.addtopool(self2, arithstack)
+        if pvg.opt_debug > 7:
+            print("datatype =", datatype, asmtype)
 
-        strx =   self2.arrx[arithstack.get(1)].mstr + " : " + datatype + " "
-        #print("datatype =", pp(self2.arrx[arithstack.get(0)].mstr), datatype)
+        strx =   self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
 
         # type dependent expand
         if self2.arrx[arithstack.get(0)].mstr == "arr":
             if arithstack.getlen() <= 2:
                 # patch missing declaration argument with zero /empty
-                strx += ""
+                #strx += ""
+                pass
             else:
-                strx +=  asmesc(self2.arrx[arithstack.get(2)].mstr)
-        elif datatype == "u32" or datatype == "u16" or datatype == "u8":
+                strx +=  asmesc(self2.arrx[arithstack.get(4)].mstr)
+        elif datatype.lower() in int_types:
             if arithstack.getlen() <= 2:
                 # patch missing declaration argument with zero /empty
                 strx += " 0 "
             else:
-                strx +=  "[" + self2.arrx[arithstack.get(2)].mstr + "[]"
+                strx +=  self2.arrx[arithstack.get(4)].mstr
         else:
+            print("other type")
             # This is where type expnsion takes place
             if arithstack.getlen() <= 2:
                 strx += " 0 "
             else:
                 strx +=  self2.arrx[arithstack.get(2)].mstr
 
-        #print("strx", strx)
+        #print("data decl:", pp(strx))
+
         # Output comment as well
         linex = self2.arrx[arithstack.get(0)].linenum + 1
         strx +=  " ; line: " + str(linex) + " -- "
-        strx +=  self2.arrx[arithstack.get(0)].mstr + " : "
-        strx += self2.arrx[arithstack.get(1)].mstr + " = "
+        for aa in range(arithstack.getlen()):
+            strx +=  self2.arrx[arithstack.get(aa)].mstr + " "
 
-        if arithstack.getlen() <= 2:
-            strx += " 0 "
-        else:
-            strx += self2.arrx[arithstack.get(2)].mstr
+        #if arithstack.getlen() <= 2:
+        #    strx += " 0 "
+        #else:
+        #    strx += self2.arrx[arithstack.get(2)].mstr
 
         codegen.emitdata(strx)
+        #arithstack.empty()
 
 decl = Decl()
 

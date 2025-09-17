@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
 import sys, os, re, time, stat
-
 import threading
+import curses
 
 pvg = None
 
 def upvg(xpvg):
     global pvg
     pvg = xpvg
+
+def start_curses(stdscr):
+    curses.initscr()
+curses.wrapper(start_curses)
 
 _gl_cnt = 0
 sema = threading.Semaphore()
@@ -447,10 +451,28 @@ def error(self2, errstr, newpos = -1, addstr = ""):
     print("-" *  (posx.end - posx.linestart - 2), end = "" )
     print("^", end = "")
     print("-" *  (eol - posx.end) )
-    print(errstr, "\033[31;1merror:\033[0m", "line:", posx.linenum + 1,
+    print(errstr, red("error"), "at line:", posx.linenum + 1,
                     "col:", posx.start - posx.linestart, end = " " )
     print(addstr)
     sys.exit(1)
+
+# 30: Black     31: Red     32: Green   33: Yellow
+# 34: Blue      35: Magenta 36: Cyan    37: White
+
+def red(strx):
+    return color(strx, "31")
+
+def blue(strx):
+    return color(strx, "34")
+
+def green(strx):
+    return color(strx, "32")
+
+def color(strx, col = "31"):
+
+    if not curses.has_colors():
+        return strx
+    return "\033[" + str(col) + ";1m" + strx + "\033[0m"
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

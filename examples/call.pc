@@ -1,2 +1,2 @@
 arr : strx =  "Hello World\n"
-printf(strx)
+#printf(strx)

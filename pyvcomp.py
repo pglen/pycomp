@@ -155,12 +155,19 @@ def parsefile(strx):
         #return
 
         codegen.output(outfile, codegen.cummulate, codegen.cummulate2)
-        codegen.assemble(outfile , lpg)
+        ret = codegen.assemble(outfile , lpg)
+        if ret:
+            print(red("Error"), "in the assembly phase of:", pp(strx) )
+            sys.exit(1)
+
         outname = os.path.splitext(lpg.opt_outfile)[0]
         exefile = lpg.opt_Outdir + os.sep + outname
         if lpg.opt_verbose.cnt > 1:
             print("Exefile:   ", exefile)
-        codegen.link(outfile, exefile, lpg)
+        ret = codegen.link(outfile, exefile, lpg)
+        if ret:
+            print("\033[31;1mError\033[0m in the link phase of:", pp(strx) )
+            sys.exit(2)
 
     #if lpg.opt_verbose.cnt:
     #    print(treeroot)
@@ -226,7 +233,10 @@ if __name__ == "__main__":
         sys.exit(1)
 
     upvg(lpg)                   # utils debug
+    stack.funcpvg(lpg)
     lexfunc.funcpvg(lpg)
+    linpool.funcpvg(lpg)
+
     tmpfile = ""
     if lpg.opt_Code:
         tmpfile = lpg.opt_workdir + os.sep + "tmp0000.pc"

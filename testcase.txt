@@ -13,10 +13,10 @@
     #[ "DF command", "df", "blocks", "regex" ],       # Search regex
     #[ "DF mregex", "df", ".*blo",  "mregex" ],       # Match regex
     #[ "Exact ls", "/bin/ls -d .", b".\n", False ],   # Exact match
-    [ "Paren", "./pyvcomp.py -d 2 examples/paren.pc -c",  "ival = '20'", "regex"],
-    [ "Paren2", "./pyvcomp.py -d 2 examples/paren2.pc -c",  "ival = '17'", "regex"],
-    [ "Decl", "./pyvcomp.py -d 2 examples/decl.pc -c",  "ival = '4'", "regex"],
-    #[ "Expr", "./pyvcomp.py -d 2 examples/expr.pc -c",  "ival = '17'", "regex"],
+    [ "Paren", "./pyvcomp.py -d 1 examples/paren.pc -c",  "ival = '20'", "regex"],
+    [ "Paren2", "./pyvcomp.py -d 1 examples/paren2.pc -c",  "ival = '17'", "regex"],
+    [ "Decl", "./pyvcomp.py -d 1 examples/decl.pc -c",  "ival = '4'", "regex"],
+    #[ "Expr", "./pyvcomp.py -d 1 examples/expr.pc -c",  "ival = '17'", "regex"],
 ]
 
 # EOF
