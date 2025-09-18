@@ -111,6 +111,9 @@ def show_emit():
     print("emit data results:")
     print(cummulate2)
 
+def clear_emit():
+    global cummulate, cummulate2;
+    cummulate = cummulate2 = ""
 
 # ------------------------------------------------------------------------
 

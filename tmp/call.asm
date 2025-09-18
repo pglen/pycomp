@@ -24,7 +24,12 @@ main:
     ;and     rsp, 0xfffffffffffffff0
     ;call    printf
 
-
+    and     rsp, 0xfffffffffffffff0
+    mov     rbp, rsp
+    mov  rdi  , strx
+    xor  rax, rax
+    extern printf
+    call printf ; line: 3 -- printf
 end_code:    ;  End of program
 
     ; This is just in case of no exit statement
@@ -57,6 +62,6 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-strx : dq "Hello World", 10, 0 ; line: 1 -- arr : : = strx
+strx : db "Hello World", 10, 0 ; line: 1 -- arr : strx = "Hello World\n" 
 
 ; EOF

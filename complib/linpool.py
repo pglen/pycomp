@@ -55,18 +55,23 @@ def lookpool(self2, varname):
             break
     return ret
 
+def emptypool():
+    gpool.empty()
+
 def pctona(ddd):
 
     ''' Transform data type string to assembler equivalent '''
     #print("pctona:", ddd)
-    retx = "dq"
-    if ddd == "u8":
+    retx = "db"
+    if ddd == "u8" or ddd == "s8":
         retx = "db"
-    elif ddd == "u16":
+    elif ddd == "arr":
+        retx = "db"
+    elif ddd == "u16" or ddd == "s16":
         retx = "dw"
-    elif ddd == "u32":
+    elif ddd == "u32" or ddd == "s32":
         retx = "dd"
-    elif ddd == "u64":
+    elif ddd == "u64" or ddd == "u64":
         retx = "dq"
     elif ddd == "float":
         retx = "dd"

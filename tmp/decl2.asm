@@ -57,7 +57,9 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
-aaa : dd 2 ; line: 1 -- u32 : aaa = 2 
-bbb : dd 3 ; line: 2 -- u32 : bbb = 3 
+aaa : dq 22 ; line: 1 -- u64 : aaa = 22 
+bbb : dd 33 ; line: 2 -- u32 : bbb = 33 
+ccc : dw 44 ; line: 3 -- u16 : ccc = 44 
+ddd : db 55 ; line: 4 -- u8 : ddd = 55 
 
 ; EOF

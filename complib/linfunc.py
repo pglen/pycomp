@@ -11,7 +11,7 @@ import codegen.codegen as codegen
 # End it with empty "" operator for cleanup
 #ops_prec = "**", "*", "/", "+", "-", ">>", "<<" #, "="
 ops_prec = "*","+", ""
-int_types = "u32", "s32", "u16", "s16", "u8", "s8",
+int_types = "u64", "s64", "u32", "s32", "u16", "s16", "u8", "s8",
 float_types = "float", "double", "quad"
 
 try:
@@ -25,9 +25,9 @@ def funcpvg(xpvg):
 
 # Stack definitions
 
-arithstack = stack.pStack()            # Arithmetic
-argstack  = stack.pStack()             # Function arguments
-callstack = stack.pStack()             # Function calls
+arithstack = stack.pStack(name='arithstack')     # Arithmetic
+argstack  = stack.pStack(name='argstack')        # Function arguments
+callstack = stack.pStack(name='callstack')       # Function calls
 gllevel = 0
 
 def execop(self2, arg1, op, arg2):
@@ -144,9 +144,9 @@ def reduce(self2, xstack, filter, pos = 0):
             print()
     return
 
-class   Funcs():
+class   FuncCall():
 
-    def call_start(self, self2, tprog):
+    def start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("call_start()", pp(self2.arrx[tprog].mstr))
             #print("func arithstack: len =", arithstack.getlen(), end = " ")
@@ -158,12 +158,12 @@ class   Funcs():
         callstack.push(arithstack.pop())
         #print("call stack", str(callstack))
 
-    def call_decl_val(self, self2, tprog):
+    def decl_val(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("call_decl_val()", self2.arrx[tprog])
         argstack.push(tprog)
 
-    def call_end(self, self2, tprog):
+    def end(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("call_end()", pp(self2.arrx[tprog].mstr))
             print("argstack:", end = " ")
@@ -238,22 +238,26 @@ class   Funcs():
 
         codegen.emit(estr)
 
-    def func_start(self2, tprog):
+fcall = FuncCall()
+
+class   Funcs():
+
+    def start(self2, tprog):
         if pvg.opt_debug > 1:
             print("func_func_start()", pp(self2.arrx[tprog].mstr))
 
-    def func_arg_start(self2, tprog):
+    def arg_start(self2, tprog):
             if pvg.opt_debug > 1:
                 print("func_func_arg_start()", pp(self2.arrx[tprog].mstr))
 
-    def func_args(self2, tprog):
+    def args(self2, tprog):
             if pvg.opt_debug > 1:
                 print("func_func_args()", pp(self2.arrx[tprog].mstr))
             argstack.empty()
             callstack.empty()
             callstack.push(arithstack.pop())
 
-    def func_end(self2, tprog):
+    def end(self2, tprog):
         if pvg.opt_debug > 1:
             print("func_func_end()", pp(self2.arrx[tprog].mstr))
 
@@ -454,10 +458,8 @@ class Decl():
     def start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.start()", "tprog =", tprog, self2.arrx[tprog])
-
         arithstack.empty()
         arithstack.push(tprog)
-
         if pvg.opt_debug > 2:
             print("arithstack start:", end = " ")
             for aa in arithstack:
@@ -502,9 +504,13 @@ class Decl():
                     print(self2.arrx[aa], end = " ")
             print()
 
+        # Nothing to see here
+        if not arithstack.getlen():
+            return
+
         datatype = self2.arrx[arithstack.get(0)].mstr
         asmtype = linpool.addtopool(self2, arithstack)
-        if pvg.opt_debug > 7:
+        if pvg.opt_debug > 3:
             print("datatype =", datatype, asmtype)
 
         strx =   self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
@@ -521,7 +527,7 @@ class Decl():
 
         elif datatype.lower() in int_types:
             #print("int type")
-            if arithstack.getlen() <= 3:
+            if arithstack.getlen() <= 4:
                 # patch missing declaration argument with zero /empty
                 strx += " 0 "
             else:
@@ -534,7 +540,7 @@ class Decl():
             else:
                 strx +=  self2.arrx[arithstack.get(4)].mstr
         else:
-            print("other type")
+            print("other type", datatype)
             # This is where type expnsion takes place
             if arithstack.getlen() <= 2:
                 strx += " 0 "

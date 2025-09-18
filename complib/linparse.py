@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import complib.stack as stack
+import complib.linpool as linpool
 
 from complib.utils  import *
 from complib.lindef import *
@@ -19,6 +20,8 @@ class LinParse():
         self.pvg = pvg
         defpvg(pvg)
         funcpvg(pvg)
+
+        linpool.emptypool()
         self.state = ST.val("STATEINI")
         self.context = 0
         self.statestack = stack.pStack(True, "statestack")

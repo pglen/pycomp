@@ -92,6 +92,8 @@ def parsefile(strx):
         if buf[len(buf)-1] != "\n":
             buf += "\n"
 
+    codegen.clear_emit()
+
     res = lx.feed(buf)
     if lpg.opt_timing_show:
         print  ("lexer time:", time_ms(start_time) )

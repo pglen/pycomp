@@ -143,6 +143,7 @@ def state2str(state):
 # Regex shortcuts
 IDEN2   = "[A-Za-z_][A-Za-z0-9_]*"
 HEX2    = "0x[0-9a-fA-F]+"
+HEX2u   = "0X[0-9a-fA-F]+"
 NOIDEN  = "[^a-zA-Z0-9_]"
 FLOATX  = "[0-9]*\.[0-9]*([Ee][0-9]+)?"
 
@@ -220,6 +221,7 @@ try:
     (INI_STATE, "decl",         r"[uU]128",         None, None ),
     (INI_STATE, "decl",         r"arr" ,            None, None ),
 
+    (INI_STATE, "hex",          HEX2u  ,            None, None ),
     (INI_STATE, "hex",          HEX2   ,            None, None ),
     (INI_STATE, "oct",          r"0o[0-7]+",        None, None ),
     (INI_STATE, "oct",          r"0y[0-7]+",        None, None ),

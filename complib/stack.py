@@ -9,6 +9,9 @@ def funcpvg(xpvg):
 class StackError(Exception):
     pass
 
+def pp(strx):
+    return "'" + strx + "'"
+
 class pStack():
 
     def __init__(self, raisex = False, name = ""):
@@ -46,7 +49,7 @@ class pStack():
     def pop(self):
         if len(self._store) == 0:
             if pvg.opt_debug > 2:
-                print("Warn: stack underflow.", self.name)
+                print("Warn: stack underflow in:", pp(self.name))
             if self.raisex:
                 raise StackError("No data to pop on: %s" % self.name)
             return None
@@ -64,7 +67,7 @@ class pStack():
     def get(self, idx):
         if len(self._store) == 0:
             if pvg.opt_debug > 2:
-                print("Warn: stack underflow", self.name)
+                print("Warn: stack underflow in:", pp(self.name))
             return None
         try:
             item = self._store[idx]

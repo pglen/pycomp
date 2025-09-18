@@ -108,9 +108,9 @@ STBASE =  C("STATEINI"), C("SFUNBODY")
 Dfuncx = ( \
     # Function Declaration
     Stamp(C("STATEANY"),  "func",   C("STFUNC"),    None,  None, False),
-    Stamp(C("STFUNC"),    "ident",  C("STFUNC2"),   None,  funcs.func_start, False),
+    Stamp(C("STFUNC"),    "ident",  C("STFUNC2"),   None,  funcs.start, False),
     Stamp(C("STFUNC2"),   "(",      C("SFUNARG"),   None,  None, False),
-    Stamp(C("SFUNARG"),   "decl",   C("SFUNARG2"),  None,  funcs.func_arg_start, False),
+    Stamp(C("SFUNARG"),   "decl",   C("SFUNARG2"),  None,  funcs.arg_start, False),
     Stamp(C("SFUNARG2"),  ":",      C("SFUNARG3"),  None,  None, False),
     Stamp(C("SFUNARG3"),  "ident",  C("SFUNARG4"),  None,  None, False),
     Stamp(C("SFUNARG4"),  ",",      C("SFUNARG3"),  None,  None, False),
@@ -120,12 +120,12 @@ Dfuncx = ( \
     Stamp(C("SFUNARG3"),  "nl",     C("STPOP"),     None,  None, False),
     Stamp(C("SFUNARG3"),  "comm2",  C("STPOP"),     None,  None, False),
 
-    Stamp(C("SFUNARG"),  ")",      C("STFUNC3"),    None,  funcs.func_args, False),
-    Stamp(C("SFUNARG3"), ")",      C("STFUNC3"),    None,  funcs.func_args, False),
+    Stamp(C("SFUNARG"),  ")",      C("STFUNC3"),    None,  funcs.args, False),
+    Stamp(C("SFUNARG3"), ")",      C("STFUNC3"),    None,  funcs.args, False),
     Stamp(C("STFUNC3"),  "{",      C("SFUNBODY"),   None,  None, False),
     Stamp(C("SFUNBODY"), "return", C("SFUNCRET"),   None,  None, False),
     Stamp(C("SFUNCRET"), "ident",  C("SFUNBODY"),   None,  None, False),
-    Stamp(C("SFUNBODY"), "}",      C("STATEINI"),   None,  funcs.func_end, False),
+    Stamp(C("SFUNBODY"), "}",      C("STATEINI"),   None,  funcs.end, False),
     )
 
 Drassn  = (
@@ -140,18 +140,15 @@ Drassn  = (
 
 Dfcall  = (
     # Function call
-    #Stamp(C("STARITH"),   "(",      C("SFUNARG"),  None,  None, False),
-    #Stamp(C("SFUNARG"),   "ident",  C("CFUNC2"),  None,  None, False),
-    #Stamp(C("SFUNBODY"),  "ident",  C("CFUNC2"),  None,  None, False),
+    Stamp(C("STARITH"),   "(",      C("CFUNC3"),  None, fcall.start,    False),
+    Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, fcall.decl_val, False),
+    Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.decl_val, False),
+    Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.decl_val, False),
+    Stamp(C("CFUNC3"),    ")",      C("STPOP"),   fcall.end, None,      False),
+    Stamp(C("CFUNC4"),    ")",      C("STPOP"),   fcall.end, None,      False),
 
-    Stamp(C("STARITH"),   "(",      C("CFUNC3"),  None, funcs.call_start, False),
-    #Stamp(C("CFUNC2"),    "(",      C("CFUNC3"),  None, funcs.func_call, False),
-    Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, funcs.call_decl_val, False),
-    Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, funcs.call_decl_val, False),
-    Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, funcs.call_decl_val, False),
-    Stamp(C("CFUNC3"),    ")",      C("STPOP"),   None, funcs.call_end, False),
     Stamp(C("CFUNC4"),    ",",      C("CFUNC3"),  None, None, False),
-    Stamp(C("CFUNC4"),    ")",      C("STPOP"),   None,  funcs.call_end, False),
+    Stamp(C("CFUNC4"),    ")",      C("STPOP"),   None,  fcall.end, False),
     )
 
 Dtest = (
@@ -245,11 +242,9 @@ Ddecl = (
     Stamp(C("DECL2"),   ":",        C("DECL3"),    None,      decl.col, False),
     Stamp(C("DECL3"),   "ident",    C("STARITH"),  None,      decl.ident, False),
     Stamp(C("STARITH"), ",",        C("DECL3"),    None,      decl.comma, False),
+
     Stamp(C("STARITH"), ";",        C("STPOP"),    decl.down, decl.ident, False),
     Stamp(C("STARITH"), "nl",       C("STPOP"),    decl.down, decl.ident, False),
-
-    #Stamp(C("DECL2"), ";",         C("STPOP"),    decl.down,  decl.stop, False),
-    #Stamp(C("DECL2"), "nl",        C("STPOP"),    None,       decl.stop, False),
     )
 
 stamps =  (  \
