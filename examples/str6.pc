@@ -1,3 +1,3 @@
-arr:str0="emojies: \u1F600 \u1F601 \u1F602 \u1F603 \u1F604 \u1F605" // --------
-arr:str1="latin: \u00E9 \u00Ea \u00Eb \u00Ec" // --------
+arr:str0="emojies: \u1F600 \u1F601 \u1F602 \u1F603 \u1F604 \u1F605" ; // --------
+arr:str1="latin: \u00E9 \u00Ea \u00Eb \u00Ec" ; // --------
 arr:str2="puntuation: \u201a \u201b \u201c \u201d \u201e \u201f \u2020"

@@ -239,28 +239,48 @@ Darith = (
     #Stamp(C("STARITH"), "nl",      C("STPOP"),    None,  arith.arith_stop, False),
     )
 
-NUMERIC = "decl", "arr",
 FLOAT   = "float", "double", "quad",
 
 Ddecl = (
     # Declarations
-    Stamp(STBASE,   NUMERIC,   C("DECL2"),   None,   decl.start, True),
-    Stamp(STBASE,   FLOAT,     C("DECL2"),   None,   decl.start, True),
+    Stamp(STBASE,   "decl",         C("DECL2"),   None,   decl.start, True),
+    Stamp(STBASE,   FLOAT,          C("DECL2"),   None,   decl.start, True),
 
     Stamp(C("DECL2"),   ":",        C("DECL3"),    None,      decl.col, False),
     Stamp(C("DECL3"),   "ident",    C("STARITH"),  None,      decl.ident, False),
     Stamp(C("STARITH"), ",",        C("DECL3"),    None,      decl.comma, False),
 
-    Stamp(C("STARITH"), ";",        C("STPOP"),    decl.down, decl.ident, False),
-    Stamp(C("STARITH"), "nl",       C("STPOP"),    decl.down, decl.ident, False),
-    )
+    Stamp(C("STARITH"), ";",        C("STPOP"),     decl.down, None, False),
+    Stamp(C("STARITH"), "nl",       C("STPOP"),     decl.down, None, False),
+
+    Stamp(STBASE,       "arr",      C("DECLA"),   None,     decl.arr, True),
+    Stamp(C("DECLA"),   ":",        C("DECLA2"),  None,     decl.acol, False),
+    Stamp(C("DECLA2"),   "ident",   C("STTARI"),  None,     decl.aident, False),
+    Stamp(C("STTARI"),    ",",      C("DECLA2"),  None,     None, False),
+
+    Stamp(C("STTARI"),    "=",      C("STTARI2"), None,     decl.aeq, False),
+    Stamp(C("STTARI2"),   "str",    C("DECLA"),   None,      None,    False),
+
+    #Stamp(C("STTARI"),   "+",      C("STTARI"),  None,     None, False),
+    #Stamp(C("STTARI"),   "*",      C("STTARI"),  None,     None, False),
+
+    Stamp(C("DECLA"), ";",          C("STPOP"),  decl.adown, None, False),
+    Stamp(C("DECLA"), "nl",         C("STPOP"),  decl.adown, None, False),
+)
+
+# Main stamps definition
 
 stamps =  (  \
 
-    #Stamp(C("STATEINI"), "num",    C("STARITH"),  None,  arith.arithstart, False),
     Stamp(C("STATEINI"), "ident",   C("STARITH"),  None,  arith.arithstart, True),
+    Stamp(C("STATEINI"), "extern",  C("EXTERN"),   None,  misc.extern, True),
+    Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  None,  misc.extadd, False),
+    Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  None,  misc.extadd, False),
+    Stamp(C("EXTERN2"),  ",",       C("EXTERN"),   None,  misc.extcomma, False),
+    Stamp(C("EXTERN2"),  ";",       C("STPOP"),    misc.exdn,  None, False),
+    Stamp(C("EXTERN2"),  "nl",      C("STPOP"),    misc.exdn,  None, False),
 
-    # include sub systems
+    # Include sub systems
     *Ddecl,
     *Darith,
     *Dfcall,

@@ -1,0 +1,4 @@
+extern hello, printf ;
+extern getenv
+arr : ccc = 0
+getenv(ccc)

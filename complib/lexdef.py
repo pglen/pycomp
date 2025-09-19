@@ -197,6 +197,7 @@ try:
     (INI_STATE, "return",       r"return" ,         None, None ),
     (INI_STATE, "loop",         r"loop" + IDEN3,    None, None ),
     (INI_STATE, "loop",         r"loop",            None, None ),
+    (INI_STATE, "extern",       r"extern",          None, None ),
 
     (INI_STATE, "type",         r"type" + IDEN3,    None, None ),
     (INI_STATE, "type",         r"type",            None, None ),
@@ -219,7 +220,7 @@ try:
     (INI_STATE, "decl",         r"[uU]32" ,         None, None ),
     (INI_STATE, "decl",         r"[uU]64" ,         None, None ),
     (INI_STATE, "decl",         r"[uU]128",         None, None ),
-    (INI_STATE, "decl",         r"arr" ,            None, None ),
+    (INI_STATE, "arr",          r"arr" ,            None, None ),
 
     (INI_STATE, "hex",          HEX2u  ,            None, None ),
     (INI_STATE, "hex",          HEX2   ,            None, None ),
@@ -234,7 +235,7 @@ try:
     (INI_STATE, "comm2",        r"\/\/.*\n",        None, None ),
 
     (INI_STATE, "num2",         FLOATX  ,           None, None),
-    (INI_STATE, "num",          r"[0-9]+",          None, None),
+    (INI_STATE, "num",          r"[-]*[0-9]+",      None, None),
 
     (INI_STATE, "bs",           "\b"    ,           None, None),
     (INI_STATE, "quote",        r"\""   ,  STR_STATE, lexfunc.func_start_str),

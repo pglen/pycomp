@@ -25,9 +25,11 @@ def funcpvg(xpvg):
 
 # Stack definitions
 
-arithstack = stack.pStack(name='arithstack')     # Arithmetic
-argstack  = stack.pStack(name='argstack')        # Function arguments
-callstack = stack.pStack(name='callstack')       # Function calls
+arithstack = stack.pStack(name='arithstack')      # Arithmetic
+argstack   = stack.pStack(name='argstack')        # Function arguments
+callstack  = stack.pStack(name='callstack')       # Function calls
+extstack   = stack.pStack(name='extstack')        # External definitions
+
 gllevel = 0
 
 def execop(self2, arg1, op, arg2):
@@ -472,14 +474,35 @@ class Decl():
                 print(self2.arrx[aa], end = " ")
             print()
 
+    def arr(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.arr()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.empty()
+        arithstack.push(tprog)
+
     def col(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.col()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
+    def acol(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.acol()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def aeq(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.aeq()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
     def ident(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.ident()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def aident(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.aident()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
     def val(self, self2, tprog):
@@ -497,6 +520,11 @@ class Decl():
             print()
         #if arithstack.getlen() <= 3:
         #    print("Padding ??? for zero fill", len(arithstack))
+
+    def adown(self, self2, tprog):
+
+        if pvg.opt_debug > 1:
+            print("decl.adown()", "tprog =", tprog, self2.arrx[tprog])
 
     def down(self, self2, tprog):
 
@@ -575,6 +603,34 @@ decl = Decl()
 # ------------------------------------------------------------------------
 
 class Misc():
+
+    def extern(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.extern()", "tprog =", tprog)
+        extstack.empty()
+
+    def extadd(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.extadd()", "tprog =", tprog)
+        extstack.push(tprog)
+
+    def extcomma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.extcomma()", "tprog =", tprog)
+
+    def exdn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.extdn()", "tprog =", tprog)
+        strx = ""
+        for aa in extstack:
+            #print("extstack:", self2.arrx[aa].mstr, self2.arrx[aa].stamp.xstr)
+            if self2.arrx[aa].stamp.xstr == "str":
+                strx += "extern " + self2.arrx[aa].mstr[1:-1]
+            else:
+                strx += "extern " + self2.arrx[aa].mstr
+            strx += " ; line: %d -- " % (self2.arrx[aa].linenum + 1)
+            strx += " extern " + self2.arrx[aa].mstr + "\n"
+        codegen.emit(strx)
 
     def space(self, self2, tprog):
         if pvg.opt_debug > 5:
