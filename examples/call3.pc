@@ -1,7 +1,5 @@
 u16 : num1 = 1234 ;
 u16 : num2 = 5678 ;
 arr : strx =  "Hello World: %d %d\n"
-
 printf(strx, num1, num2)
-
 # EOF

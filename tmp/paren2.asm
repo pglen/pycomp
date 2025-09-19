@@ -57,5 +57,6 @@ hellodef:   db      "Start program", 10, 0
 endx2:      db       "End program.", 10, 0
 endx:       db      10, 0
 
+aa : dd 1 ; line: 1 -- u32 : aa = 1 + 2 + 3 * 4 + 2 
 
 ; EOF

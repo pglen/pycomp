@@ -16,6 +16,7 @@ row = 0
 class LinParse():
 
     def __init__(self, stamps, pvg = None):
+
         #print("linparse init", pvg)
         self.pvg = pvg
         defpvg(pvg)
@@ -23,14 +24,14 @@ class LinParse():
 
         linpool.emptypool()
         self.state = ST.val("STATEINI")
-        self.context = 0
+        #self.context = 0
         self.statestack = stack.pStack(True, "statestack")
         #self.statestack = stack.pStack()
         self.statestack.push(ST.val("STATEINI"))
 
         # Print stamps:
         #for ss in range(len(stamps)):
-        #    print("st", stamps[ss].tokens)
+        #    print(stamps[ss])
 
     def feed(self, arrx, buf):
 
@@ -178,17 +179,19 @@ class LinParse():
                 if currstamp.upcall:
                     currstamp.upcall(self, tprog)
 
-                    if self.pvg.opt_debug > 4:
-                        print("push:", ST.get(self.state), end = " ")
 
                     if currstamp.push:
+                        if self.pvg.opt_debug > 4:
+                            print("push:", ST.get(self.state), end = " ")
                         self.statestack.push(self.state)
 
                     self.state = currstamp.nstate
+                    if self.pvg.opt_debug > 4:
+                        print("set to:", ST.get(self.state))
 
-                    #    #if self.pvg.opt_debug > 4:
-                    #    #    for aa in self.statestack:
-                    #    #        print("statestack:", aa)
+                    if self.pvg.opt_debug > 7:
+                        for aa in self.statestack:
+                            print("statestack:", aa)
 
                     #if self.pvg.opt_debug > 4:
                     #    print("state to:", ST.get(self.state), end = "\n")

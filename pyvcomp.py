@@ -21,7 +21,8 @@ from complib.utils import *
 Version = "Version: 1.0.0; "
 Build   = "Build date: Mon 15.Sep.2025"
 
-# Name is prepened opt_ and name's first letter is the option letter
+# Name is prepened opt_ and name's first letter becomes the option letter
+# Execute is activated if outprog != 'x'
 
 opts =  (\
     #   name        initval     HelpFlag    HelpString
@@ -29,14 +30,15 @@ opts =  (\
     ("Define",      [],         False,  "Define variable. (multiple defines accepted)"),
     ("outfile",     "",         False,  "Name of output file."),
     ("Code",        "",         False,  "Code to compile."),
-    ("xlexer_show", False,      False,  "Show lexer output"),
+    ("xlexer_show", False,      False,  "Show lexer output."),
     ("comp_only",   False,      False,  "Compile only."),
     ("emit",        False,      False,  "Emit parse string."),
     ("pre_only",    False,      False,  "Pre-process only."),
     ("just_lex",    False,      False,  "Only execute lexer."),
     ("emit",        False,      False,  "Emit parse string."),
-    ("rdocstr",     False,      False,  "Show document strings"),
-    ("uresults",    False,      False,  "Show results"),
+    ("rdocstr",     False,      False,  "Show document strings."),
+    ("uresults",    False,      True,   "Show results."),
+    ("Execute",     "x",        False,  "Execute target. Args passed to program."),
     ("workdir",     "./tmp",    False,  "Directory for temp files. Def=./tmp"),
     ("Outdir",      "./out",    False,  "Directory for out files. Def=./out"),
     ("lexdebug",    0,          True,   "Lexer debug level. Def=0 0=>none 9=>noisy."),
@@ -152,7 +154,7 @@ def parsefile(strx):
     if not lpg.opt_comp_only:
         codegen.dep_assemble(lpg)
         outfile = lpg.opt_workdir + os.sep + lpg.opt_outfile
-        if lpg.opt_verbose.cnt > 1:
+        if lpg.opt_verbose.cnt > 2:
             print("Outfile:   ", outfile)
         #return
 
@@ -164,12 +166,17 @@ def parsefile(strx):
 
         outname = os.path.splitext(lpg.opt_outfile)[0]
         exefile = lpg.opt_Outdir + os.sep + outname
-        if lpg.opt_verbose.cnt > 1:
+        if lpg.opt_verbose.cnt > 2:
             print("Exefile:   ", exefile)
         ret = codegen.link(outfile, exefile, lpg)
         if ret:
             print("\033[31;1mError\033[0m in the link phase of:", pp(strx) )
             sys.exit(2)
+
+        if lpg.opt_Execute != "x":
+            if lpg.opt_verbose.cnt > 1:
+                print("Executing: %s %s" % (exefile, lpg.opt_Execute) )
+            codegen.exec(exefile, lpg.opt_Execute, lpg)
 
     #if lpg.opt_verbose.cnt:
     #    print(treeroot)

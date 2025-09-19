@@ -74,9 +74,15 @@ class Stamp:
         if self.upcall:
             fname = str(self.upcall.__name__)
         else:
-            fname = "No Func"
+            fname = "NoUPFunc"
+        if self.dncall:
+            fnameD = str(self.dncall.__name__)
+        else:
+            fnameD = "NoDNFunc"
+
         strx = "cState: " + states + " "  + pp(str(self.tokens)) \
-                + " nState: " + ST.get(self.nstate) + " " + fname
+                + " nState: " + ST.get(self.nstate) + " " + fnameD \
+                + " " + fname + " " + str(self.push)
         return strx
 
 # List of identities for declaration
@@ -140,15 +146,17 @@ Drassn  = (
 
 Dfcall  = (
     # Function call
-    Stamp(C("STARITH"),   "(",      C("CFUNC3"),  None, fcall.start,    False),
-    Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, fcall.decl_val, False),
-    Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.decl_val, False),
-    Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.decl_val, False),
-    Stamp(C("CFUNC3"),    ")",      C("STPOP"),   fcall.end, None,      False),
-    Stamp(C("CFUNC4"),    ")",      C("STPOP"),   fcall.end, None,      False),
+    Stamp(C("STARITH"),   "(",      C("CFUNC3"),  None, fcall.start, False),
+    Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, fcall.val, False),
+    Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.val, False),
+    Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.val, False),
 
-    Stamp(C("CFUNC4"),    ",",      C("CFUNC3"),  None, None, False),
-    Stamp(C("CFUNC4"),    ")",      C("STPOP"),   None,  fcall.end, False),
+    Stamp(C("CFUNC3"),    ")",      C("STATEINI"), fcall.end, None,      False),
+    Stamp(C("CFUNC4"),    ")",      C("STATEINI"), fcall.end, None,      False),
+
+    Stamp(C("CFUNC4"),    ",",      C("CFUNC3"),    None, fcall.comma, False),
+    Stamp(C("CFUNC4"),    "nl",     C("STATEINI"),  None, fcall.end, False),
+    Stamp(C("CFUNC4"),    ";",      C("STATEINI"),  None, fcall.end, False),
     )
 
 Dtest = (
@@ -250,7 +258,7 @@ Ddecl = (
 stamps =  (  \
 
     #Stamp(C("STATEINI"), "num",    C("STARITH"),  None,  arith.arithstart, False),
-    Stamp(C("STATEINI"), "ident",  C("STARITH"),  None,  arith.arithstart, False),
+    Stamp(C("STATEINI"), "ident",   C("STARITH"),  None,  arith.arithstart, True),
 
     # include sub systems
     *Ddecl,

@@ -144,13 +144,14 @@ def isnewer(targ, *file2):
 
     return retx
 
+crtnames = "codegen/main.inc", "codegen/crtasm.inc"
+
 def dep_assemble(lpg):
 
     ''' Conditionally greate CRT objects '''
 
     depnames = "codegen/crt.inc",
-    fnames = "codegen/main.inc", "codegen/crtasm.inc"
-    for fname in fnames:
+    for fname in crtnames:
         oname = os.path.splitext(fname)[0] + ".o"
         if not isnewer(oname, fname, *depnames):
             continue
@@ -168,7 +169,7 @@ def assemble(fname, lpg):
     outname = os.path.splitext(fname)[0] + ".o"
 
     linprog = ["nasm", "-felf64", fname, "-o", outname]
-    if lpg.opt_verbose.cnt > 2:
+    if lpg.opt_verbose.cnt > 3:
         print("assemble:",  linprog)
     try:
         ret = subprocess.Popen(linprog, stdout=subprocess.PIPE)
@@ -183,13 +184,26 @@ def link(fname, outname, lpg):
     linprog = ["ld", objname, "codegen/main.o", "codegen/crtasm.o",
                 "-o", outname, "-dynamic-linker",
                 "/lib64/ld-linux-x86-64.so.2", "-lc"]
-    if lpg.opt_verbose.cnt > 2:
+    if lpg.opt_verbose.cnt > 3:
         print("link:",  linprog)
     try:
         ret = subprocess.Popen(linprog, stdout=subprocess.PIPE)
         res = ret.wait()
     except:
         print("link", sys.exc_info())
+    return res
+
+def exec(fname, args, lpg):
+
+    argx = args.split()
+    exeprog = [fname, *argx]
+    if lpg.opt_debug > 7:
+        print("exeprog", exeprog)
+    try:
+        ret = subprocess.Popen(exeprog) #, stdout=subprocess.PIPE)
+        res = ret.wait()
+    except:
+        print("exec:", sys.exc_info())
     return res
 
 def output(fname, codex, datax):

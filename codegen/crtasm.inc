@@ -6,22 +6,22 @@
 global _print, _print_char, _print_num, _print_lab
 global _print_dot, _print_regs, _print_args, _print_zstr
 global _printnl, _printsp, _printdot, _getkey
+global _len_zstr
 global _version, _sbrk
 
 %include "crt.inc"
 
 bits    64
-;default rel
 
 extern  _main
-extern  printf
 
 section .text
 
-
-        ;push      rbp
+        ;push    rbp
         ;call    _print_args
         ;call    _printnl
+        ;pop     rbp
+
         ;lea     rsi, [rsp]
         ;mov     rcx, 8
         ;call    _print_mem
@@ -29,7 +29,7 @@ section .text
         ;call    _print_regs
         ;call    _printnl
 
-        ;mov     rsi, format2             ; set 1st parameter (format)
+        ;mov     rsi, format2               ; set 1st parameter (format)
         ;call    _print_zstr
 
         ;push        rbp
@@ -37,24 +37,24 @@ section .text
         ;sub         rsp, 8
         ;
         ;;push        qword 0
-        ;mov         rdi, format2             ; set 1st parameter (format)
+        ;mov         rdi, format2           ; set 1st parameter (format)
         ;xor         rax,rax
         ;call        printf
         ;pop         rax
         ;
-        ;add         rsp, 8               ; Restore stack pointer after call
+        ;add         rsp, 8                 ; Restore stack pointer after call
         ;pop         rbp
 
-        ;mov     rsi, format2             ; set 1st parameter (format)
+        ;mov     rsi, format2               ; set 1st parameter (format)
         ;mov     rcx, [format2_end]
         ;call    _print_mem
         ;call    _printnl
 
 _version:       ; Print version
-         mov       rsi, message             ; Address of string to output
-         mov       rdx, [msg_len]           ; Number of bytes
+         mov       rsi, crt_msg             ; Address of string to output
+         mov       rdx, [crt_len]           ; Number of bytes
          call      _print
-         mov        eax, 0                  ; Set return value
+         mov        rax, 0                  ; Set return value
          ret
 
 _print_lab:       ; String in rax
@@ -84,12 +84,32 @@ _print_lab:       ; String in rax
         mov     rax,0
         ret
 
+_len_zstr:    ; String in rsi len in rax
+
+        mov      rax, 0
+     .again:
+        ;mov     bl, byte [rsi]
+        ;cmp     bl, 0
+        cmp     byte [rsi], 0
+        je     .endd
+        inc     rsi
+        inc     rax
+        jmp    .again
+      .endd:
+        ret
+
 _print_zstr:    ; String in rsi
 
         push      rbp
         mov       rbp, rsp
-        sub       rsp, 8
+        sub       rsp, 16
         mov       qword [rbp - 8] , 0
+
+        cmp      rsi, 0
+        jne      .again
+        mov      esi, null
+        call     _print_zstr
+        jmp     .endd
 
     .again:
         mov     al, byte [rsi]
@@ -163,13 +183,13 @@ _print_mem:  ; String in rsi, len in rcx
         loop .L4
     ret
 
-_print_char:                                 ; Characteris is in rax
+_print_char:        ; Print character; char is in rax
 
         push      rbp
         mov       rbp, rsp
         sub       rsp, 16
 
-        lea       rsi, [rbp - 4]
+        lea       rsi, [rbp - 8]
         mov       byte [rsi], al
 
         mov       rdx, 1
@@ -180,31 +200,31 @@ _print_char:                                 ; Characteris is in rax
 
         ret
 
-_printnl:
+_printnl:   ; Print New line
         pushall
          mov       rsi, nl                  ; Address of string to output
          mov       rdx, [nl_len]            ; Number of bytes
          call      _print
         popall
-         mov        eax, 0                  ; Set return value
+         ;mov        eax, 0                  ; Set return value
          ret
 
-_printsp:
+_printsp:    ; Print space
         pushall
          mov       rsi, spx                  ; Address of string to output
          mov       rdx, [spx_len]            ; Number of bytes
          call      _print
         popall
-         mov        eax, 0                  ; Set return value
+         ;mov        eax, 0                  ; Set return value
          ret
 
-_printdot:
+_printdot:    ; Print dot character
          pushall
          mov       rsi, dot                  ; Address of string to output
          mov       rdx, [dot_len]            ; Number of bytes
          call      _print
          popall
-        mov        eax, 0                  ; Set return value
+        ;mov        eax, 0                  ; Set return value
          ret
 
 ; %rax	arg0 (%rdi)	arg1 (%rsi)	arg2 (%rdx)	arg3 (%r10)	arg4 (%r8)	arg5 (%r9)
@@ -212,15 +232,13 @@ _printdot:
 ;   arg 0 -- rax    op code  arg 1 -- rdi    handle
 ;   arg 2 -- rsi    address  arg 3 -- rdx    length
 
-_print:
+_print:   ; Chain to system call str in rsi len in rdx
           mov       rax, 1                  ; System call for write
           mov       rdi, 1                  ; File handle 1 is stdout
           syscall                           ; invoke operating system to do the write
           ret
 
-;;  Print number in RAX
-
-_print_num:                                 ; Number is in rax
+_print_num:    ; Print number; num is in rax
 
           pushall
 
@@ -361,7 +379,7 @@ _print_regs:        ; print processor registers
     pop rbp
     ret
 
-_print_args:
+_print_args:  ; Print arguments coming in
 
         showbp "ar0", [rbp ]
         showbp "ar1", [rbp + 1*8]
@@ -372,6 +390,12 @@ _print_args:
         showbp "ar4", [rbp + 4*8]
         showbp "ar5", [rbp + 5*8]
         printnl
+        showbp "ar6", [rbp + 6*8]
+        showbp "ar7", [rbp + 7*8]
+        printnl
+        showbp "ar8", [rbp + 8*8]
+        showbp "ar9", [rbp + 9*8]
+        printnl
         xor     rax, rax
         ret
 
@@ -380,17 +404,15 @@ _sbrk:  ; get memory boundary add amount in rdi
         syscall
         ret
 
-buff    db  0, 0
-
 _getkey: ; wait for a key
         mov     rax,  0
         mov     rdi, 1
-        mov     rsi, buff
+        mov     rsi, inbuff
         mov     dx, 1
         syscall
         push rax
         mov ecx, 1
-        mov rsi, buff
+        mov rsi, inbuff
         call _print_mem
         pop rax
         ret
@@ -411,22 +433,86 @@ _addmem:   ; extend memory  amount in rax
         ;printx "Srax", rax
         ret
 
+_print_xregs:  ; Print registers and newline
+
+        call    _print_regs
+        call    _printnl
+        ret
+
+        ;call _getkey
+        ;printx "key", rax
+        ;call    _printnl
+
+        ; Arguments before stack operations
+        ;call    _print_args
+        ;call    _printnl
+
+        ;mov rsi, message
+        ;call  _print_zstr
+
+        ;mov     rax, "cnt"
+        ;call    _print_lab
+
+        ;lea     rdi, [rbp]
+        ;mov     rcx, [rdi]
+        ;add     rcx, 100
+        ;printx "cnt", rcx
+        ;mov     rbx, 0
+
+     .L5:
+        ;printx  "rbx", rbx
+        lea     rdi, [rbp + 8]
+        mov     rsi, [rdi]
+        add     rsi, rbx
+
+        push    rcx
+        push    rbx
+
+        ;call    _print_zstr
+        push    rax
+        ;printx  "rax", rax
+        ;printnl
+        pop     rax
+        cmp     rax, 0
+        je      .end_env
+
+        pop     rbx
+        add     rbx, rax
+        inc     rbx         ; point to next string
+        pop     rcx
+
+        loop .L5
+        jmp     .done_scan
+
+     .end_env:
+        ;printx  "end", rax
+        ;call    _printnl
+        pop     rbx
+        pop     rcx
+
+     .done_scan:
+
+    ret
+
+
 section .data
 
-message     db      "CRT Version 1.0", 10  ; Note the newline at the end
-msg_len     dq      $-message
+crt_msg     db      "CRT Version 1.0", 10  ; Note the newline at the end
+crt_len     dq      $-crt_msg
 nl          db      10
 nl_len      dq      $-nl
 spx         db      ' '
 spx_len     dq      $-spx
 dot         db      '.'
 dot_len     dq      $-dot
+null:       db      "null", 0
 
-format3:    db      "Hello world3.%d", 10, 0
-format2:    db      "Hello world2.", 10, 0
-format2_end dq      $-format2
-format1:    db      "Hello world1.", 10, 0
-format1_end dq      $-format1
+inbuff        db      0, 0, 0
 
+;format3:    db      "Hello world3.%d", 10, 0
+;format2:    db      "Hello world2.", 10, 0
+;format2_end dq      $-format2
+;format1:    db      "Hello world1.", 10, 0
+;format1_end dq      $-format1
 
 ; EOF

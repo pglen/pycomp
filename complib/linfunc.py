@@ -148,24 +148,31 @@ class   FuncCall():
 
     def start(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("call_start()", pp(self2.arrx[tprog].mstr))
-            #print("func arithstack: len =", arithstack.getlen(), end = " ")
-            #for aa in arithstack:
-            #    print(self2.arrx[aa], end = " ")
-            #print()
+            print("call.start()", pp(self2.arrx[tprog].mstr))
+        if pvg.opt_debug > 7:
+            print("func arithstack: len =", arithstack.getlen(), end = " ")
+            for aa in arithstack:
+                print(self2.arrx[aa], end = " ")
+            print()
         argstack.empty()
         callstack.empty()
         callstack.push(arithstack.pop())
-        #print("call stack", str(callstack))
+        #print("call stack:", callstack.dump())
 
-    def decl_val(self, self2, tprog):
+    def val(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("call_decl_val()", self2.arrx[tprog])
+            print("call.decl_val()", self2.arrx[tprog])
         argstack.push(tprog)
+
+    def comma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("call.decl_comma()", self2.arrx[tprog])
 
     def end(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("call_end()", pp(self2.arrx[tprog].mstr))
+            print("call.end()", pp(self2.arrx[tprog].mstr))
+
+        if pvg.opt_debug > 3:
             print("argstack:", end = " ")
             for aa in argstack:
                 print(self2.arrx[aa], end = " ")
@@ -192,8 +199,7 @@ class   FuncCall():
                 error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
 
             if cnt  >= len(codegen.regorder) - 1:
-                #error(self2, "Too many arguments to function:") #, funcname )
-                #sys.exit(1)
+                error(self2, "Too many arguments to function: '%s'" % funcname )
                 pass
             # Skip first arg as syscall opcode is in rax
             #print("arg:", self2.arrx[aa].dump())
@@ -510,7 +516,7 @@ class Decl():
 
         datatype = self2.arrx[arithstack.get(0)].mstr
         asmtype = linpool.addtopool(self2, arithstack)
-        if pvg.opt_debug > 3:
+        if pvg.opt_debug > 6:
             print("datatype =", datatype, asmtype)
 
         strx =   self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
