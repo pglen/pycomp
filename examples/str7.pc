@@ -1,1 +1,1 @@
-arr:hello="this i|\\\"s \\a \s\"tring"
+arr:hello='this i|\"s \\a \s\"tring'

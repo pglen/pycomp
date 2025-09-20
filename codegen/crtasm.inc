@@ -13,7 +13,7 @@ global _version, _sbrk
 
 bits    64
 
-extern  _main
+;extern  _main
 
 section .text
 
@@ -446,9 +446,6 @@ _print_xregs:  ; Print registers and newline
         ; Arguments before stack operations
         ;call    _print_args
         ;call    _printnl
-
-        ;mov rsi, message
-        ;call  _print_zstr
 
         ;mov     rax, "cnt"
         ;call    _print_lab

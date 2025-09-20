@@ -5,6 +5,8 @@
 %include "syscalls.inc"
 
 global  _main, _exit, _start
+global  __argc, __argv_0, __argv_1, __argv_2, __argv_3, __argv_4
+global  __env
 
 bits 64
 
@@ -27,9 +29,7 @@ _start:     ; Main entry point from kernel
         mov       rbx, rsp
         mov       rbp, rsp
 
-        ; Save stack
-        lea         rsi, __stack
-        mov         [rsi], rsp
+        ;call    _version
 
         ; Save environment pointer
         mov         rax, [rbp + 8]  ; Argc +
@@ -69,7 +69,12 @@ _start:     ; Main entry point from kernel
         mov       rsp, stack_end
         mov       rbp,rsp
 
+        ;mov rsi, message
+        ;call  _print_zstr
+
+        ; ---------------------------
         call    _main               ;; Main entry point
+        ; ---------------------------
 
         mov     rsp, [orgstack]     ; resore stack
         pop     rbp
@@ -110,6 +115,7 @@ _main:
         ;call        _print_zstr
         ;call        _printnl
 
+%if 0
         mov         rsi, [__argv_1]
         cmp         rsi, 0
         je          .env
@@ -133,6 +139,7 @@ _main:
         je          .env
         call        _print_zstr
         call        _printnl
+ %endif
 
         ; ----------------------------------------------------------------
 
@@ -220,6 +227,7 @@ _main:
 
      .done:
 
+        ;call    _version
         call    main
 
         mov       rsp, rbp
@@ -238,31 +246,24 @@ section   .data
 
 ; Save entry values here
 
-__stack      dq      0
 __argc       dq      0
 __argv_0     dq      0
 __argv_1     dq      0
 __argv_2     dq      0
 __argv_3     dq      0
 __argv_4     dq      0
-
 __env        dq      0
 
 orgstack    dq      0
+message:    db      "In _main.", 10, 0      ; note the newline at the end
 
-;dumpx       db      2, 4, 6, 8, 9, 10, 'a', 'Z', '1', '2', 128, 130
-;dumpx_len   dq      $ - dumpx
-
-message:    db      "Hello World in _main.", 10, 0      ; note the newline at the end
-msg_len     dq      $ - message
-
-testenv:     db      "HOME", 0
+;testenv:     db      "HOME", 0
 buffer:      db      4096 dup (0)
 
 section .bss
 
 align 64
-stack        resb 4096
+stack:        resb 4096
 stack_end:
 
 ; EOF

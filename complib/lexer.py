@@ -207,8 +207,8 @@ class Lexer():
                     elif tt.mstr == "f":  self.accum[self.state] += "\\f"
                     elif tt.mstr == "e":  self.accum[self.state] += "\\e"
                     elif tt.mstr == "\?": self.accum[self.state] += "\\?"
-                    elif tt.mstr == "\"": self.accum[self.state] += "\""
-                    elif tt.mstr == "\'": self.accum[self.state] += "\'"
+                    elif tt.mstr == "\"": self.accum[self.state] += "\\\""
+                    elif tt.mstr == "\'": self.accum[self.state] += "\\\'"
                     elif tt.mstr == "\\": self.accum[self.state] += "\\\\"
                     elif tt.mstr == "x":
                         self._push_state(tt, lexdef.HEX_STATE)

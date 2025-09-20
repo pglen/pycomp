@@ -179,23 +179,22 @@ class LinParse():
                 if currstamp.upcall:
                     currstamp.upcall(self, tprog)
 
-
-                    if currstamp.push:
-                        if self.pvg.opt_debug > 4:
-                            print("push:", ST.get(self.state), end = " ")
-                        self.statestack.push(self.state)
-
-                    self.state = currstamp.nstate
+                if currstamp.push:
                     if self.pvg.opt_debug > 4:
-                        print("set to:", ST.get(self.state))
+                        print("push:", ST.get(self.state), end = " ")
+                    self.statestack.push(self.state)
 
-                    if self.pvg.opt_debug > 7:
-                        for aa in self.statestack:
-                            print("statestack:", aa)
+                self.state = currstamp.nstate
+                if self.pvg.opt_debug > 4:
+                    print("set to:", ST.get(self.state))
 
-                    #if self.pvg.opt_debug > 4:
-                    #    print("state to:", ST.get(self.state), end = "\n")
-                    pass
+                if self.pvg.opt_debug > 7:
+                    for aa in self.statestack:
+                        print("statestack:", aa)
+
+                #if self.pvg.opt_debug > 4:
+                #    print("state to:", ST.get(self.state), end = "\n")
+                pass
 
             #global lastnode
             #if currstamp.nstate != ST.val("STIGN"):

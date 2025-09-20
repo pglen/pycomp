@@ -25,6 +25,10 @@ def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
         varval = self2.arrx[xstack.get(4)].mstr
     else:
         varval = 0
+    ret = add2pool(self2, typename, varname, varval)
+    return ret
+
+def add2pool(self2, typename, varname, varval):
 
     if pvg.opt_debug > 7:
         print("addtopool:", "type:", pp(typename),
@@ -40,7 +44,7 @@ def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
 
     tpi = TypI(typename, varname, varval)
     gpool.push(tpi)
-    datatype = pctona(self2.arrx[xstack.get(0)].mstr)
+    datatype = pctona(typename)
     return datatype
 
 def lookpool(self2, varname):

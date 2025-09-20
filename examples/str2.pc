@@ -1,1 +1,1 @@
-arr : strvar = "hello 'old' world"
+arr:svar="hello "+"world"

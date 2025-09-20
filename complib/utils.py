@@ -474,6 +474,12 @@ def color(strx, col = "31"):
         return strx
     return "\033[" + str(col) + ";1m" + strx + "\033[0m"
 
+def dumpstack(self2, stackx):
+
+    print(stackx.name + ":")
+    for aa in stackx:
+        print(self2.arrx[aa])
+
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
     org = "12345678\r\n\a\tabcdef"

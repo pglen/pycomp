@@ -1,1 +1,1 @@
-arr : strvar = "hello world: \f\t\r\n "
+arr:v2="hello world",v3=": \f\t\r\n "

@@ -47,6 +47,7 @@ opts =  (\
     ("Target",      "x86_64",   True,   "Select target. Def: x86_64 (only target)"),
     ("state_show",  False,      True,   "Show parser states."),
     ("timing_show", False,      True,   "Show timings for program execution."),
+    ("frame_show",  False,      True,   "Show CRT frame strings."),
     )
 
 def parsefile(strx):
@@ -241,10 +242,12 @@ if __name__ == "__main__":
         print("Error - cannot write to work dir:", pp(lpg.opt_workdir))
         sys.exit(1)
 
-    upvg(lpg)                   # utils debug
+    # Set submodules global options
+    upvg(lpg)                   # utils debug (renamed, as it is global)
     stack.funcpvg(lpg)
     lexfunc.funcpvg(lpg)
     linpool.funcpvg(lpg)
+    codegen.funcpvg(lpg)
 
     tmpfile = ""
     if lpg.opt_Code:

@@ -309,14 +309,14 @@ try:
 
     # string2 states
     (STR2_STATE, "sbsla2",     r"\\"    ,           ESC_STATE, None),
-    (STR2_STATE, "dquote2",    r"\'"    ,            POP_STATE, None),
+    (STR2_STATE, "dquote2",    r"\'"    ,           POP_STATE, None),
     (STR2_STATE, "sany2",      r"."     ,           None, None),
 
     # comm states
     (COMM_STATE,  "ecomm3",     r"\*\/" ,           POP_STATE, None ),
-    (COMM_STATE,  "cany",      "(?s)."  ,            None, None ),
-    (COMM_STATED, "ecomm3d",    r"\*\/" ,            POP_STATE, None ),
-    (COMM_STATED, "canyd",     r"(?s)." ,            None, None ),
+    (COMM_STATE,  "cany",      "(?s)."  ,           None, None ),
+    (COMM_STATED, "ecomm3d",    r"\*\/" ,           POP_STATE, None ),
+    (COMM_STATED, "canyd",     r"(?s)." ,           None, None ),
 
     # escape states
     #(ESC_STATE, "squote",      r"\'"   ,           None, None ),

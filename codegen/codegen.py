@@ -4,6 +4,11 @@ import os, sys, subprocess
 
 '''  Code generator for FASM output '''
 
+def funcpvg(xpvg):
+    global pvg
+    pvg = xpvg
+    #print("got pvg", pvg)
+
 cummulate  = ""
 cummulate2 = ""
 
@@ -42,43 +47,51 @@ main:
     push    rbp
     mov     rbp, rsp
 
-    ;call    _print_regs
-    ;mov     rdi, hellodef
-    ;and     rsp, 0xfffffffffffffff0
-    ;call    printf
-
 '''
 
-epilstr = '''
-end_code:    ;  End of program\n
+prolstr2 = '''\
+    ; This is to see if we are alive
+    ;call    _print_regs
+    mov     rdi, startx2
+    extern  __argc
+    mov     rsi, [__argc]
+    dec     rsi
+    and     rsp, 0xfffffffffffffff0
+    call    printf
+'''
+
+epilstr2 = '''\
     ; This is just in case of no exit statement
-    ;xor     rax,rax
-    ;mov     rdi, endx
-    ;and     rsp, 0xfffffffffffffff0
-    ;call    printf
+    xor     rax,rax
+    mov     rdi, endx2
+    mov     rsi, [exit_code]
+    and     rsp, 0xfffffffffffffff0
+    call    printf
+'''
+
+epilstr = '''\
+    end_code:    ;  End of program\n
 
     ; Flush stdout, in case of missing terminating newline
     mov     rdi, 0
     call    fflush
 
     ; Exit here
-    ;mov     qword [exit_code], 44   ; test exit code
+    ; return value -> exit code
     mov     rdi, [exit_code]
     call    exit
 
-    ; return value -> exit code
-    mov     rax, 0
-
+    ; not reached ... but do the right thing
+    mov     rax, 255      ; exit failed, tell the caller
     mov     rsp, rbp
     pop     rbp
-
     ret
 
 section .data
 
 exit_code   dq      0
-hellodef:   db      "Start program", 10, 0
-endx2:      db       "End program.", 10, 0
+startx2:   db       "Start program: argc=%d", 10, 0
+endx2:      db      "End program. ret=%d", 10, 0
 endx:       db      10, 0
 
 '''
@@ -211,7 +224,11 @@ def output(fname, codex, datax):
     #print("outfile:", fname)
     fp = open(fname, "w")
     fp.write(prolstr)
+    if pvg.opt_frame_show:
+        fp.write(prolstr2)
     fp.write(codex)
+    if pvg.opt_frame_show:
+        fp.write(epilstr2)
     fp.write(epilstr)
     fp.write(datax)
     fp.write(endstr)

@@ -188,30 +188,29 @@ class   FuncCall():
         funcname =  self2.arrx[idx].mstr
         linex = self2.arrx[idx].linenum + 1
 
-        # Exception on printf stack call
         estr = ""
+        # Exception on printf stack call
         if funcname == "printf":
             estr += "    and     rsp, 0xfffffffffffffff0\n"
             estr += "    mov     rbp, rsp\n"
         cnt = 0
         for aa in argstack:
             tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
-            #print("linpool.lookpool tpi =>", tpi)
+            print("linpool.lookpool tpi", tpi)
             if not tpi:
                 error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
-
             if cnt  >= len(codegen.regorder) - 1:
                 error(self2, "Too many arguments to function: '%s'" % funcname )
                 pass
-            # Skip first arg as syscall opcode is in rax
-            #print("arg:", self2.arrx[aa].dump())
+            # Skip first arg as syscall opcode is in rax # ????
             # Expand types
-            if tpi.typex == "arr":
+            if tpi.typex == "str":
+                print("typex", tpi)
                 if cnt  >= len(codegen.regorder) - 1:
                     estr += "    push   rax \n"
                 else:
-                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
-                             ", " + self2.arrx[aa].mstr + "\n"
+                    estr += "    mov  " + codegen.regorder[cnt+1]
+                    estr += "  , " + self2.arrx[aa].mstr  + "\n"
             elif  tpi.typex == "u32" or tpi.typex == "s32" :
                 estr += "    mov rax, 0\n"
                 estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
@@ -236,7 +235,10 @@ class   FuncCall():
                 else:
                     estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
                                      ", rax\n"
+            else:
+                print("Unkown type:", tpi.typex)
             cnt += 1
+
         estr += "    xor  rax, rax" + "\n"
         #print("estr =\n", estr)
 
@@ -474,10 +476,29 @@ class Decl():
                 print(self2.arrx[aa], end = " ")
             print()
 
-    def arr(self, self2, tprog):
+    def astart(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl.arr()", "tprog =", tprog, self2.arrx[tprog])
+            print("decl.astart()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.empty()
+
+    def astr(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.astr()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def amul(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.amul()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def anum(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.anum()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def aadd(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.aadd()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
     def col(self, self2, tprog):
@@ -488,12 +509,10 @@ class Decl():
     def acol(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.acol()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
 
     def aeq(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.aeq()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
 
     def ident(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -512,7 +531,7 @@ class Decl():
 
     def comma(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("decl.comma()", "tprog =", tprog)
+            print("decl.comma()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 7:
             print("arithstack comma:", end = " ")
             for aa in arithstack:
@@ -521,10 +540,50 @@ class Decl():
         #if arithstack.getlen() <= 3:
         #    print("Padding ??? for zero fill", len(arithstack))
 
+    def acomma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.acomma()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
     def adown(self, self2, tprog):
 
         if pvg.opt_debug > 1:
             print("decl.adown()", "tprog =", tprog, self2.arrx[tprog])
+        if pvg.opt_debug > 0:
+            dumpstack(self2, arithstack)
+        strx = "" ; statex = 0; lab = "" ; val = ""
+        for aa in arithstack:
+            if statex == 0:
+                if self2.arrx[aa].stamp.xstr  == "ident":
+                    statex = 1
+                    lab = self2.arrx[aa].mstr
+            elif statex == 1:
+                if self2.arrx[aa].stamp.xstr  == "str":
+                    statex = 2
+                    val = asmesc(self2.arrx[aa].mstr)
+            elif statex == 2:
+                if self2.arrx[aa].stamp.xstr  == "+":
+                    statex = 3
+                elif self2.arrx[aa].stamp.xstr  == "*":
+                    statex = 4
+                else:
+                    linpool.add2pool(self2, "str", lab, val)
+                    strx += lab + ": db "
+                    strx += val  + "\n"
+                    statex = 0
+
+            elif  statex == 3:
+                val = val[0] + val[1:-1] + self2.arrx[aa].mstr[1:-1] + val[-1]
+                statex = 0
+            elif  statex == 4:
+                val = val[0] + val[1:-1] * self2.arrx[aa].ival + val[-1]
+                statex = 0
+
+        linpool.add2pool(self2, "str", lab, val)
+        strx +=  lab + ": db "
+        strx +=  val  + "\n"
+
+        codegen.emitdata(strx)
 
     def down(self, self2, tprog):
 
@@ -544,7 +603,7 @@ class Decl():
 
         datatype = self2.arrx[arithstack.get(0)].mstr
         asmtype = linpool.addtopool(self2, arithstack)
-        if pvg.opt_debug > 6:
+        if pvg.opt_debug > 1:
             print("datatype =", datatype, asmtype)
 
         strx =   self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
@@ -576,10 +635,11 @@ class Decl():
         else:
             print("other type", datatype)
             # This is where type expnsion takes place
-            if arithstack.getlen() <= 2:
-                strx += " 0 "
-            else:
-                strx +=  self2.arrx[arithstack.get(4)].mstr
+            #if arithstack.getlen() <= 2:
+            #    strx += " 0 "
+            #else:
+            #    strx +=  self2.arrx[arithstack.get(4)].mstr
+            error(self2, "No type specified")
 
         #print("data decl:", pp(strx))
 

@@ -1,2 +1,1 @@
 arr:strvar = 'hello "new" world' ;
-#anyvar

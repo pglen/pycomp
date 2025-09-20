@@ -1,5 +1,2 @@
-arr : strx =  "Hello World\n"
-arr : stry =  "ret = %d \n"
-u32:ret = -12
-ret = printf(strx)
-printf(stry, ret)
+arr:strx="Hello World\n"
+printf(strx)

@@ -151,12 +151,12 @@ Dfcall  = (
     Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.val, False),
     Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.val, False),
 
-    Stamp(C("CFUNC3"),    ")",      C("STATEINI"), fcall.end, None,      False),
-    Stamp(C("CFUNC4"),    ")",      C("STATEINI"), fcall.end, None,      False),
+    Stamp(C("CFUNC3"),    ")",      C("STATEINI"), None, fcall.end,  False),
+    Stamp(C("CFUNC4"),    ")",      C("STATEINI"), None, fcall.end,  False),
 
     Stamp(C("CFUNC4"),    ",",      C("CFUNC3"),    None, fcall.comma, False),
-    Stamp(C("CFUNC4"),    "nl",     C("STATEINI"),  None, fcall.end, False),
-    Stamp(C("CFUNC4"),    ";",      C("STATEINI"),  None, fcall.end, False),
+    Stamp(C("CFUNC4"),    "nl",     C("STATEINI"),  None, fcall.end,   False),
+    Stamp(C("CFUNC4"),    ";",      C("STATEINI"),  None, fcall.end,   False),
     )
 
 Dtest = (
@@ -243,29 +243,29 @@ FLOAT   = "float", "double", "quad",
 
 Ddecl = (
     # Declarations
-    Stamp(STBASE,   "decl",         C("DECL2"),   None,   decl.start, True),
-    Stamp(STBASE,   FLOAT,          C("DECL2"),   None,   decl.start, True),
+    Stamp(STBASE,   "decl",      C("DECL2"),   None,   decl.start, True),
+    Stamp(STBASE,   FLOAT,       C("DECL2"),   None,   decl.start, True),
 
-    Stamp(C("DECL2"),   ":",        C("DECL3"),    None,      decl.col, False),
-    Stamp(C("DECL3"),   "ident",    C("STARITH"),  None,      decl.ident, False),
-    Stamp(C("STARITH"), ",",        C("DECL3"),    None,      decl.comma, False),
+    Stamp(C("DECL2"),   ":",     C("DECL3"),   None,   decl.col, False),
+    Stamp(C("DECL3"),   "ident", C("STARITH"), None,   decl.ident, False),
+    Stamp(C("STARITH"), ",",     C("DECL3"),   None,   decl.comma, False),
 
-    Stamp(C("STARITH"), ";",        C("STPOP"),     decl.down, None, False),
-    Stamp(C("STARITH"), "nl",       C("STPOP"),     decl.down, None, False),
+    Stamp(C("STARITH"), ";",     C("STPOP"),   decl.down, None, False),
+    Stamp(C("STARITH"), "nl",    C("STPOP"),   decl.down, None, False),
 
-    Stamp(STBASE,       "arr",      C("DECLA"),   None,     decl.arr, True),
-    Stamp(C("DECLA"),   ":",        C("DECLA2"),  None,     decl.acol, False),
-    Stamp(C("DECLA2"),   "ident",   C("STTARI"),  None,     decl.aident, False),
-    Stamp(C("STTARI"),    ",",      C("DECLA2"),  None,     None, False),
+    Stamp(STBASE,       "arr",   C("DECLA"),   None,   decl.astart, True),
+    Stamp(C("DECLA"),   ":",     C("DECLA2"),  None,   decl.acol, False),
+    Stamp(C("DECLA2"),  "ident", C("STTARI"),  None,   decl.aident, False),
+    Stamp(C("STTARI"),  "=",     C("STTARI2"), None,   None, False),
+    Stamp(C("STTARI2"), "str",   C("STTARI3"), None,   decl.astr,    False),
 
-    Stamp(C("STTARI"),    "=",      C("STTARI2"), None,     decl.aeq, False),
-    Stamp(C("STTARI2"),   "str",    C("DECLA"),   None,      None,    False),
+    Stamp(C("STTARI3"), ",",     C("DECLA2"),  None,   decl.acomma, False),
+    Stamp(C("STTARI3"), "+",     C("STTARI2"), None,   decl.aadd,   False),
+    Stamp(C("STTARI3"), "*",     C("STTARI4"), None,   decl.amul,   False),
+    Stamp(C("STTARI4"), "num",   C("STTARI3"), None,   decl.anum,   False),
 
-    #Stamp(C("STTARI"),   "+",      C("STTARI"),  None,     None, False),
-    #Stamp(C("STTARI"),   "*",      C("STTARI"),  None,     None, False),
-
-    Stamp(C("DECLA"), ";",          C("STPOP"),  decl.adown, None, False),
-    Stamp(C("DECLA"), "nl",         C("STPOP"),  decl.adown, None, False),
+    Stamp(C("STTARI3"), ";",     C("STPOP"),   decl.adown, None, False),
+    Stamp(C("STTARI3"), "nl",    C("STPOP"),   decl.adown, None, False),
 )
 
 # Main stamps definition

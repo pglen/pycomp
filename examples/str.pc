@@ -1,1 +1,1 @@
-arr : sss = "xy\n";
+arr:svar="xyz\n";
