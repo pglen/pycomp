@@ -47,7 +47,7 @@ opts =  (\
     ("Target",      "x86_64",   True,   "Select target. Def: x86_64 (only target)"),
     ("state_show",  False,      True,   "Show parser states."),
     ("timing_show", False,      True,   "Show timings for program execution."),
-    ("frame_show",  False,      True,   "Show CRT frame strings."),
+    ("frame_show",  False,      True,   "Show CRT frame strings. (for testing)"),
     )
 
 def parsefile(strx):
@@ -156,7 +156,7 @@ def parsefile(strx):
         codegen.dep_assemble(lpg)
         outfile = lpg.opt_workdir + os.sep + lpg.opt_outfile
         if lpg.opt_verbose.cnt > 2:
-            print("Outfile:   ", outfile)
+            print("Outfile:  ", outfile)
         #return
 
         codegen.output(outfile, codegen.cummulate, codegen.cummulate2)
@@ -168,20 +168,18 @@ def parsefile(strx):
         outname = os.path.splitext(lpg.opt_outfile)[0]
         exefile = lpg.opt_Outdir + os.sep + outname
         if lpg.opt_verbose.cnt > 2:
-            print("Exefile:   ", exefile)
+            print("Exefile:  ", exefile)
+        if lpg.opt_verbose.cnt > 1:
+            print("Linking:  ", outfile)
         ret = codegen.link(outfile, exefile, lpg)
         if ret:
             print("\033[31;1mError\033[0m in the link phase of:", pp(strx) )
             sys.exit(2)
 
         if lpg.opt_Execute != "x":
-            if lpg.opt_verbose.cnt > 1:
+            if lpg.opt_verbose.cnt > 0:
                 print("Executing: %s %s" % (exefile, lpg.opt_Execute) )
             codegen.exec(exefile, lpg.opt_Execute, lpg)
-
-    #if lpg.opt_verbose.cnt:
-    #    print(treeroot)
-    #print()
 
 def setheads(lpg):
     prestr =    "PYVCOMP parallel compiler.\n" \

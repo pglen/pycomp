@@ -196,7 +196,6 @@ class   FuncCall():
         cnt = 0
         for aa in argstack:
             tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
-            print("linpool.lookpool tpi", tpi)
             if not tpi:
                 error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
             if cnt  >= len(codegen.regorder) - 1:
@@ -205,7 +204,6 @@ class   FuncCall():
             # Skip first arg as syscall opcode is in rax # ????
             # Expand types
             if tpi.typex == "str":
-                print("typex", tpi)
                 if cnt  >= len(codegen.regorder) - 1:
                     estr += "    push   rax \n"
                 else:
@@ -425,8 +423,8 @@ class Assn():
             print("Undeclared variable:", pp(self2.arrx[arithstack.get(0)].mstr))
             return
 
-        print("tpi:", tpi, self2.arrx[arithstack.get(0)],
-                            self2.arrx[arithstack.get(2)])
+        #print("tpi:", tpi, self2.arrx[arithstack.get(0)],
+        #                    self2.arrx[arithstack.get(2)])
 
         if tpi.typex == "arr":
             strx =   "lea  rsi, " + self2.arrx[arithstack.get(0)].mstr + "\n"
@@ -549,7 +547,7 @@ class Decl():
 
         if pvg.opt_debug > 1:
             print("decl.adown()", "tprog =", tprog, self2.arrx[tprog])
-        if pvg.opt_debug > 0:
+        if pvg.opt_debug > 7:
             dumpstack(self2, arithstack)
         strx = "" ; statex = 0; lab = "" ; val = ""
         for aa in arithstack:
@@ -590,12 +588,8 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
 
-        if pvg.opt_debug > 0:
-            print("arithstack: len =", arithstack.getlen(), end = " ")
-            for aa in arithstack:
-                if self2.arrx[aa].flag == 0:
-                    print(self2.arrx[aa], end = " ")
-            print()
+        if pvg.opt_debug > 7:
+            dumpstack(self2, arithstack)
 
         # Nothing to see here
         if not arithstack.getlen():
@@ -603,7 +597,7 @@ class Decl():
 
         datatype = self2.arrx[arithstack.get(0)].mstr
         asmtype = linpool.addtopool(self2, arithstack)
-        if pvg.opt_debug > 1:
+        if pvg.opt_debug > 7:
             print("datatype =", datatype, asmtype)
 
         strx =   self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
