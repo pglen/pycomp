@@ -569,7 +569,6 @@ class Decl():
                     strx += lab + ": db "
                     strx += val  + "\n"
                     statex = 0
-
             elif  statex == 3:
                 val = val[0] + val[1:-1] + self2.arrx[aa].mstr[1:-1] + val[-1]
                 statex = 0
@@ -588,68 +587,105 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
 
-        if pvg.opt_debug > 7:
+        if pvg.opt_debug > 2:
             dumpstack(self2, arithstack)
 
         # Nothing to see here
         if not arithstack.getlen():
+            print("Empty arithstack")
             return
 
-        datatype = self2.arrx[arithstack.get(0)].mstr
-        asmtype = linpool.addtopool(self2, arithstack)
-        if pvg.opt_debug > 7:
-            print("datatype =", datatype, asmtype)
+        numtypes = "float", "double", "quad", "decl"
+        numvals = "num", "num2"
 
-        strx =   self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
+        statex = 0;
+        typey = "" ; typex = "" ; lab = ""; val = "";
 
-        # type dependent expand
-        if self2.arrx[arithstack.get(0)].mstr == "arr":
-            #print("arr type")
-            if arithstack.getlen() <= 3:
-                # patch missing declaration argument with zero /empty
-                strx += "hello"
+        for aa in arithstack:
+            strx = ""
+            print("as aa", pp(self2.arrx[aa].stamp.xstr), self2.arrx[aa].mstr)
+            if statex == 0:
+                #if self2.arrx[aa].stamp.xstr == "decl":
+                if self2.arrx[aa].stamp.xstr in numtypes:
+                    statex = 1
+                    typey = self2.arrx[aa].mstr
+                    typex = linpool.pctona(self2.arrx[aa].mstr)
+                if self2.arrx[aa].stamp.xstr == "ident":
+                    statex = 4
+                    lab = self2.arrx[aa].mstr
+            elif statex == 1:
+                if self2.arrx[aa].stamp.xstr == "ident":
+                    lab = self2.arrx[aa].mstr
+                    statex = 2
+            elif statex == 2:
+                if self2.arrx[aa].stamp.xstr == "=":
+                    statex = 3
+            elif statex == 3:
+                val = self2.arrx[aa].mstr
+                linpool.add2pool(self2, typey, lab, val)
+                statex = 0
+                # output decl opeartion
+                print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
+                # type dependent expand
+                if typey.lower() in int_types:
+                    #print("int type")
+                    if arithstack.getlen() <= 4:
+                        # patch missing declaration argument with zero /empty
+                        strx += " 0 "
+                    else:
+                        strx +=  lab + " : " + typex + " " + val + "\n"
+                elif typey.lower() in float_types:
+                    print("float type")
+                    if arithstack.getlen() <= 3:
+                        # patch missing declaration argument with zero /empty
+                        strx += " 0 "
+                    else:
+                        strx +=  lab + " : " + typex + " " + val + "\n"
+                else:
+                    #print("other type", typex)
+                    error(self2, "No type specified")
+                codegen.emitdata(strx)
+
+            elif statex == 4:
+                if self2.arrx[aa].stamp.xstr == "num":
+                    state = 0
+                    tpi = linpool.lookpool(self2, lab)
+                    if not tpi:
+                        error(self2, "Undefined variable", )
+                    typex = linpool.pctona(tpi.typex)
+                    typey = tpi.typex
+                    val = self2.arrx[aa].mstr
+                    # output assn opeartion
+                    ttt = linpool.pctocast(typey)
+                    print("ttt", ttt)
+                    strx += "   mov   " + ttt + " [" + lab + "], " + val + "\n"
+                    codegen.emit(strx)
+            else:
                 pass
-            else:
-                strx +=  asmesc(self2.arrx[arithstack.get(4)].mstr)
+                #print("Warn: invalid state", __file__, __line__)
 
-        elif datatype.lower() in int_types:
-            #print("int type")
-            if arithstack.getlen() <= 4:
-                # patch missing declaration argument with zero /empty
-                strx += " 0 "
-            else:
-                strx +=  self2.arrx[arithstack.get(4)].mstr
-        elif datatype.lower() in float_types:
-            #print("float type")
-            if arithstack.getlen() <= 3:
-                # patch missing declaration argument with zero /empty
-                strx += " 0 "
-            else:
-                strx +=  self2.arrx[arithstack.get(4)].mstr
-        else:
-            print("other type", datatype)
-            # This is where type expnsion takes place
-            #if arithstack.getlen() <= 2:
-            #    strx += " 0 "
-            #else:
-            #    strx +=  self2.arrx[arithstack.get(4)].mstr
-            error(self2, "No type specified")
+        #datatype = self2.arrx[arithstack.get(0)].mstr
+        #asmtype = linpool.addtopool(self2, arithstack)
+        #if pvg.opt_debug > 2:
+        #    print("datatype =", datatype, asmtype)
+
+        #strx =  self2.arrx[arithstack.get(2)].mstr + " : " + asmtype + " "
+        #strx  =  lab + " : " + typex + " "
 
         #print("data decl:", pp(strx))
 
         # Output comment as well
-        linex = self2.arrx[arithstack.get(0)].linenum + 1
-        strx +=  " ; line: " + str(linex) + " -- "
-        for aa in range(arithstack.getlen()):
-            strx +=  self2.arrx[arithstack.get(aa)].mstr + " "
-        strx += "\n"
+        #linex = self2.arrx[arithstack.get(0)].linenum + 1
+        #strx +=  " ; line: " + str(linex) + " -- "
+        #for aa in range(arithstack.getlen()):
+        #    strx +=  self2.arrx[arithstack.get(aa)].mstr + " "
+        #strx += "\n"
 
         #if arithstack.getlen() <= 2:
         #    strx += " 0 "
         #else:
         #    strx += self2.arrx[arithstack.get(2)].mstr
 
-        codegen.emitdata(strx)
         #arithstack.empty()
 
 decl = Decl()
@@ -841,6 +877,5 @@ class Fdecl():
         _func_arith(self2, "+", tprog)
         if pvg.opt_debug > 6:
             prarr(self2.arrx[tprog:tprog], "add post: ")
-
 
 # EOF

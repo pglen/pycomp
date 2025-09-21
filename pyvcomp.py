@@ -84,7 +84,8 @@ def parsefile(strx):
     if lpg.opt_timing_show:
         print("load  time:", time_ms(start_time) )
 
-    if lpg.opt_debug > 5: print (buf)
+    if lpg.opt_debug > 8:
+            print ("buf:", pp(buf))
 
     if lpg.opt_timing_show:
         start_time =  time.process_time()

@@ -186,46 +186,46 @@ Dtest = (
 Darith = (
     # Arithmetics (+ - * / sqr assn)
     Stamp(C("STARITH"), "=",       C("SFASSN"),   None,  arith.arithop, False),
-    Stamp(C("SFASSN"), "ident",    C("STARITH"),  None,  arith.assnexpr, False),
-    Stamp(C("SFASSN"), "num",      C("STARITH"),  None,  arith.assnexpr, False),
-    Stamp(C("SFASSN"), "num2",     C("STARITH"),  None,  arith.assnexpr, False),
-    Stamp(C("SFASSN"), "str",      C("STARITH"),  None,  arith.assnexpr, False),
+    Stamp(C("SFASSN"),  "ident",    C("STARITH"),  None,  arith.assnexpr, False),
+    Stamp(C("SFASSN"),  "num",      C("STARITH"),  None,  arith.assnexpr, False),
+    Stamp(C("SFASSN"),  "num2",     C("STARITH"),  None,  arith.assnexpr, False),
+    Stamp(C("SFASSN"),  "str",      C("STARITH"),  None,  arith.assnexpr, False),
 
     Stamp(C("STARITH"), "=>",      C("SFPUT"),    None,  arith.arithop, False),
-    Stamp(C("SFPUT"), "ident",     C("STARITH"),  None,  arith.mulexpr, False),
-    Stamp(C("SFPUT"), "num",       C("STARITH"),  None,  arith.mulexpr, False),
+    Stamp(C("SFPUT"),   "ident",   C("STARITH"),  None,  arith.mulexpr, False),
+    Stamp(C("SFPUT"),   "num",     C("STARITH"),  None,  arith.mulexpr, False),
 
     Stamp(C("STARITH"), "expo",    C("SFSQR"),    None,  arith.arithop, False),
     Stamp(C("SFSQR"),   "ident",   C("STARITH"),  None,  arith.expexpr, False),
     Stamp(C("SFSQR"),   "num",     C("STARITH"),  None,  arith.expexpr, False),
 
-    #Stamp(C("STATEANY"),   "(",     C("STIGN"),    None,  misc.func_parent, False),
-    #Stamp(C("STATEANY"),   ")",     C("STIGN"),    None,  misc.func_parent, False),
+    #Stamp(C("STATEANY"),   "(",   C("STIGN"),    None,  misc.func_parent, False),
+    #Stamp(C("STATEANY"),   ")",   C("STIGN"),    None,  misc.func_parent, False),
 
-    #Stamp(C("SFPAR"), "ident",     C("STARITH"),  None,  None, False),
-    #Stamp(C("SFPAR"), "num",       C("STARITH"),  None,  None, False),
+    #Stamp(C("SFPAR"), "ident",    C("STARITH"),  None,  None, False),
+    #Stamp(C("SFPAR"), "num",      C("STARITH"),  None,  None, False),
 
-    #Stamp(C("STARITH"), ")",       C("SFPAR2"),   None,  misc.func_parent, False),
-    #Stamp(C("SFPAR2"), "ident",    C("STARITH"),  None,  arith.mulexpr, False),
-    #Stamp(C("SFPAR2"), "num",      C("STARITH"),  None,  arith.mulexpr, False),
+    #Stamp(C("STARITH"), ")",      C("SFPAR2"),   None,  misc.func_parent, False),
+    #Stamp(C("SFPAR2"), "ident",   C("STARITH"),  None,  arith.mulexpr, False),
+    #Stamp(C("SFPAR2"), "num",     C("STARITH"),  None,  arith.mulexpr, False),
 
     Stamp(C("STARITH"), "*",       C("SFMUL"),    None,  arith.arithop, False),
-    Stamp(C("SFMUL"), "ident",     C("STARITH"),  None,  arith.mulexpr, False),
-    Stamp(C("SFMUL"), "num",       C("STARITH"),  None,  arith.mulexpr, False),
-    Stamp(C("SFMUL"), "num2",      C("STARITH"),  None,  arith.mulexpr, False),
+    Stamp(C("SFMUL"),   "ident",   C("STARITH"),  None,  arith.mulexpr, False),
+    Stamp(C("SFMUL"),   "num",     C("STARITH"),  None,  arith.mulexpr, False),
+    Stamp(C("SFMUL"),   "num2",    C("STARITH"),  None,  arith.mulexpr, False),
 
     Stamp(C("STARITH"), "/",       C("SFDIV"),    None,  arith.arithop, False),
-    Stamp(C("SFDIV"), "ident",     C("STARITH"),  None,  arith.divexpr, False),
-    Stamp(C("SFDIV"), "num",       C("STARITH"),  None,  arith.divexpr, False),
+    Stamp(C("SFDIV"),   "ident",   C("STARITH"),  None,  arith.divexpr, False),
+    Stamp(C("SFDIV"),   "num",     C("STARITH"),  None,  arith.divexpr, False),
 
     Stamp(C("STARITH"), "+",       C("SFADD"),    None,  arith.arithop, False),
     Stamp(C("SFADD"),   "ident",   C("STARITH"),  None,  arith.addexpr, False),
     Stamp(C("SFADD"),   "num",     C("STARITH"),  None,  arith.addexpr, False),
-    Stamp(C("SFMUL"), "num2",      C("STARITH"),  None,  arith.mulexpr, False),
+    Stamp(C("SFMUL"),   "num2",    C("STARITH"),  None,  arith.mulexpr, False),
 
     Stamp(C("STARITH"), "-",       C("SFSUB"),     None, arith.arithop, False),
-    Stamp(C("SFSUB"), "ident",     C("STARITH"),   None, arith.subexpr, False),
-    Stamp(C("SFSUB"), "num",       C("STARITH"),   None, arith.subexpr, False),
+    Stamp(C("SFSUB"),   "ident",   C("STARITH"),   None, arith.subexpr, False),
+    Stamp(C("SFSUB"),   "num",     C("STARITH"),   None, arith.subexpr, False),
 
     Stamp(C("STARITH"), "<<",      C("SFSHIFT"),  None,  arith.arithop, False),
     Stamp(C("SFSHIFT"), "ident",   C("STARITH"),  None,  arith.expr, False),
@@ -235,8 +235,8 @@ Darith = (
     Stamp(C("SFRSHIFT"), "ident",  C("STARITH"),  None,  arith.expr, False),
     Stamp(C("SFRSHIFT"), "num",    C("STARITH"),  None,  arith.expr, False),
 
-    #Stamp(C("STARITH"), ";",       C("STPOP"),    None,  arith.arith_stop, False),
-    #Stamp(C("STARITH"), "nl",      C("STPOP"),    None,  arith.arith_stop, False),
+    #Stamp(C("STARITH"), ";",      C("STPOP"),    None,  arith.arith_stop, False),
+    #Stamp(C("STARITH"), "nl",     C("STPOP"),    None,  arith.arith_stop, False),
     )
 
 FLOAT   = "float", "double", "quad",

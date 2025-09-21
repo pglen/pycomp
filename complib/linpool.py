@@ -39,7 +39,7 @@ def add2pool(self2, typename, varname, varval):
                 print("Dumping pool:")
                 for aa in gpool:
                     print(" pool:", aa)
-            error(self2, "Duplicate definition", self2.arrx[xstack.get(0)].pos)
+            error(self2, "Duplicate definition") #, varname)
             sys.exit(1)
 
     tpi = TypI(typename, varname, varval)
@@ -83,6 +83,29 @@ def pctona(ddd):
         retx = "dq"
     elif ddd == "quad":
         retx = "dt"
+    return retx
+
+def pctocast(ddd):
+
+    ''' Transform data type string to assembler equivalent '''
+    #print("pctona:", ddd)
+    retx = "db"
+    if ddd == "arr":
+        retx = "byte"
+    elif ddd == "u8" or ddd == "s8":
+        retx = "byte"
+    elif ddd == "u16" or ddd == "s16":
+        retx = "word"
+    elif ddd == "u32" or ddd == "s32":
+        retx = "dword"
+    elif ddd == "u64" or ddd == "u64":
+        retx = "qword"
+    elif ddd == "float":
+        retx = "float"
+    elif ddd == "double":
+        retx = "double"
+    elif ddd == "quad":
+        retx = "quad"
     return retx
 
 class   Xenum():

@@ -26,27 +26,17 @@ reglist = ( "rax", #arg0
             )
 
 prolstr = '''\
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\
-;                                                                         \n\
-;   Compile with NASM                                                     \n\
-;                                                                         \n\
-;   Automatically generated, will be overwritten.                         \n\
-;                                                                         \n\
-        extern  printf                                                    \n\
-        extern  fflush                                                    \n\
-        extern  exit                                                      \n\
-        global main                                                       \n\
-        bits 64
-
+;------------------------------------------------------------------------
+;   Compile with NASM
+;   Automatically generated, will be overwritten.
+    bits 64
+    extern  printf, fflush, exit
+    global main, exit_code
 %include "codegen/crt.inc"
-
-section .text                                                     \n\
-
+section .text
 main:
-
     push    rbp
     mov     rbp, rsp
-
 '''
 
 prolstr2 = '''\
@@ -67,33 +57,31 @@ epilstr2 = '''\
     mov     rsi, [exit_code]
     and     rsp, 0xfffffffffffffff0
     call    printf
+
+section .data
+startx2:    db      "Start program: argc=%d", 10, 0
+endx2:      db      "End program. ret=%d", 10, 0
+endx:       db      10, 0
+
 '''
 
 epilstr = '''\
     end_code:    ;  End of program\n
-
     ; Flush stdout, in case of missing terminating newline
     mov     rdi, 0
     call    fflush
-
     ; Exit here
     ; return value -> exit code
     mov     rdi, [exit_code]
     call    exit
-
-    ; not reached ... but do the right thing
+    ; not reached ... but do the right thing anyway
     mov     rax, 255      ; exit failed, tell the caller
     mov     rsp, rbp
     pop     rbp
     ret
 
 section .data
-
 exit_code   dq      0
-startx2:   db       "Start program: argc=%d", 10, 0
-endx2:      db      "End program. ret=%d", 10, 0
-endx:       db      10, 0
-
 '''
 
 endstr = '''

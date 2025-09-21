@@ -1,2 +1,1 @@
-// Arithmetic test
 aa=1+2*3

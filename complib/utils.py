@@ -474,11 +474,12 @@ def color(strx, col = "31"):
         return strx
     return "\033[" + str(col) + ";1m" + strx + "\033[0m"
 
-def dumpstack(self2, stackx):
+def dumpstack(self2, stackx, eolx = ""):
 
-    print(stackx.name + ":")
+    print(stackx.name + ":", end = eolx)
     for aa in stackx:
-        print(self2.arrx[aa])
+        print("  " + str(self2.arrx[aa]), end=eolx)
+    if eolx == "": print()
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
