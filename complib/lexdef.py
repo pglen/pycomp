@@ -93,10 +93,10 @@ IDEN3   = "[A-Za-z0-9_]+"
 # the token. This way it is eazy to see the kind of token in the parser.
 
 try:
-    # State     # Token         # Regex             # New State    # OPT Notes
-    # --------  -------         -------             ------------
+    # State     # Token         # Regex         # New State   # Up Func
+    # --------  -------         -------         ------------  ---------
     xtokens =  (
-    (INI_STATE, "eolnl",        r"\\\\\n",          None, None ),
+    (INI_STATE, "eolnl",        r"\\\\\n",          None,       None ),
     (INI_STATE, "bsla",         r"\\\\" ,           None, None ),
 
     (INI_STATE, "ifdef2",       r"%ifdef",          None, None ),
@@ -165,8 +165,8 @@ try:
     (INI_STATE, "num",          r"[-]*[0-9]+",      None, None),
 
     (INI_STATE, "bs",           "\b"    ,           None, None),
-    (INI_STATE, "quote",        r"\""   ,  STR_STATE, lexfunc.func_start_str),
-    (INI_STATE, "squote",       r"\'"   ,  STR2_STATE,lexfunc.func_start_str),
+    (INI_STATE, "quote",        r"\""   ,           STR_STATE, None),  #lexfunc.func_start_str),
+    (INI_STATE, "squote",       r"\'"   ,           STR2_STATE, None), #lexfunc.func_start_str),
     (INI_STATE, "ident",        IDEN2   ,           None, None),
 
     (INI_STATE, "<<",           r"<<"   ,           None, None),  # Shift left <<

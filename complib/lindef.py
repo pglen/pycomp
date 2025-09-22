@@ -253,19 +253,19 @@ Ddecl = (
     Stamp(C("STARITH"), ";",     C("STPOP"),   decl.down, None, False),
     Stamp(C("STARITH"), "nl",    C("STPOP"),   decl.down, None, False),
 
-    Stamp(STBASE,       "arr",   C("DECLA"),   None,   decl.astart, True),
-    Stamp(C("DECLA"),   ":",     C("DECLA2"),  None,   decl.acol, False),
-    Stamp(C("DECLA2"),  "ident", C("STTARI"),  None,   decl.aident, False),
-    Stamp(C("STTARI"),  "=",     C("STTARI2"), None,   None, False),
-    Stamp(C("STTARI2"), "str",   C("STTARI3"), None,   decl.astr,    False),
+    Stamp(STBASE,       "arr",   C("DECLA"),   None,   adecl.astart, True),
+    Stamp(C("DECLA"),   ":",     C("DECLA2"),  None,   adecl.acol, False),
+    Stamp(C("DECLA2"),  "ident", C("STTARI"),  None,   adecl.aident, False),
+    Stamp(C("STTARI"),  "=",     C("STTARI2"), None,   adecl.aeq, False),
+    Stamp(C("STTARI2"), "str",   C("STTARI3"), None,   adecl.astr,    False),
 
-    Stamp(C("STTARI3"), ",",     C("DECLA2"),  None,   decl.acomma, False),
-    Stamp(C("STTARI3"), "+",     C("STTARI2"), None,   decl.aadd,   False),
-    Stamp(C("STTARI3"), "*",     C("STTARI4"), None,   decl.amul,   False),
-    Stamp(C("STTARI4"), "num",   C("STTARI3"), None,   decl.anum,   False),
+    Stamp(C("STTARI3"), ",",     C("DECLA2"),  None,   adecl.acomma, False),
+    Stamp(C("STTARI3"), "+",     C("STTARI2"), None,   adecl.aadd,   False),
+    Stamp(C("STTARI3"), "*",     C("STTARI4"), None,   adecl.amul,   False),
+    Stamp(C("STTARI4"), "num",   C("STTARI3"), None,   adecl.anum,   False),
 
-    Stamp(C("STTARI3"), ";",     C("STPOP"),   decl.adown, None, False),
-    Stamp(C("STTARI3"), "nl",    C("STPOP"),   decl.adown, None, False),
+    Stamp(C("STTARI3"), ";",     C("STPOP"),   adecl.adown, None, False),
+    Stamp(C("STTARI3"), "nl",    C("STPOP"),   adecl.adown, None, False),
 )
 
 # Main stamps definition

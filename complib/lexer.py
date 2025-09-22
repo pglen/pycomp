@@ -14,20 +14,20 @@ class LexI():
 
     def __init__(self, stampx = [], mstr = "", startx = 0, endx = 0):
         self.state = lexdef.INI_STATE
-        self.stamp = stampx
+        self.stamp = stampx     # Originating token
         self.mstr = mstr        # Main payload
-        self.start = startx
+        # Init some future vars (just to show what comes)
+        self.flag = 0           # State information 0=>available
+        self.start = startx     # Positions
         self.end = endx
-        # Init future vars (just to show what comes)
-        self.flag = 0           # State information
         self.linenum = 0
         self.linestart = 0
         self.lineoffs = 0
         self.pos = 0
-        self.val = 0.0          # if number
-        self.ival = 0           # if integer
+        self.val = 0.0          # if number  (pre calculated)
+        self.ival = 0           # if integer (pre calculated)
         self.wantstate = None
-        self.typez  = "Notyp"
+        self.typez  = "NoType"
 
         # Decode and mold
         if self.stamp.xstr == "num":
@@ -64,8 +64,8 @@ class LexI():
                         " ival = " + pp(str(self.ival)) + \
                         " flag = " + pp(str(self.flag)) + \
                         " typez = " + pp(self.typez) + \
+                        " want = "  + lexdef.state2str(self.wantstate) + \
                         " ]"
-        #" want = " + state2str(self.wantstate) + \
         return strx
 
     def dump(self):
@@ -80,6 +80,7 @@ class LexI():
                         " offs = " + ("%d" % (self.lineoffs+1)) + \
                         " lsta = " + ("%d" % (self.linestart)) + \
                         " typez = " + ("%s" % (self.typez)) + \
+                        " want = "  + state2str(self.wantstate) + \
                         " ] "
         return strx
 
@@ -119,6 +120,7 @@ class Lexer():
         self.accum = {}
         self.accum[self.state] = ""
         self.linearr = []
+
     def _lexiter(self, pos, strx):
 
         '''  Call this for every token '''
@@ -207,7 +209,8 @@ class Lexer():
 
             # Change state if needed, except on pop state
             if tt.wantstate and tt.wantstate != lexdef.POP_STATE:
-                #print("Push state:", lexdef.state2str(tt.wantstate))
+                if self.pvg.opt_lexdebug > 3:
+                    print("Push state:", lexdef.state2str(tt.wantstate))
                 self._push_state(tt, tt.wantstate)
 
             # If function is specified, execute

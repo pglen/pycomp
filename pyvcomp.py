@@ -137,8 +137,8 @@ def parsefile(strx):
     if lpg.opt_uresults:
         print("Results:", ) # end = " ")
         for aa in par.arrx:
-            #if aa.stamp.xstr == "sp":
-            #    continue
+            if aa.stamp.xstr == "sp":
+                continue
             #if aa.flag == 0:
             #print(aa.dump(), end = " ")
             if lpg.opt_verbose.cnt > 1:

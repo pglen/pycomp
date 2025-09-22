@@ -1,1 +1,1 @@
-arr:svar="xyz\n";
+arr:svar="xyz\n"

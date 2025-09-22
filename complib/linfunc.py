@@ -32,120 +32,6 @@ extstack   = stack.pStack(name='extstack')        # External definitions
 
 gllevel = 0
 
-def execop(self2, arg1, op, arg2):
-    ret = 0
-    if op ==   "**":  ret = arg1 ** arg2
-    elif op ==   "*":   ret = arg1 * arg2
-    elif op ==   "/":   ret = arg1 // arg2
-    elif op ==   "+":   ret = arg1 + arg2
-    elif op ==   "-":   ret = arg1 - arg2
-    elif op ==   "<<":  ret = arg1 << arg2
-    elif op ==   ">>":  ret = arg1 >> arg2
-    elif op ==   "=":   ret = arg2
-    else:  error(self2, "Invalid operator '%s': " % op )
-
-    if pvg.opt_debug > 5:
-        print(" execop:", arg1, op, arg2, "; ret = ", ret, )
-
-    return ret
-
-def reduce(self2, xstack, filter, pos = 0):
-
-    if pvg.opt_debug > 1:
-        print("reduce():", "filter =", pp(filter), "pos =", pos)
-
-    #if pvg.opt_debug > 4:
-    #    print("\narithstack pre reduce:", end = " ")
-    #    for aa in arithstack:
-    #        print(self2.arrx[aa], end = " ")
-    #    print()
-
-    # Walk the stack
-    loopx = pos ; wasop = False
-    statex = 0 ; numidx = -1 ; opidx = -1 ;  num2idx = -1
-    while True:
-        if loopx >= len(xstack):
-            break
-        idx = xstack.get(loopx)
-        if self2.arrx[idx].flag != 0:
-            loopx += 1
-            continue
-
-        if pvg.opt_debug > 7:
-            print("pos:", loopx, pp(self2.arrx[idx].stamp.xstr),
-                        pp(self2.arrx[idx].mstr), end = " -- ")
-        if pvg.opt_debug > 7:
-            print("arithstack: [", self2.arrx[idx].stamp.xstr,
-                            pp(self2.arrx[idx].mstr), end = "] " )
-
-        if self2.arrx[idx].stamp.xstr == "(":
-            self2.arrx[idx].flag = 1
-            # Recurse into parenthases
-            if pvg.opt_debug > 7:
-                print("\n ** recurse:", "idx:", idx, pp(self2.arrx[idx].mstr))
-            global gllevel
-            gllevel += 1
-            for aa in ops_prec:
-                reduce(self2, xstack, aa, idx)
-            if pvg.opt_debug > 7:
-                print("\n ** after recurse" )
-            gllevel -= 1
-            if pvg.opt_debug > 7:
-                print("\nxstack post recurse:", end = " ")
-                for aa in xstack:
-                    if 1: #self2.arrx[aa].flag == 0:
-                        print(self2.arrx[aa], end = " ")
-                print()
-        if self2.arrx[idx].stamp.xstr == ")":
-            if pvg.opt_debug > 7:
-                print("\nparen2:", idx, pp(self2.arrx[idx].stamp.xstr), loopx)
-            #if gllevel == 0:
-            if filter == "":
-                self2.arrx[idx].flag = 1
-            else:
-                return
-        # Blind assign first number
-        if statex == 0:
-            if self2.arrx[idx].stamp.xstr == "num":
-                numidx = idx
-                if pvg.opt_debug > 7:
-                    print(" arg1: ", pp(self2.arrx[numidx].mstr))
-        elif statex == 1:
-            if self2.arrx[idx].stamp.xstr == "num":
-                #statex = 0
-                num2idx = idx
-                if pvg.opt_debug > 7:
-                    print(" arg1", pp(self2.arrx[numidx].mstr),
-                            " op", pp(self2.arrx[opidx].mstr),
-                            " arg2", pp(self2.arrx[num2idx].mstr))
-                    if pvg.opt_debug > 7:
-                        print("numidx =", numidx, "opidx =", opidx)
-                if numidx >= 0 and opidx >= 0:
-                    bb =  execop(self2, self2.arrx[numidx].ival,
-                            self2.arrx[opidx].mstr,
-                            self2.arrx[idx].ival)
-                    self2.arrx[numidx].ival = bb
-                    self2.arrx[numidx].mstr = str(bb)
-                    self2.arrx[idx].flag = 1
-                    self2.arrx[opidx].flag = 1
-                    wasop = True
-                    opidx = -1
-                pass
-         # If filter match, step state
-        if self2.arrx[idx].mstr == filter:
-            if pvg.opt_debug > 7:
-                print(" op: ", pp(filter), pp(self2.arrx[idx].mstr))
-            opidx = idx
-            statex = 1
-        loopx += 1
-    if pvg.opt_debug > 7:
-        if wasop:
-            print("\nxstack post reduce:", end = " ")
-            for aa in xstack:
-                print(self2.arrx[aa], end = " ")
-            print()
-    return
-
 class   FuncCall():
 
     def start(self, self2, tprog):
@@ -289,7 +175,7 @@ class Arith():
 
         # Execute as operator precedence
         for aa in ops_prec:
-            reduce(self2, arithstack, aa)
+            linpool.reduce(self2, arithstack, aa)
 
         #if self2.statestack.getlen() > 1:
         #    sss =  self2.statestack[self2.statestack.getlen() - 1]
@@ -461,23 +347,22 @@ class Assn():
 
 assn = Assn()
 
-class Decl():
-
-    def start(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl.start()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.empty()
-        arithstack.push(tprog)
-        if pvg.opt_debug > 2:
-            print("arithstack start:", end = " ")
-            for aa in arithstack:
-                print(self2.arrx[aa], end = " ")
-            print()
+class Adecl():
 
     def astart(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.astart()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.empty()
+
+    def aident(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.aident()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def aequ(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.aeq()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
 
     def astr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -499,11 +384,6 @@ class Decl():
             print("decl.aadd()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
-    def col(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl.col()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
-
     def acol(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.acol()", "tprog =", tprog, self2.arrx[tprog])
@@ -511,32 +391,6 @@ class Decl():
     def aeq(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.aeq()", "tprog =", tprog, self2.arrx[tprog])
-
-    def ident(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl.ident()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
-
-    def aident(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl.aident()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
-
-    def val(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl.val()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
-
-    def comma(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("decl.comma()", "tprog =", tprog, self2.arrx[tprog])
-        if pvg.opt_debug > 7:
-            print("arithstack comma:", end = " ")
-            for aa in arithstack:
-                print(self2.arrx[aa], end = " ")
-            print()
-        #if arithstack.getlen() <= 3:
-        #    print("Padding ??? for zero fill", len(arithstack))
 
     def acomma(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -581,6 +435,47 @@ class Decl():
         strx +=  val  + "\n"
 
         codegen.emitdata(strx)
+
+adecl = Adecl()
+
+class Decl():
+
+    def start(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.start()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.empty()
+        arithstack.push(tprog)
+        if pvg.opt_debug > 2:
+            print("arithstack start:", end = " ")
+            for aa in arithstack:
+                print(self2.arrx[aa], end = " ")
+            print()
+
+    def col(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.col()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def ident(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.ident()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def val(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.val()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def comma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("decl.comma()", "tprog =", tprog, self2.arrx[tprog])
+        if pvg.opt_debug > 7:
+            print("arithstack comma:", end = " ")
+            for aa in arithstack:
+                print(self2.arrx[aa], end = " ")
+            print()
+        #if arithstack.getlen() <= 3:
+        #    print("Padding ??? for zero fill", len(arithstack))
 
     def down(self, self2, tprog):
 
