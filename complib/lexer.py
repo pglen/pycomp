@@ -7,6 +7,82 @@ from . import lexdef, stack
 from complib.utils import *
 from complib import lexfunc as lexfunc
 
+class LexI():
+
+    ''' Store one lexed item (used to be a list, but got out of hand)
+    '''
+
+    def __init__(self, stampx = [], mstr = "", startx = 0, endx = 0):
+        self.state = lexdef.INI_STATE
+        self.stamp = stampx
+        self.mstr = mstr        # Main payload
+        self.start = startx
+        self.end = endx
+        # Init future vars (just to show what comes)
+        self.flag = 0           # State information
+        self.linenum = 0
+        self.linestart = 0
+        self.lineoffs = 0
+        self.pos = 0
+        self.val = 0.0          # if number
+        self.ival = 0           # if integer
+        self.wantstate = None
+        self.typez  = "Notyp"
+
+        # Decode and mold
+        if self.stamp.xstr == "num":
+            self.ival = int(self.mstr)
+
+        if self.stamp.xstr == "hex":
+            self.stamp.xstr = "num"
+            self.ival = int(self.mstr[2:], 16)
+
+        if self.stamp.xstr == "oct":
+            self.stamp.xstr = "num"
+            self.ival = int(self.mstr[2:], 8)
+
+        if self.stamp.xstr == "bin":
+            self.stamp.xstr = "num"
+            self.ival = int(self.mstr[2:], 2)
+
+        #print("inited", str(self))
+
+    def copy(self, other):
+        other.state = self.state
+        other.stamp = self.stamp
+        other.mstr = self.mstr
+        other.start = self.start
+        other.end = self.end
+        other.flag = self.flag
+        other.val = self.val
+        other.ival = self.ival
+        other.wantstate = self.wantstate
+
+    def __str__(self):
+        '''   Deliver it in an easy to see format  '''
+        strx = "[ " + pp(self.stamp.xstr) + " -> " + pp(self.mstr) + \
+                        " ival = " + pp(str(self.ival)) + \
+                        " flag = " + pp(str(self.flag)) + \
+                        " typez = " + pp(self.typez) + \
+                        " ]"
+        #" want = " + state2str(self.wantstate) + \
+        return strx
+
+    def dump(self):
+        ''' deliver a more detailed set of fields '''
+        strx = " [ Lex: " + padx("'" + str(self.stamp) + "' => '" + \
+                        cesc(self.mstr) + "'", 20) + \
+                        " flag = " + padx("%d" % (self.flag)) + \
+                        " st/en = " + padx("%d:%d" % (self.start, self.end), 8) +  \
+                        " val = "  + ("%d" % (self.val)) + \
+                        " ival = " + ("%d" % (self.ival)) + \
+                        " line = " + ("%d" % (self.linenum+1)) + \
+                        " offs = " + ("%d" % (self.lineoffs+1)) + \
+                        " lsta = " + ("%d" % (self.linestart)) + \
+                        " typez = " + ("%s" % (self.typez)) + \
+                        " ] "
+        return strx
+
 # ------------------------------------------------------------------------
 # Construct lexer, precompile regex, fill into array
 
@@ -62,7 +138,7 @@ class Lexer():
                 mstr = mmm.string[mmm.start():mmm.end()]
                 #print("ttt", ttt)
                 dd = lexdef.StI(ttt)
-                tt = lexdef.LexI(dd, mstr, mmm.start(), mmm.end())
+                tt = LexI(dd, mstr, mmm.start(), mmm.end())
                 tt.linenum = self.linenum
                 tt.linestart = self.linestart
                 tt.lineoffs  = tt.start - self.linestart

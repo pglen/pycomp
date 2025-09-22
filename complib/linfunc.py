@@ -51,7 +51,7 @@ def execop(self2, arg1, op, arg2):
 
 def reduce(self2, xstack, filter, pos = 0):
 
-    if pvg.opt_debug > 7:
+    if pvg.opt_debug > 1:
         print("reduce():", "filter =", pp(filter), "pos =", pos)
 
     #if pvg.opt_debug > 4:
@@ -587,6 +587,8 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
 
+        arith.arith_stop(self2, tprog)
+
         if pvg.opt_debug > 2:
             dumpstack(self2, arithstack)
 
@@ -603,7 +605,7 @@ class Decl():
 
         for aa in arithstack:
             strx = ""
-            print("as aa", pp(self2.arrx[aa].stamp.xstr), self2.arrx[aa].mstr)
+            #print("as aa", pp(self2.arrx[aa].stamp.xstr), self2.arrx[aa].mstr)
             if statex == 0:
                 #if self2.arrx[aa].stamp.xstr == "decl":
                 if self2.arrx[aa].stamp.xstr in numtypes:
@@ -625,7 +627,7 @@ class Decl():
                 linpool.add2pool(self2, typey, lab, val)
                 statex = 0
                 # output decl opeartion
-                print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
+                #print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
                 # type dependent expand
                 if typey.lower() in int_types:
                     #print("int type")
@@ -657,7 +659,7 @@ class Decl():
                     val = self2.arrx[aa].mstr
                     # output assn opeartion
                     ttt = linpool.pctocast(typey)
-                    print("ttt", ttt)
+                    #print("ttt", ttt)
                     strx += "   mov   " + ttt + " [" + lab + "], " + val + "\n"
                     codegen.emit(strx)
             else:

@@ -135,12 +135,16 @@ def parsefile(strx):
 
     #prarr(res, "Result of '%s': " % strx, lpg.opt_verbose.cnt)
     if lpg.opt_uresults:
-        print("results:", end = " ")
-        for aa in res:
-            if aa.stamp.xstr == "sp":
-                continue
-            if aa.flag == 0:
-                print(aa, end = " ")
+        print("Results:", ) # end = " ")
+        for aa in par.arrx:
+            #if aa.stamp.xstr == "sp":
+            #    continue
+            #if aa.flag == 0:
+            #print(aa.dump(), end = " ")
+            if lpg.opt_verbose.cnt > 1:
+                print(aa.dump()) #, end = " ")
+            else:
+                print(aa) #, end = " ")
         print()
     #codegen.emit("hello")
 

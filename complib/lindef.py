@@ -72,9 +72,9 @@ class Stamp:
         for aa in self.state:
             states += ST.get(aa) + " "
         if self.upcall:
-            fname = str(self.upcall.__name__)
+            fnameU = str(self.upcall.__name__)
         else:
-            fname = "NoUPFunc"
+            fnameU = "NoUPFunc"
         if self.dncall:
             fnameD = str(self.dncall.__name__)
         else:
@@ -82,7 +82,7 @@ class Stamp:
 
         strx = "cState: " + states + " "  + pp(str(self.tokens)) \
                 + " nState: " + ST.get(self.nstate) + " " + fnameD \
-                + " " + fname + " " + str(self.push)
+                + " " + fnameU + " " + str(self.push)
         return strx
 
 # List of identities for declaration
