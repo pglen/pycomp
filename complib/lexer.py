@@ -64,8 +64,8 @@ class LexI():
                         " ival = " + pp(str(self.ival)) + \
                         " flag = " + pp(str(self.flag)) + \
                         " typez = " + pp(self.typez) + \
-                        " want = "  + lexdef.state2str(self.wantstate) + \
                         " ]"
+                        #" want = "  + lexdef.state2str(self.wantstate) + \
         return strx
 
     def dump(self):

@@ -401,7 +401,7 @@ class Adecl():
 
         if pvg.opt_debug > 1:
             print("decl.adown()", "tprog =", tprog, self2.arrx[tprog])
-        if pvg.opt_debug > 7:
+        if pvg.opt_debug > 5:
             dumpstack(self2, arithstack)
         strx = "" ; statex = 0; lab = "" ; val = ""
         for aa in arithstack:
@@ -412,7 +412,8 @@ class Adecl():
             elif statex == 1:
                 if self2.arrx[aa].stamp.xstr  == "str":
                     statex = 2
-                    val = asmesc(self2.arrx[aa].mstr)
+                    #val = asmesc(self2.arrx[aa].mstr)
+                    val = self2.arrx[aa].mstr
             elif statex == 2:
                 if self2.arrx[aa].stamp.xstr  == "+":
                     statex = 3
@@ -421,18 +422,21 @@ class Adecl():
                 else:
                     linpool.add2pool(self2, "str", lab, val)
                     strx += lab + ": db "
-                    strx += val  + "\n"
+                    strx += asmesc(val)  + "\n"
                     statex = 0
             elif  statex == 3:
                 val = val[0] + val[1:-1] + self2.arrx[aa].mstr[1:-1] + val[-1]
                 statex = 0
             elif  statex == 4:
+                print("val:", val)
                 val = val[0] + val[1:-1] * self2.arrx[aa].ival + val[-1]
                 statex = 0
+            else:
+                print("invalid state")
 
         linpool.add2pool(self2, "str", lab, val)
         strx +=  lab + ": db "
-        strx +=  val  + "\n"
+        strx +=  asmesc(val)  + "\n"
 
         codegen.emitdata(strx)
 

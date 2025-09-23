@@ -1,1 +1,1 @@
-arr:svar="hello "+"world"
+arr:svar="hello "+"world\n"

@@ -208,7 +208,7 @@ def asmesc(strx):
         print("asmesc:", strx, "->", retx)
     if pvg and pvg.opt_debug > 6:
         for aa in retx:
-            print(ord(retx))
+            print(retx)
 
     return retx
 

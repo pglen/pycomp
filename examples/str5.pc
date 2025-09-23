@@ -1,1 +1,1 @@
-arr: strvar = "hello world: 1234 \x41\x42 \x3A\x3b again "
+arr: strvar = "hello world: 1234 \x41\x42 \x3A\x3b again \n\r"
