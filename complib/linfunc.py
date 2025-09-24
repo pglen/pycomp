@@ -3,16 +3,21 @@
 ''' Functions for the lin parser, to call on stamp match '''
 
 import complib.stack as stack
-import complib.lindef as lindef
 import complib.linpool as linpool
 import complib.lexdef as lexdef
 import codegen.codegen as codegen
 
+#import complib.lindef as lindef
+
 # End it with empty "" operator for cleanup
-#ops_prec = "**", "*", "/", "+", "-", ">>", "<<" #, "="
+#ops_prec = "**", "*", "/", "%", "+", "-", ">>", "<<", "=", ""
 ops_prec = "*","+", ""
+
 int_types = "u64", "s64", "u32", "s32", "u16", "s16", "u8", "s8",
 float_types = "float", "double", "quad"
+
+numtypes = "float", "double", "quad", "decl"
+numvals = "num", "num2"
 
 try:
     from complib.utils import *
@@ -29,8 +34,6 @@ arithstack = stack.pStack(name='arithstack')      # Arithmetic
 argstack   = stack.pStack(name='argstack')        # Function arguments
 callstack  = stack.pStack(name='callstack')       # Function calls
 extstack   = stack.pStack(name='extstack')        # External definitions
-
-gllevel = 0
 
 class   FuncCall():
 
@@ -160,31 +163,19 @@ funcs = Funcs()
 class Arith():
 
     def arith_stop(self, self2, tprog):
-        if pvg.opt_debug > 2:
+
+        if pvg.opt_debug > 1:
             print("func_arith_stop()", "tprog =", tprog, self2.arrx[tprog])
 
-        #if self2.pvg.opt_debug > 4:
-        #    for aa in self2.statestack:
-        #        print("statestack:", lindef.ST.get(aa))
-
-        if pvg.opt_debug > 2:
-            print("arithstack:", end = " ")
-            for aa in arithstack:
-                print(self2.arrx[aa], end = " ")
-            print()
+        if pvg.opt_debug > 3:
+            dumpstack(self2, arithstack, eolx="\n", label="arith stop:")
 
         # Execute as operator precedence
         for aa in ops_prec:
             linpool.reduce(self2, arithstack, aa)
 
-        #if self2.statestack.getlen() > 1:
-        #    sss =  self2.statestack[self2.statestack.getlen() - 1]
-        #    #print("Arith parent context:", lindef.ST.get(sss))
-
-        #strx =  " ; " + self2.arrx[arithstack.get(0)].mstr + " : "
-        #strx += self2.arrx[arithstack.get(1)].mstr + " = "
-        #strx += self2.arrx[arithstack.get(2)].mstr + " \n"
-        #codegen.emit(strx)
+        if pvg.opt_debug > 3:
+            dumpstack(self2, arithstack, label="arith stop post:", active=True)
 
     def arithstart(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -198,6 +189,8 @@ class Arith():
         arithstack.push(tprog)
 
     def addexpr(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("addexpr()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
             print("addexpr: ",
@@ -238,6 +231,8 @@ class Arith():
         arithstack.push(tprog)
 
     def assnexpr(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("assnexpr()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
             print("assnexpr: ",
@@ -402,7 +397,7 @@ class Adecl():
         if pvg.opt_debug > 1:
             print("decl.adown()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 5:
-            dumpstack(self2, arithstack)
+            dumpstack(self2, arithstack, label="adown:")
         strx = "" ; statex = 0; lab = "" ; val = ""
         for aa in arithstack:
             if statex == 0:
@@ -432,7 +427,7 @@ class Adecl():
                 val = val[0] + val[1:-1] * self2.arrx[aa].ival + val[-1]
                 statex = 0
             else:
-                print("invalid state")
+                print("invalid state", __line__)
 
         linpool.add2pool(self2, "str", lab, val)
         strx +=  lab + ": db "
@@ -486,23 +481,23 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
 
+        # Call into upper parse entity
         arith.arith_stop(self2, tprog)
 
-        if pvg.opt_debug > 2:
-            dumpstack(self2, arithstack)
+        if pvg.opt_debug > 3:
+            dumpstack(self2, arithstack, label="decl down:")
 
         # Nothing to see here
         if not arithstack.getlen():
             print("Empty arithstack")
             return
-
-        numtypes = "float", "double", "quad", "decl"
-        numvals = "num", "num2"
-
-        statex = 0;
-        typey = "" ; typex = "" ; lab = ""; val = "";
-
+        statex = 0; typey = "" ; typex = "" ; lab = ""; val = "";
         for aa in arithstack:
+            if self2.arrx[aa].flag:
+                continue
+            #if self2.arrx[aa].stamp.xstr == "sp":
+            #    self2.arrx[aa].flag = 1
+            #    continue
             strx = ""
             #print("as aa", pp(self2.arrx[aa].stamp.xstr), self2.arrx[aa].mstr)
             if statex == 0:
@@ -527,7 +522,6 @@ class Decl():
                 statex = 0
                 # output decl opeartion
                 #print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
-                # type dependent expand
                 if typey.lower() in int_types:
                     #print("int type")
                     if arithstack.getlen() <= 4:
@@ -626,10 +620,12 @@ class Misc():
     def space(self, self2, tprog):
         if pvg.opt_debug > 5:
             print("misc.space()", "tprog =", tprog)
+        self2.arrx[tprog].flag = 1
 
     def tab(self, self2, tprog):
         if pvg.opt_debug > 5:
             print("misc.tab()", "tprog =", tprog)
+        self2.arrx[tprog].flag = 1
 
     def nl(self, self2, tprog):
         if pvg.opt_debug > 5:
@@ -691,11 +687,8 @@ class Misc():
 
     def parent(self, self2, tprog):
 
-        if pvg.opt_debug > 3:
+        if pvg.opt_debug > 1:
             print("misc.parent()", tprog, self2.arrx[tprog])
-
-        if pvg.opt_debug > 5:
-            prarr(self2.arrx, "func pre par feed:", True)
 
         arithstack.push(tprog)
 
@@ -716,17 +709,22 @@ class Fdecl():
         # Skip till number
         while 1:
             #if uprog >= iprog: return
-            if self2.arrx[tprog + uprog].flag: uprog += 1 ; continue
+            if self2.arrx[tprog + uprog].flag:
+                uprog += 1
+                continue
             if "num" == self2.arrx[tprog + uprog].stamp.xstr:
                 break
             uprog += 1
+
         #print("num[", uprog, self2.arrx[tprog + uprog][2])
         startx = uprog
         ttt =  self2.arrx[tprog + uprog]
         # Skip till operator
         while 1:
             #if uprog >= iprog: return
-            if self2.arrx[tprog + uprog].flag: uprog += 1 ; continue
+            if self2.arrx[tprog + uprog].flag:
+                uprog += 1
+                continue
             if opstr == self2.arrx[tprog + uprog].stamp.xstr:
                 break
             uprog += 1
@@ -762,21 +760,21 @@ class Fdecl():
         #    #self2.arrx[ss].flag = 1
 
     def func_mul(self, self2, tprog):
-        if pvg.opt_debug > 5:
-            print("mul() tprog =", tprog, "iprog=")
+        if pvg.opt_debug > 1:
+            print("mul() tprog =", tprog)
         if pvg.opt_debug > 3:
             prarr(self2.arrx[tprog:tprog], "mul pre: ")
-        _func_arith(self2, "*", tprog)
-        if pvg.opt_debug > 5:
-            prarr(self2.arrx[tprog:tprog], "mul post: ")
+        #_func_arith(self2, "*", tprog)
+        #if pvg.opt_debug > 5:
+        #    prarr(self2.arrx[tprog:tprog], "mul post: ")
 
     def func_add(self, self2, tprog):
-        if pvg.opt_debug > 6:
-            print("add() tprog =", tprog, "iprog=")
+        if pvg.opt_debug > 1:
+            print("add() tprog =", tprog)
         if pvg.opt_debug > 6:
             prarr(self2.arrx[tprog:tprog], "add pre: ")
-        _func_arith(self2, "+", tprog)
-        if pvg.opt_debug > 6:
-            prarr(self2.arrx[tprog:tprog], "add post: ")
+        #_func_arith(self2, "+", tprog)
+        #if pvg.opt_debug > 6:
+        #    prarr(self2.arrx[tprog:tprog], "add post: ")
 
 # EOF

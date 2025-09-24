@@ -3,6 +3,7 @@
 ''' syntab functions for the lin parser '''
 
 import complib.stack as stack
+import complib.linfunc  as linfunc
 
 try:
     from complib.utils import *
@@ -108,39 +109,6 @@ def pctocast(ddd):
         retx = "quad"
     return retx
 
-class   Xenum():
-
-    ''' Simple autofill enum to use in parser '''
-
-    def __init__(self, *val):
-        self.arr = [] ; self.narr = {}
-        self.add(*val)
-
-    def add(self, *val):
-        for aa in val:
-            self.narr[aa] = len(self.arr)
-            self.arr.append(aa)
-
-    def dump(self):
-        strx = ""
-        for cnt, aa in enumerate(self.arr):
-            #print(cnt, aa)
-            strx += str(cnt) + " = " + str(aa) + "\n"
-        return strx
-
-    def get(self, cnt):
-        return self.arr[cnt]
-
-    def val(self, name):
-        try:
-            ret = self.narr[name]
-        except:
-            if 0: #pvg.opt_verbose:
-                print("Warn: adding:", name)
-            self.add(name)
-            ret = self.narr[name]
-        return ret
-
 class TypI:
 
     ''' Global type structure '''
@@ -156,23 +124,6 @@ class TypI:
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
-
-def test_xenum():
-
-    eee = Xenum("no", "yes",)
-    eee.add( "maybe")
-
-    #print(eee.dump(), end = "")
-    #print(eee.val("no"))
-    #print(eee.val("yes"))
-
-    assert eee.get(0) == "no"
-    assert eee.get(1) == "yes"
-    assert eee.val("no")  == 0
-    assert eee.val("yes") == 1
-
-    # Autogen
-    assert eee.val("none") == 3
 
 def test_pool():
 
@@ -208,66 +159,56 @@ def execop(self2, arg1, op, arg2):
     elif op ==   "=":   ret = arg2
     else:  error(self2, "Invalid operator '%s': " % op )
 
-    if pvg.opt_debug > 5:
+    if pvg.opt_debug > 2:
         print(" execop:", arg1, op, arg2, "; ret = ", ret, )
 
     return ret
 
 def reduce(self2, xstack, filter, pos = 0):
 
-    if pvg.opt_debug > 5:
+    if pvg.opt_debug > 1:
         print("reduce():", "filter =", pp(filter), "pos =", pos)
-
-    #if pvg.opt_debug > 4:
-    #    print("\narithstack pre reduce:", end = " ")
-    #    for aa in arithstack:
-    #        print(self2.arrx[aa], end = " ")
-    #    print()
+    if pvg.opt_debug > 7:
+        dumpstack(self2, xstack, label="pre reduce:")
 
     # Walk the stack
     loopx = pos ; wasop = False
     statex = 0 ; numidx = -1 ; opidx = -1 ;  num2idx = -1
+    #for idx in xstack[pos:]:
     while True:
-        if loopx >= len(xstack):
+        if loopx >= xstack.getlen():
             break
-        idx = xstack.get(loopx)
+        idx = xstack[loopx]
+        print("item:", pp(self2.arrx[idx].stamp.xstr), "mstr:", self2.arrx[idx].mstr)
         if self2.arrx[idx].flag != 0:
             loopx += 1
             continue
-
         if pvg.opt_debug > 7:
             print("pos:", loopx, pp(self2.arrx[idx].stamp.xstr),
                         pp(self2.arrx[idx].mstr), end = " -- ")
         if pvg.opt_debug > 7:
             print("arithstack: [", self2.arrx[idx].stamp.xstr,
                             pp(self2.arrx[idx].mstr), end = "] " )
-
         if self2.arrx[idx].stamp.xstr == "(":
-            self2.arrx[idx].flag = 1
+            if filter == "":
+                self2.arrx[idx].flag = 1
             # Recurse into parenthases
-            if pvg.opt_debug > 7:
-                print("\n ** recurse:", "idx:", idx, pp(self2.arrx[idx].mstr))
-            global gllevel
-            gllevel += 1
-            for aa in ops_prec:
-                reduce(self2, xstack, aa, idx)
-            if pvg.opt_debug > 7:
-                print("\n ** after recurse" )
-            gllevel -= 1
+            for aa in linfunc.ops_prec:
+                prog = reduce(self2, xstack, aa, loopx + 1)
+            #loopx = prog + 1
+            if pvg.opt_debug > 2:
+                print(" ** after recurse", prog )
             if pvg.opt_debug > 7:
                 print("\nxstack post recurse:", end = " ")
-                for aa in xstack:
-                    if 1: #self2.arrx[aa].flag == 0:
-                        print(self2.arrx[aa], end = " ")
-                print()
+                dumpstack(xstack)
+            #continue
         if self2.arrx[idx].stamp.xstr == ")":
             if pvg.opt_debug > 7:
                 print("\nparen2:", idx, pp(self2.arrx[idx].stamp.xstr), loopx)
-            #if gllevel == 0:
             if filter == "":
                 self2.arrx[idx].flag = 1
             else:
-                return
+                return loopx
         # Blind assign first number
         if statex == 0:
             if self2.arrx[idx].stamp.xstr == "num":
@@ -308,6 +249,6 @@ def reduce(self2, xstack, filter, pos = 0):
             for aa in xstack:
                 print(self2.arrx[aa], end = " ")
             print()
-    return
+    return loopx
 
 # EOF

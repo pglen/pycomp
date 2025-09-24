@@ -8,15 +8,19 @@
 #
 
 [
-    #[ "Echo Command", "", "", True],                 # NOOP
-    #[ "Test ls", "ls", "Makefile", True],            # Do we have a Make file
-    #[ "DF command", "df", "blocks", "regex" ],       # Search regex
-    #[ "DF mregex", "df", ".*blo",  "mregex" ],       # Match regex
-    #[ "Exact ls", "/bin/ls -d .", b".\n", False ],   # Exact match
-    [ "Paren", "./pyvcomp.py -d 1 examples/paren.pc -c",  "ival = '20'", "regex"],
-    [ "Paren2", "./pyvcomp.py -d 1 examples/paren2.pc -c",  "ival = '17'", "regex"],
-    [ "Decl", "./pyvcomp.py -d 1 examples/decl.pc -c",  "ival = '4'", "regex"],
-    #[ "Expr", "./pyvcomp.py -d 1 examples/expr.pc -c",  "ival = '17'", "regex"],
+    #[ "Echo Command", "", "", True],
+    [ "Paren2", "./pyvcomp.py -d 1 examples/paren2.pc -e",  "aa : dd 17", "regex"],
+    [ "Paren3", "./pyvcomp.py -d 1 examples/paren3.pc -e",  "aa : dw 14", "regex"],
+    [ "Decl", "./pyvcomp.py  -d 1 examples/decl.pc -e",  "aaa : dd 11", "regex"],
+    [ "Expr", "./pyvcomp.py  -d 1 examples/expr.pc -e",  "aa : dd 1", "regex"],
+    [ "Expr4", "./pyvcomp.py -d 1 examples/expr4.pc -e",  "aa : dd 12", "regex"],
+
+    [ "str",  "./pyvcomp.py -e examples/str.pc",  "svar: db \"xyz\", 10, 0", True,],
+    [ "str2", "./pyvcomp.py -e examples/str2.pc", 'svar: db "hello world", 10, 0', True],
+    [ "str3", "./pyvcomp.py -e examples/str3.pc", "strvar: db 'hello world ', 13", True],
+    [ "str4", "./pyvcomp.py -e examples/str4.pc", 'v2: db "hello world"', True],
+    [ "str5", "./pyvcomp.py -e examples/str5.pc", "hello world: 1234 AB :; again ", True],
+    [ "str9", "./pyvcomp.py -e examples/str9.pc", 'strvar: db "AB", 0', True],
 ]
 
 # EOF

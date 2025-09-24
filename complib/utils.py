@@ -5,6 +5,7 @@ import threading
 import curses
 
 pvg = None
+curses_flag = False
 
 def upvg(xpvg):
     global pvg
@@ -12,7 +13,6 @@ def upvg(xpvg):
 
 def start_curses(stdscr):
     curses.initscr()
-curses.wrapper(start_curses)
 
 _gl_cnt = 0
 sema = threading.Semaphore()
@@ -470,14 +470,27 @@ def green(strx):
 
 def color(strx, col = "31"):
 
+    if not os.isatty(1):
+        return strx
+
+    if not pvg.opt_nocolor:
+        global curses_flag
+        if not curses_flag:
+            curses_flag = True
+            curses.wrapper(start_curses)
+
+    if pvg.opt_nocolor:
+        return strx
     if not curses.has_colors():
         return strx
     return "\033[" + str(col) + ";1m" + strx + "\033[0m"
 
-def dumpstack(self2, stackx, eolx = ""):
+def dumpstack(self2, stackx, eolx = "", label = "", active=False):
 
-    print(stackx.name + ":", end = eolx)
+    print(stackx.name + ":", label, end = eolx)
     for aa in stackx:
+        if active and self2.arrx[aa].flag != 0:
+            continue
         print("  " + str(self2.arrx[aa]), end=eolx)
     if eolx == "": print()
 

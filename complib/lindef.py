@@ -2,30 +2,91 @@
 
 ''' Definitions for the linear parser
 
-# We initialize parser variables in the context of the parser module.
-#
-# The parser will look up if current state is in the list of parser states.
-#   If there is a match, the tokens are compared. If there is a match, the
-#   new parser state is set, and the specified parser function is executed.
-#   This parser has limited need for backtracking, as the grammer concept
-#   is sentence based. The termination of the sentence is either a new
-#   line or a semi colon.
-# Examples:
-#    u32 : varname = varval ;
-#    func callme("hello World")
-# Space / Tab is skipped / ignored, newline and ';' is interpretd as a
-# sequence terminator,  See grammer spec for more details.
+    We initialize parser variables in the context of the parser module.
+
+    The parser will look up if current state in the list of parser states.
+    (called stamps) If there is a match, the tokens are compared.
+    If the tokens match, the new parser state is set to (new)state, and the
+    specified parser (UP) function is executed.
+    When the parser is popping from the state stack, the specified (DOWN)
+    function is executed.
+
+    This parser has limited need for backtracking, as the grammar concept
+    is sentence based. The termination of the sentence is either a new
+    line or a semi colon.
+
+    Examples:
+        u32 : varname = 0 ;
+        varname = 2 *(3+2)
+        printf("hello")
+        func callme("hello World") { }
+
+    Space / Tab is skipped / ignored, new line and ';' is interpreted as a
+    sequence terminator,  See grammar spec for more details.
 
 '''
 
 from complib.utils import *
 from complib.linfunc  import *
+
 import complib.lexdef  as lexdef
+import complib.linfunc  as linfunc
 
 def defpvg(xpvg):
     global pvg
     pvg = xpvg
     #print("got pvg", pvg)
+
+class   Xenum():
+
+    ''' Simple autofill enum to use in parser '''
+
+    def __init__(self, *val):
+        self.arr = [] ; self.narr = {}
+        self.add(*val)
+
+    def add(self, *val):
+        for aa in val:
+            self.narr[aa] = len(self.arr)
+            self.arr.append(aa)
+
+    def dump(self):
+        strx = ""
+        for cnt, aa in enumerate(self.arr):
+            #print(cnt, aa)
+            strx += str(cnt) + " = " + str(aa) + "\n"
+        return strx
+
+    def get(self, cnt):
+        return self.arr[cnt]
+
+    def val(self, name):
+        try:
+            ret = self.narr[name]
+        except:
+            if 0: #pvg.opt_verbose:
+                print("Warn: adding:", name)
+            self.add(name)
+            ret = self.narr[name]
+        return ret
+
+def test_xenum():
+
+    eee = Xenum("no", "yes",)
+    eee.add( "maybe")
+
+    #print(eee.dump(), end = "")
+    #print(eee.val("no"))
+    #print(eee.val("yes"))
+
+    assert eee.get(0) == "no"
+    assert eee.get(1) == "yes"
+    assert eee.val("no")  == 0
+    assert eee.val("yes") == 1
+
+    # Autogen
+    assert eee.val("none") == 3
+
 
 class Stamp:
 
@@ -89,7 +150,7 @@ class Stamp:
 IDEN = ("ident", "num", "num2", "str", "arr", "float", "dbl",  "dbl2", )
 
 # Changed to auto add new state (note: no dup checking)
-ST = linpool.Xenum()
+ST = Xenum()
 def C(vvv):
     return ST.val(vvv)
 
@@ -183,13 +244,21 @@ Dtest = (
     #Stamp(C("STARITH"),  "nl",     C("STPOP"),    None,   func_assn_stop, False),
 )
 
+# Where parenthases are valid
+PARENSTATE = C("STARITH"), C("SFASSN"), C("SFADD"),  C("SFSUB"), C("SFMUL")
+
+#, C("STATEANY")
+
 Darith = (
     # Arithmetics (+ - * / sqr assn)
-    Stamp(C("STARITH"), "=",       C("SFASSN"),   None,  arith.arithop, False),
+    Stamp(C("STARITH"), "=",       C("SFASSN"),    None,  arith.arithop, False),
     Stamp(C("SFASSN"),  "ident",    C("STARITH"),  None,  arith.assnexpr, False),
     Stamp(C("SFASSN"),  "num",      C("STARITH"),  None,  arith.assnexpr, False),
     Stamp(C("SFASSN"),  "num2",     C("STARITH"),  None,  arith.assnexpr, False),
     Stamp(C("SFASSN"),  "str",      C("STARITH"),  None,  arith.assnexpr, False),
+
+    Stamp(PARENSTATE,   "(",   C("STIGN"),    None,   misc.parent, False),
+    Stamp(PARENSTATE,   ")",   C("STIGN"),    None,   misc.parent, False),
 
     Stamp(C("STARITH"), "=>",      C("SFPUT"),    None,  arith.arithop, False),
     Stamp(C("SFPUT"),   "ident",   C("STARITH"),  None,  arith.mulexpr, False),
@@ -199,13 +268,10 @@ Darith = (
     Stamp(C("SFSQR"),   "ident",   C("STARITH"),  None,  arith.expexpr, False),
     Stamp(C("SFSQR"),   "num",     C("STARITH"),  None,  arith.expexpr, False),
 
-    #Stamp(C("STATEANY"),   "(",   C("STIGN"),    None,  misc.func_parent, False),
-    #Stamp(C("STATEANY"),   ")",   C("STIGN"),    None,  misc.func_parent, False),
-
     #Stamp(C("SFPAR"), "ident",    C("STARITH"),  None,  None, False),
     #Stamp(C("SFPAR"), "num",      C("STARITH"),  None,  None, False),
 
-    #Stamp(C("STARITH"), ")",      C("SFPAR2"),   None,  misc.func_parent, False),
+    #Stamp(C("STARITH"), ")",      C("SFPAR2"),   None,  misc.parent, False),
     #Stamp(C("SFPAR2"), "ident",   C("STARITH"),  None,  arith.mulexpr, False),
     #Stamp(C("SFPAR2"), "num",     C("STARITH"),  None,  arith.mulexpr, False),
 
@@ -215,6 +281,10 @@ Darith = (
     Stamp(C("SFMUL"),   "num2",    C("STARITH"),  None,  arith.mulexpr, False),
 
     Stamp(C("STARITH"), "/",       C("SFDIV"),    None,  arith.arithop, False),
+    Stamp(C("SFDIV"),   "ident",   C("STARITH"),  None,  arith.divexpr, False),
+    Stamp(C("SFDIV"),   "num",     C("STARITH"),  None,  arith.divexpr, False),
+
+    Stamp(C("STARITH"), "%",       C("SFDIV"),    None,  arith.arithop, False),
     Stamp(C("SFDIV"),   "ident",   C("STARITH"),  None,  arith.divexpr, False),
     Stamp(C("SFDIV"),   "num",     C("STARITH"),  None,  arith.divexpr, False),
 

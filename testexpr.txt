@@ -1,0 +1,20 @@
+# String quadruplet per test.
+#
+# Format:
+#
+#   Context_string  Send_string     Expect_string   Find/Compare
+#   --------------  -----------     -------------   ------------
+#    for the user   what to test    what to expect  True if Find
+#
+
+[
+    [ "Expr", "./pyvcomp.py  -d 1 examples/expr.pc  -e",  "aa : dd 7", "regex"],
+    [ "Expr1", "./pyvcomp.py -d 1 examples/expr1.pc -e",  "aa : dw 11", "regex"],
+    [ "Expr2", "./pyvcomp.py -d 1 examples/expr2.pc -e",  "aa : dd 9", "regex"],
+    [ "Expr3", "./pyvcomp.py -d 1 examples/expr3.pc -e",  "ccc : dd 1", "regex"],
+    #[ "Expr4", "./pyvcomp.py -d 1 examples/expr4.pc -e",  "aa : dd 60", "regex"],
+    #[ "Expr5", "./pyvcomp.py -d 1 examples/expr5.pc -e",  "var : dd 10", "regex"],
+]
+
+# EOF
+

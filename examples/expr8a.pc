@@ -1,0 +1,2 @@
+u32:ddd=0 ; u32:eee=0
+ccc=ddd%eee

@@ -219,7 +219,7 @@ try:
     (INI_STATE, "dot",          r"\."   ,           None, None),
 
     (INI_STATE, "caret",        r"\^"   ,           None, None),
-    (INI_STATE, "cent",         r"%"    ,           None, None),
+    (INI_STATE, "%",            r"%"    ,           None, None),
 
     # We parse white spaces, let the parser deal with it
     (INI_STATE, "sp",           r" "    ,           None, None),

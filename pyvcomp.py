@@ -48,6 +48,8 @@ opts =  (\
     ("state_show",  False,      True,   "Show parser states."),
     ("timing_show", False,      True,   "Show timings for program execution."),
     ("frame_show",  False,      True,   "Show CRT frame strings. (for testing)"),
+    ("ignore",      False,      True,   "Ignore error, continue compilation"),
+    ("nocolor",     False,      True,   "Output no color info to terminal"),
     )
 
 def parsefile(strx):
@@ -107,12 +109,16 @@ def parsefile(strx):
 
     if lpg.opt_xlexer_show:  # To show what the lexer did
         print("Lexer res:", end = " ")
-        for aa in res:
+        if lpg.opt_verbose.cnt > 0:
+            print()
 
-            if lpg.opt_verbose.cnt > 1:
+        for aa in res:
+            if lpg.opt_verbose.cnt > 2:
                 print(aa.dump())
-            elif lpg.opt_verbose.cnt > 0:
+            elif lpg.opt_verbose.cnt > 1:
                 print(aa, end = " ")
+            elif lpg.opt_verbose.cnt > 0:
+                print(aa)
             else:
                 # Do not show comments
                 if aa.stamp.xstr == "comm2": continue
@@ -137,14 +143,16 @@ def parsefile(strx):
     if lpg.opt_uresults:
         print("Results:", ) # end = " ")
         for aa in par.arrx:
-            if aa.stamp.xstr == "sp":
-                continue
+            #if aa.stamp.xstr == "sp":
+            #    continue
             #if aa.flag == 0:
             #print(aa.dump(), end = " ")
             if lpg.opt_verbose.cnt > 1:
                 print(aa.dump()) #, end = " ")
-            else:
+            elif lpg.opt_verbose.cnt > 0:
                 print(aa) #, end = " ")
+            else:
+                print(aa, end = " ")
         print()
     #codegen.emit("hello")
 
@@ -168,7 +176,8 @@ def parsefile(strx):
         ret = codegen.assemble(outfile , lpg)
         if ret:
             print(red("Error"), "in the assembly phase of:", pp(strx) )
-            sys.exit(1)
+            if not lpg.opt_ignore:
+                sys.exit(1)
 
         outname = os.path.splitext(lpg.opt_outfile)[0]
         exefile = lpg.opt_Outdir + os.sep + outname
@@ -178,8 +187,10 @@ def parsefile(strx):
             print("Linking:  ", outfile)
         ret = codegen.link(outfile, exefile, lpg)
         if ret:
-            print("\033[31;1mError\033[0m in the link phase of:", pp(strx) )
-            sys.exit(2)
+            #print("\033[31;1mError\033[0m in the link phase of:", pp(strx) )
+            print(red("Error"), "in the link phase of:", pp(strx))
+            if not lpg.opt_ignore:
+                sys.exit(2)
 
         if lpg.opt_Execute != "x":
             if lpg.opt_verbose.cnt > 0:
