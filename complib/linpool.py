@@ -179,7 +179,8 @@ def reduce(self2, xstack, filter, pos = 0):
         if loopx >= xstack.getlen():
             break
         idx = xstack[loopx]
-        print("item:", pp(self2.arrx[idx].stamp.xstr), "mstr:", self2.arrx[idx].mstr)
+        if pvg.opt_debug > 7:
+            print("item:", pp(self2.arrx[idx].stamp.xstr), "mstr:", self2.arrx[idx].mstr)
         if self2.arrx[idx].flag != 0:
             loopx += 1
             continue
@@ -201,7 +202,8 @@ def reduce(self2, xstack, filter, pos = 0):
             if pvg.opt_debug > 7:
                 print("\nxstack post recurse:", end = " ")
                 dumpstack(xstack)
-            #continue
+            loopx += 1 #prog
+            continue
         if self2.arrx[idx].stamp.xstr == ")":
             if pvg.opt_debug > 7:
                 print("\nparen2:", idx, pp(self2.arrx[idx].stamp.xstr), loopx)
