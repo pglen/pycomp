@@ -1,4 +1,4 @@
 u16 : num1 = 1234
 arr : strx =  "Hello World: %d\n"
-printf(strx, num1)
+printf((strx, num1))
 # EOF

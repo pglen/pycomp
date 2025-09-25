@@ -1,1 +1,1 @@
-ret=printf()
+printf(("Hello\n"))

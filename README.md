@@ -1,10 +1,25 @@
-# pycomp
+# pyvcomp
 
-## Simple py compiler to output assembler for OS construction
+## Parallel compiler to output assembler for OS construction
 
-Under construction; check back later
+Under construction; check back later (Thu 25.Sep.2025)
 
-pycomp.py: Version 0.1 - Utility for compiling a pcomp file.
+   This compiler fills the gap between assembler / c / python. High
+level conveniences with the possibility to add low level code.
+
+ Features:
+
+    Only 3 major keywords: "func { }" "loop { }" "if {{ }}".
+    Added enter/leave on function level and loop level for cleaner code.
+
+  This parser has limited need for backtracking, as the grammar's concept
+is sentence based. The termination of the sentence is either a lexical
+completion, a new line or a semi colon.
+
+Example code:
+
+    arr : strx = "Hello World\n"
+    printf(strx)
 
 ```
 PYVCOMP parallel compiler.
@@ -39,17 +54,31 @@ Def: stands for default value. Options after file names are also interpreted.
 |examples   |        |Directory for syntax tests|
 |complib/   |        |The compiler directory|
 |codegen/   |        |The code generation directory|
-|  -  |lexdef.py     |Lexical definitions| This is the token definition file |
-|  -  |lexer.py      |Lexer code|
-|  -  |lindef.py     |Parser definitions| This is the actual grammer|
-|  -  |linparse.py   |Parser proper|
-|  -  |stack.py      |Helper stack|
-|  -  |utils.py      |Helper miscellanea|
-|  -  |garbage       |Ignore this|
+|  -        |lexdef.py     |Lexical definitions| This is the token definition file |
+|  -        |lexer.py      |Lexer code|
+|  -        |lindef.py     |Parser definitions| This is the actual grammer|
+|  -        |linparse.py   |Parser proper|
+|  -        |stack.py      |Helper stack|
+|  -        |utils.py      |Helper miscellanea|
+|  -        |garbage       |Ignore this -- was for testing / eperimenting|
 
 ## History:
 
 Wed 16.Jul.2025  Moved from pgpygtk
 Thu 18.Sep.2025  Added float, down functions
+Thu 25.Sep.2025  Expression parser operational
+
+## Testing:
+
+The testvdrive utility tests functionality on the test / expect basis. A
+sample output from the utility below:
+
+Expr1            	 OK
+Expr2            	 OK
+Expr3            	 OK
+Expr4            	 OK
+str2             	 OK
+str3             	 OK
+str4             	 OK
 
 # EOF

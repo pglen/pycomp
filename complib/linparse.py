@@ -139,13 +139,12 @@ class LinParse():
                 if  currtoken.stamp.xstr != "sp":    # no sp display
                     xprintf( \
                             "state:",  ST.get(self.state),
-                            #"stamp:", pp(currstamp.token),
                             "tok:", pp(currtoken.mstr),
                             "tprog =", tprog,
+                            #"stamp:", pp(currstamp.token),
                             #padx(pp(currtoken.stamp.xstr), 7),
                             #padx(pp(currtoken.mstr, 6), 5),
                             )
-                            #end = " ")
                     global row
                     rrr =  6
                     if row % rrr == rrr - 1:
@@ -206,7 +205,7 @@ class LinParse():
             pass
 
         if self.pvg.opt_animate:
-            time.sleep(0.01) # this case was for runaway display
+            time.sleep(0.01) # this case was for slowing runaway display
 
         if  self.pvg.opt_debug > 7:
             print("itemx return:", match, iprog)

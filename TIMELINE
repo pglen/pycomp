@@ -15,8 +15,12 @@ Timeline:
 Jun 27  2019        Initial attempts for compiler
 Thu 3.Jul.2025      Compiler in 'C' started
 Thu 24.Jul.2025     Switched to python project 'pyvcomp'
-
-
+Wed 16.Jul.2025     Moved from pgpygtk
+Thu 18.Sep.2025     Added float, down functions
+Thu 25.Sep.2025     Expression parser operational
 
 Memory management
+
+For now using stdlib.
+
 

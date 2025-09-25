@@ -1,2 +1,2 @@
 arr:strx="Hello World\n"
-ret = printf(strx)
+printf((strx))

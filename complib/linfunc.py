@@ -64,14 +64,8 @@ class   FuncCall():
             print("call.end()", pp(self2.arrx[tprog].mstr))
 
         if pvg.opt_debug > 3:
-            print("argstack:", end = " ")
-            for aa in argstack:
-                print(self2.arrx[aa], end = " ")
-            print()
-            print("callstack:", end = " ")
-            for aa in callstack:
-                print(self2.arrx[aa], end = " ")
-            print()
+            dumpstack(self2, callstack)
+            dumpstack(self2, argstack)
 
         idx  =   callstack.get(0)
         funcname =  self2.arrx[idx].mstr
@@ -82,11 +76,29 @@ class   FuncCall():
         if funcname == "printf":
             estr += "    and     rsp, 0xfffffffffffffff0\n"
             estr += "    mov     rbp, rsp\n"
-        cnt = 0
+        cnt = 0; tpi = None
         for aa in argstack:
             tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
-            if not tpi:
-                error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
+            if self2.arrx[aa].stamp.xstr == "str":
+                if not tpi:
+                    #error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
+                    # Generate entry for immidiate variable
+                    uuu = "str_%d" % unique()
+                    strx =  uuu + " : db " + asmesc(self2.arrx[aa].mstr) + "\n"
+                    #print("strx =", pp(strx))
+                    linpool.add2pool(self2, self2.arrx[aa].stamp.xstr,
+                                                uuu, self2.arrx[aa].mstr)
+                    tpi = linpool.lookpool(self2, uuu)
+                    #print("gen var:", tpi)
+                    codegen.emitdata(strx)
+            elif self2.arrx[aa].stamp.xstr in int_types:
+                print("call ints")
+            elif self2.arrx[aa].stamp.xstr in float_types:
+                print("call float")
+            else:
+                #print("Unkown type", self2.arrx[aa].stamp.xstr)
+                pass
+
             if cnt  >= len(codegen.regorder) - 1:
                 error(self2, "Too many arguments to function: '%s'" % funcname )
                 pass
@@ -97,7 +109,7 @@ class   FuncCall():
                     estr += "    push   rax \n"
                 else:
                     estr += "    mov  " + codegen.regorder[cnt+1]
-                    estr += "  , " + self2.arrx[aa].mstr  + "\n"
+                    estr += "  , " + tpi.namex  + "\n"
             elif  tpi.typex == "u32" or tpi.typex == "s32" :
                 estr += "    mov rax, 0\n"
                 estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
@@ -175,25 +187,26 @@ class Arith():
             linpool.reduce(self2, arithstack, aa)
 
         if pvg.opt_debug > 3:
-            dumpstack(self2, arithstack, label="arith stop post:", active=True)
+            dumpstack(self2, arithstack, eolx="\n",
+                                    label="arith stop post:", active=True)
 
     def arithstart(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("arithstart()", "tprog =", tprog, self2.arrx[tprog])
+            print("misc.arithstart()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.empty()
         arithstack.push(tprog)
 
     def arithop(self, self2, tprog):
         if pvg.opt_debug > 5:
-            print("arithop()", "tprog =", tprog, self2.arrx[tprog])
+            print("misc.arithop()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
     def addexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("addexpr()", "tprog =", tprog, self2.arrx[tprog])
+            print("misc.addexpr()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
-            print("addexpr: ",
+            print("misc.addexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
         arithstack.push(tprog)
@@ -201,7 +214,7 @@ class Arith():
     def subexpr(self, self2, tprog):
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
-            print("subexpr: ",
+            print("misc.subexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
         arithstack.push(tprog)
@@ -209,7 +222,7 @@ class Arith():
     def divexpr(self, self2, tprog):
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
-            print("divexpr: ",
+            print("misc.divexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
         arithstack.push(tprog)
@@ -217,7 +230,7 @@ class Arith():
     def expexpr(self, self2, tprog):
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
-            print("func_expexpr: ",
+            print("misc.expexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
         arithstack.push(tprog)
@@ -225,14 +238,14 @@ class Arith():
     def mulexpr(self, self2, tprog):
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
-            print("mulexpr: ",
+            print("misc.mulexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
         arithstack.push(tprog)
 
     def assnexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("assnexpr()", "tprog =", tprog, self2.arrx[tprog])
+            print("misc.assnexpr()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 5:
             tprog2 = arithstack.peek()
             print("assnexpr: ",
@@ -241,7 +254,8 @@ class Arith():
         arithstack.push(tprog)
 
     def expr(self, self2, tprog):
-
+        if pvg.opt_debug > 1:
+            print("misc.expr()", "tprog =", tprog, self2.arrx[tprog])
         ''' Just push '''
         arithstack.push(tprog)
 
@@ -485,13 +499,14 @@ class Decl():
         arith.arith_stop(self2, tprog)
 
         if pvg.opt_debug > 3:
-            dumpstack(self2, arithstack, label="decl down:")
+            dumpstack(self2, arithstack, eolx="\n", label="decl down:")
 
         # Nothing to see here
         if not arithstack.getlen():
             print("Empty arithstack")
             return
         statex = 0; typey = "" ; typex = "" ; lab = ""; val = "";
+        orgline = 0
         for aa in arithstack:
             if self2.arrx[aa].flag:
                 continue
@@ -499,7 +514,8 @@ class Decl():
             #    self2.arrx[aa].flag = 1
             #    continue
             strx = ""
-            #print("as aa", pp(self2.arrx[aa].stamp.xstr), self2.arrx[aa].mstr)
+            if pvg.opt_debug > 7:
+                print("st:", statex, pp(self2.arrx[aa].stamp.xstr), self2.arrx[aa].mstr)
             if statex == 0:
                 #if self2.arrx[aa].stamp.xstr == "decl":
                 if self2.arrx[aa].stamp.xstr in numtypes:
@@ -508,12 +524,19 @@ class Decl():
                     typex = linpool.pctona(self2.arrx[aa].mstr)
                 if self2.arrx[aa].stamp.xstr == "ident":
                     statex = 4
+                    orgline =  self2.arrx[aa].linenum
                     lab = self2.arrx[aa].mstr
             elif statex == 1:
                 if self2.arrx[aa].stamp.xstr == "ident":
                     lab = self2.arrx[aa].mstr
                     statex = 2
             elif statex == 2:
+                if self2.arrx[aa].stamp.xstr == "ident":
+                    strx = lab + " : " + typex + " "  + " 0 " + \
+                            "; line: " + str(orgline+1) + \
+                            " generated from " + pp(lab) + "\n"
+                    codegen.emitdata(strx)
+                    statex = 1
                 if self2.arrx[aa].stamp.xstr == "=":
                     statex = 3
             elif statex == 3:
@@ -523,7 +546,7 @@ class Decl():
                 # output decl opeartion
                 #print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
                 if typey.lower() in int_types:
-                    #print("int type")
+                    print("int type", lab, typex, val)
                     if arithstack.getlen() <= 4:
                         # patch missing declaration argument with zero /empty
                         strx += " 0 "
@@ -557,7 +580,16 @@ class Decl():
                     codegen.emit(strx)
             else:
                 pass
-                #print("Warn: invalid state", __file__, __line__)
+                print("Warn: invalid state", __file__, __line__)
+
+        if statex == 1:
+            # Comma operator left this incomplete
+            #print("left over:", lab, typex, val)
+            strx = self2.arrx[aa].mstr + " : " + typex + " 0 " + "; line: " \
+                                        + str(self2.arrx[aa].linenum+1) \
+                                        + " -- generated from " \
+                                        + self2.arrx[aa].mstr + "\n"
+            codegen.emitdata(strx)
 
         #datatype = self2.arrx[arithstack.get(0)].mstr
         #asmtype = linpool.addtopool(self2, arithstack)

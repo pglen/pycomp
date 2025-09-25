@@ -207,13 +207,13 @@ Drassn  = (
 
 Dfcall  = (
     # Function call
-    Stamp(C("STARITH"),   "(",      C("CFUNC3"),  None, fcall.start, False),
+    Stamp(C("STARITH"),   "((",     C("CFUNC3"),  None, fcall.start, False),
     Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, fcall.val, False),
     Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.val, False),
     Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.val, False),
 
-    Stamp(C("CFUNC3"),    ")",      C("STATEINI"), None, fcall.end,  False),
-    Stamp(C("CFUNC4"),    ")",      C("STATEINI"), None, fcall.end,  False),
+    Stamp(C("CFUNC3"),    "))",      C("STATEINI"), None, fcall.end,  False),
+    Stamp(C("CFUNC4"),    "))",      C("STATEINI"), None, fcall.end,  False),
 
     Stamp(C("CFUNC4"),    ",",      C("CFUNC3"),    None, fcall.comma, False),
     Stamp(C("CFUNC4"),    "nl",     C("STATEINI"),  None, fcall.end,   False),
@@ -245,7 +245,7 @@ Dtest = (
 )
 
 # Where parenthases are valid
-PARENSTATE = C("STARITH"), C("SFASSN"), C("SFADD"),  C("SFSUB"), C("SFMUL")
+PARENSTATE =  C("STARITH"), C("SFASSN"), C("SFADD"),  C("SFSUB"), C("SFMUL")
 
 #, C("STATEANY")
 

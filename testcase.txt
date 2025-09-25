@@ -9,11 +9,15 @@
 
 [
     #[ "Echo Command", "", "", True],
-    [ "Paren2", "./pyvcomp.py -d 1 examples/paren2.pc -e",  "aa : dd 17", "regex"],
-    [ "Paren3", "./pyvcomp.py -d 1 examples/paren3.pc -e",  "aa : dw 14", "regex"],
-    [ "Decl", "./pyvcomp.py  -d 1 examples/decl.pc -e",  "aaa : dd 11", "regex"],
-    [ "Expr", "./pyvcomp.py  -d 1 examples/expr.pc -e",  "aa : dd 1", "regex"],
-    [ "Expr4", "./pyvcomp.py -d 1 examples/expr4.pc -e",  "aa : dd 12", "regex"],
+    [ "Paren2", "./pyvcomp.py -d 1 examples/paren2.pc -e",  "aa : dd 17",   True],
+    [ "Paren3", "./pyvcomp.py -d 1 examples/paren3.pc -e",  "aa : dw 14",   True],
+    [ "Decl", "./pyvcomp.py  -d 1 examples/decl.pc -e",  "aaa : dd 11",     True],
+
+    [ "Expr", "./pyvcomp.py  -d 1 examples/expr.pc  -e",  "aa : dd 7",  True],
+    [ "Expr1", "./pyvcomp.py -d 1 examples/expr1.pc -e",  "aa : dw 7",  True],
+    [ "Expr2", "./pyvcomp.py -d 1 examples/expr2.pc -e",  "aa : dd 18", True],
+    [ "Expr3", "./pyvcomp.py -d 1 examples/expr3.pc -e",  "ccc : dd 1", True],
+    [ "Expr4", "./pyvcomp.py -d 1 examples/expr4.pc -e",  "aa : dd 60", True],
 
     [ "str",  "./pyvcomp.py -e examples/str.pc",  "svar: db \"xyz\", 10, 0", True,],
     [ "str2", "./pyvcomp.py -e examples/str2.pc", 'svar: db "hello world", 10, 0', True],
@@ -21,6 +25,8 @@
     [ "str4", "./pyvcomp.py -e examples/str4.pc", 'v2: db "hello world"', True],
     [ "str5", "./pyvcomp.py -e examples/str5.pc", "hello world: 1234 AB :; again ", True],
     [ "str9", "./pyvcomp.py -e examples/str9.pc", 'strvar: db "AB", 0', True],
+
+    [ "call", "./pyvcomp.py -e examples/call.pc", 'call printf', True],
 ]
 
 # EOF

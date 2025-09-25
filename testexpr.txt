@@ -15,7 +15,7 @@
     [ "Expr4", "./pyvcomp.py -d 1 examples/expr4.pc -e",  "aa : dd 60", "regex"],
     [ "Expr5", "./pyvcomp.py -d 1 examples/expr5.pc -e",  "var : dd 10", "regex"],
     [ "Expr6", "./pyvcomp.py -d 1 examples/expr6.pc -e",  "aaa : dd 4", "regex"],
-    [ "Expr7", "./pyvcomp.py -d 1 examples/expr7.pc -e",  "aaa : dd 4", "regex"],
+    [ "Expr7", "./pyvcomp.py -d 1 examples/expr7.pc -e",  "ccc : dd 0", "regex"],
 ]
 
 # EOF

@@ -159,14 +159,14 @@ def execop(self2, arg1, op, arg2):
     elif op ==   "=":   ret = arg2
     else:  error(self2, "Invalid operator '%s': " % op )
 
-    if pvg.opt_debug > 2:
+    if pvg.opt_debug > 4:
         print(" execop:", arg1, op, arg2, "; ret = ", ret, )
 
     return ret
 
 def reduce(self2, xstack, filter, pos = 0):
 
-    if pvg.opt_debug > 1:
+    if pvg.opt_debug > 6:
         print("reduce():", "filter =", pp(filter), "pos =", pos)
     if pvg.opt_debug > 7:
         dumpstack(self2, xstack, label="pre reduce:")
@@ -197,7 +197,7 @@ def reduce(self2, xstack, filter, pos = 0):
             for aa in linfunc.ops_prec:
                 prog = reduce(self2, xstack, aa, loopx + 1)
             #loopx = prog + 1
-            if pvg.opt_debug > 2:
+            if pvg.opt_debug > 7:
                 print(" ** after recurse", prog )
             if pvg.opt_debug > 7:
                 print("\nxstack post recurse:", end = " ")

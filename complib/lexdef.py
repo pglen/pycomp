@@ -199,6 +199,9 @@ try:
     (INI_STATE, "comm3d",       r"\/\*\*",          COMM_STATED, None),
     (INI_STATE, "comm3",        r"\/\*" ,           COMM_STATE, None),
 
+    (INI_STATE, "((",           r"\(\(" ,           None, None),
+    (INI_STATE, "))",           r"\)\)" ,           None, None),
+
     (INI_STATE, "(",            r"\("   ,           None, None),
     (INI_STATE, ")",            r"\)"   ,           None, None),
     (INI_STATE, "<",            r"<"    ,           None, None),
@@ -216,10 +219,10 @@ try:
     (INI_STATE, ";",            r";"    ,           None, None),  # Semi Colon
     (INI_STATE, ":",            r":"    ,           None, None),  # Colon
     (INI_STATE, "::",           r"::"   ,           None, None),  # Double colon
-    (INI_STATE, "dot",          r"\."   ,           None, None),
-
-    (INI_STATE, "caret",        r"\^"   ,           None, None),
     (INI_STATE, "%",            r"%"    ,           None, None),
+
+    (INI_STATE, "dot",          r"\."   ,           None, None),
+    (INI_STATE, "caret",        r"\^"   ,           None, None),
 
     # We parse white spaces, let the parser deal with it
     (INI_STATE, "sp",           r" "    ,           None, None),

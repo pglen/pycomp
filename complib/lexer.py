@@ -63,8 +63,8 @@ class LexI():
         strx = "[ " + pp(self.stamp.xstr) + " -> " + pp(self.mstr) + \
                         " ival = " + pp(str(self.ival)) + \
                         " flag = " + pp(str(self.flag)) + \
-                        " typez = " + pp(self.typez) + \
                         " ]"
+                        #" typez = " + pp(self.typez) + \
                         #" want = "  + lexdef.state2str(self.wantstate) + \
         return strx
 

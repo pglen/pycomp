@@ -1,4 +1,2 @@
-u64 : aaa = 22 ;
-u32 : bbb = 33 ;
-u16 : ccc = 44 ;
-u8  : ddd = 55 ;
+u64 : aaa = 22 ; u32 : bbb = 33 ;
+u16 : ccc = 44 ; u8  : ddd = 55 ;
