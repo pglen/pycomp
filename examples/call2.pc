@@ -1,4 +1,6 @@
 u16 : num1 = 1234
+u32 : retx = 1234
 arr : strx =  "Hello World: %d\n"
+retx = printf((strx, num1))
 printf((strx, num1))
 # EOF

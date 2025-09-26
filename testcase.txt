@@ -27,6 +27,12 @@
     [ "str9", "./pyvcomp.py -e examples/str9.pc", 'strvar: db "AB", 0', True],
 
     [ "call", "./pyvcomp.py -e examples/call.pc", 'call printf', True],
+    [ "call0", "./pyvcomp.py -E '' examples/call0.pc", 'ret = 29', True],
+    [ "call1", "./pyvcomp.py -E '' examples/call1.pc", 'ret = 12', True],
+    [ "call2", "./pyvcomp.py -E '' examples/call2.pc", 'Hello World', True],
+    [ "call3", "./pyvcomp.py -E '' examples/call3.pc", '1234 5678', True],
+    [ "call4", "./pyvcomp.py -E '' examples/call4.pc", '1234 5678', True],
+    [ "callx", "./pyvcomp.py -E '' examples/callx.pc", 'Hello Again', True],
 ]
 
 # EOF

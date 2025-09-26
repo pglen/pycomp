@@ -40,15 +40,15 @@ class   FuncCall():
     def start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("call.start()", pp(self2.arrx[tprog].mstr))
-        if pvg.opt_debug > 7:
+        if pvg.opt_debug > 5:
             print("func arithstack: len =", arithstack.getlen(), end = " ")
             for aa in arithstack:
                 print(self2.arrx[aa], end = " ")
             print()
+
         argstack.empty()
         callstack.empty()
         callstack.push(arithstack.pop())
-        #print("call stack:", callstack.dump())
 
     def val(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -66,6 +66,7 @@ class   FuncCall():
         if pvg.opt_debug > 3:
             dumpstack(self2, callstack)
             dumpstack(self2, argstack)
+            dumpstack(self2, arithstack)
 
         idx  =   callstack.get(0)
         funcname =  self2.arrx[idx].mstr
@@ -74,29 +75,42 @@ class   FuncCall():
         estr = ""
         # Exception on printf stack call
         if funcname == "printf":
-            estr += "    and     rsp, 0xfffffffffffffff0\n"
+            estr += "    and     rsp, 0xfffffffffffffff0 ; even 16 stack\n"
             estr += "    mov     rbp, rsp\n"
         cnt = 0; tpi = None
         for aa in argstack:
+            if pvg.opt_debug > 7:
+                print("arg:", self2.arrx[aa].stamp.xstr, self2.arrx[aa].mstr)
             tpi = linpool.lookpool(self2, self2.arrx[aa].mstr)
-            if self2.arrx[aa].stamp.xstr == "str":
+            if self2.arrx[aa].stamp.xstr == "ident":
                 if not tpi:
-                    #error(self2, "Variable: '%s' not defined" % self2.arrx[aa].mstr)
+                    error(self2, "Undefined variable '%s'" % self2.arrx[aa].mstr)
+            elif self2.arrx[aa].stamp.xstr == "str":
+                if not tpi:
                     # Generate entry for immidiate variable
                     uuu = "str_%d" % unique()
                     strx =  uuu + " : db " + asmesc(self2.arrx[aa].mstr) + "\n"
-                    #print("strx =", pp(strx))
                     linpool.add2pool(self2, self2.arrx[aa].stamp.xstr,
                                                 uuu, self2.arrx[aa].mstr)
                     tpi = linpool.lookpool(self2, uuu)
-                    #print("gen var:", tpi)
                     codegen.emitdata(strx)
+
+            elif self2.arrx[aa].stamp.xstr == "num":
+                if not tpi:
+                    # Generate entry for immidiate variable
+                    uuu = "num_%d" % unique()
+                    linpool.add2pool(self2, self2.arrx[aa].stamp.xstr,
+                                                uuu, int(self2.arrx[aa].mstr))
+                    tpi = linpool.lookpool(self2, uuu)
+                    # We do not need this number in memory :-)
+                    #strx =  uuu + " : dq " + asmesc(self2.arrx[aa].mstr) + "\n"
+                    #codegen.emitdata(strx)
             elif self2.arrx[aa].stamp.xstr in int_types:
                 print("call ints")
             elif self2.arrx[aa].stamp.xstr in float_types:
                 print("call float")
             else:
-                #print("Unkown type", self2.arrx[aa].stamp.xstr)
+                print("Unkown type", self2.arrx[aa].stamp.xstr)
                 pass
 
             if cnt  >= len(codegen.regorder) - 1:
@@ -110,25 +124,32 @@ class   FuncCall():
                 else:
                     estr += "    mov  " + codegen.regorder[cnt+1]
                     estr += "  , " + tpi.namex  + "\n"
+            elif  tpi.typex == "num" :
+                estr += "    mov   rax, " + str(self2.arrx[aa].ival) + "\n"
+                if cnt  >= len(codegen.regorder) - 1:
+                    estr += "    push   rax \n"
+                else:
+                    estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
+                                ", rax\n"
             elif  tpi.typex == "u32" or tpi.typex == "s32" :
-                estr += "    mov rax, 0\n"
-                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                estr += "    mov   rax, 0\n"
+                estr += "    mov   ax, word [" + self2.arrx[aa].mstr + "]\n"
                 if cnt  >= len(codegen.regorder) - 1:
                     estr += "    push   rax \n"
                 else:
                     estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
                              ", [" + self2.arrx[aa].mstr + "]\n"
             elif  tpi.typex == "u16" or tpi.typex == "s16":
-                estr += "    mov rax, 0\n"
-                estr += "    mov ax, word [" + self2.arrx[aa].mstr + "]\n"
+                estr += "    mov   rax, 0\n"
+                estr += "    mov   ax, word [" + self2.arrx[aa].mstr + "]\n"
                 if cnt  >= len(codegen.regorder) - 1:
                     estr += "    push   rax \n"
                 else:
                     estr += "    mov  " + codegen.regorder[cnt+1] + "  " + \
                                     ", rax\n"
             elif  tpi.typex == "u8" or tpi.typex == "s8":
-                estr += "    mov rax, 0\n"
-                estr += "    mov al, byte [" + self2.arrx[aa].mstr + "]\n"
+                estr += "    mov   rax, 0\n"
+                estr += "    mov   al, byte [" + self2.arrx[aa].mstr + "]\n"
                 if cnt  >= len(codegen.regorder) - 1:
                     estr += "    push   rax \n"
                 else:
@@ -143,9 +164,18 @@ class   FuncCall():
 
         estr += "    extern " +  funcname + "\n"
         estr += "    call " +  funcname
-        estr +=  " ; line: " + str(linex + 1) + " -- " + funcname
-
+        estr +=  " ; line: " + str(linex + 1) + " -- " + funcname + "\n"
         codegen.emit(estr)
+
+        # Finally, output return assignments
+        if len(arithstack) >= 2:
+            #dumpstack(self2, arithstack)
+            if self2.arrx[arithstack[1]].mstr == "=":
+                xstr = "    mov [ " + \
+                        self2.arrx[arithstack[0]].mstr + " ] " + \
+                        ", rax " + \
+                        "; line: " + str(linex + 1) + "\n"
+                codegen.emit(xstr)
 
 fcall = FuncCall()
 
@@ -546,14 +576,14 @@ class Decl():
                 # output decl opeartion
                 #print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
                 if typey.lower() in int_types:
-                    print("int type", lab, typex, val)
+                    #print("int type", lab, typex, val)
                     if arithstack.getlen() <= 4:
                         # patch missing declaration argument with zero /empty
                         strx += " 0 "
                     else:
                         strx +=  lab + " : " + typex + " " + val + "\n"
                 elif typey.lower() in float_types:
-                    print("float type")
+                    #print("float type", lab, typex, val)
                     if arithstack.getlen() <= 3:
                         # patch missing declaration argument with zero /empty
                         strx += " 0 "
@@ -650,12 +680,12 @@ class Misc():
         codegen.emit(strx)
 
     def space(self, self2, tprog):
-        if pvg.opt_debug > 5:
+        if pvg.opt_debug > 8:
             print("misc.space()", "tprog =", tprog)
         self2.arrx[tprog].flag = 1
 
     def tab(self, self2, tprog):
-        if pvg.opt_debug > 5:
+        if pvg.opt_debug > 8:
             print("misc.tab()", "tprog =", tprog)
         self2.arrx[tprog].flag = 1
 

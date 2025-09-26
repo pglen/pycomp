@@ -1,6 +1,6 @@
 arr : strx =  "Hello World\n"
 arr : stry =  "ret = %d %s\n"
 arr : strz =  "Hello Again"
-u32:ret = 1234
-ret = printf((strx ))
+u32 : ret = 1234
+ret = printf((strx))
 printf((stry, ret, strz))

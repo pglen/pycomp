@@ -486,7 +486,6 @@ def color(strx, col = "31"):
     return "\033[" + str(col) + ";1m" + strx + "\033[0m"
 
 def dumpstack(self2, stackx, eolx = "", label = "", active=False):
-
     print(stackx.name + ":", label, end = eolx)
     for aa in stackx:
         if active and self2.arrx[aa].flag != 0:

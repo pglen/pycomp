@@ -1,4 +1,4 @@
-arr : strx =  "Hello World\n"
-printf(strx)
+arr : strx =  "Hello World ... "
+printf((strx))
 arr : stry =  "Hello Again\n"
-printf(stry)
+printf((stry))
