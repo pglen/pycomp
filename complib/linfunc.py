@@ -181,24 +181,32 @@ fcall = FuncCall()
 
 class   Funcs():
 
-    def start(self2, tprog):
+    def start(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("func_func_start()", pp(self2.arrx[tprog].mstr))
+            print("funcs.start()", pp(self2.arrx[tprog].mstr))
 
-    def arg_start(self2, tprog):
+    def arg_start(self, self2, tprog):
             if pvg.opt_debug > 1:
-                print("func_func_arg_start()", pp(self2.arrx[tprog].mstr))
+                print("funcs.arg_start()", pp(self2.arrx[tprog].mstr))
 
-    def args(self2, tprog):
+    def args(self, self2, tprog):
             if pvg.opt_debug > 1:
-                print("func_func_args()", pp(self2.arrx[tprog].mstr))
+                print("funcs.args()", pp(self2.arrx[tprog].mstr))
             argstack.empty()
             callstack.empty()
             callstack.push(arithstack.pop())
 
-    def end(self2, tprog):
+    def end(self, self2, tprog):
         if pvg.opt_debug > 1:
-            print("func_func_end()", pp(self2.arrx[tprog].mstr))
+            print("funcs.end()", pp(self2.arrx[tprog].mstr))
+
+    def args_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("funcs.args_end()", pp(self2.arrx[tprog].mstr))
+
+    def down(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("funcs.down()", pp(self2.arrx[tprog].mstr))
 
 funcs = Funcs()
 

@@ -180,15 +180,19 @@ Dfuncx = ( \
     Stamp(C("SFUNARG"),   "decl",   C("SFUNARG2"),  None,  funcs.arg_start, False),
     Stamp(C("SFUNARG2"),  ":",      C("SFUNARG3"),  None,  None, False),
     Stamp(C("SFUNARG3"),  "ident",  C("SFUNARG4"),  None,  None, False),
-    Stamp(C("SFUNARG4"),  ",",      C("SFUNARG3"),  None,  None, False),
-    Stamp(C("SFUNARG4"),  "=",      C("SFUNARG4"),  None,  None, False),
-    Stamp(C("SFUNARG4"),  "ident",  C("SFUNARG3"),  None,  None, False),
-    Stamp(C("SFUNARG4"),  "num",    C("SFUNARG3"),  None,  None, False),
-    Stamp(C("SFUNARG3"),  "nl",     C("STPOP"),     None,  None, False),
+    Stamp(C("SFUNARG4"),  ",",      C("SFUNARG"),   None,  None, False),
+    Stamp(C("SFUNARG4"),  "=",      C("SFUNARG5"),  None,  None, False),
+    Stamp(C("SFUNARG5"),  "ident",  C("SFUNARG3"),  None,  None, False),
+    Stamp(C("SFUNARG5"),  "num",    C("SFUNARG3"),  None,  None, False),
+    Stamp(C("SFUNARG4"),  ",",      C("SFUNARG"),   None,  None, False),
+    Stamp(C("SFUNARG3"),  ",",      C("SFUNARG"),   None,  None, False),
+    Stamp(C("SFUNARG3"),  ";",      C("STPOP"),     funcs.down,  None, False),
+    Stamp(C("SFUNARG3"),  "nl",     C("STPOP"),     funcs.down,  None, False),
     Stamp(C("SFUNARG3"),  "comm2",  C("STPOP"),     None,  None, False),
 
-    Stamp(C("SFUNARG"),  ")",      C("STFUNC3"),    None,  funcs.args, False),
-    Stamp(C("SFUNARG3"), ")",      C("STFUNC3"),    None,  funcs.args, False),
+    Stamp(C("SFUNARG"),  ")",      C("STFUNC3"),    None,  funcs.args_end, False),
+    Stamp(C("SFUNARG3"), ")",      C("STFUNC3"),    None,  funcs.args_end, False),
+    Stamp(C("SFUNARG4"), ")",      C("STFUNC3"),    None,  funcs.args_end, False),
     Stamp(C("STFUNC3"),  "{",      C("SFUNBODY"),   None,  None, False),
     Stamp(C("SFUNBODY"), "return", C("SFUNCRET"),   None,  None, False),
     Stamp(C("SFUNCRET"), "ident",  C("SFUNBODY"),   None,  None, False),
@@ -208,16 +212,17 @@ Drassn  = (
 Dfcall  = (
     # Function call
     Stamp(C("STARITH"),   "((",     C("CFUNC3"),  None, fcall.start, False),
+    #Stamp(STBASE,          "((",     C("CFUNC3"),  None, fcall.start, False),
     Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, fcall.val, False),
     Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.val, False),
     Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.val, False),
 
-    Stamp(C("CFUNC3"),    "))",      C("STATEINI"), None, fcall.end,  False),
-    Stamp(C("CFUNC4"),    "))",      C("STATEINI"), None, fcall.end,  False),
+    Stamp(C("CFUNC3"),    "))",      C("STPOP"), None, fcall.end,  False),
+    Stamp(C("CFUNC4"),    "))",      C("STPOP"), None, fcall.end,  False),
 
     Stamp(C("CFUNC4"),    ",",      C("CFUNC3"),    None, fcall.comma, False),
-    Stamp(C("CFUNC4"),    "nl",     C("STATEINI"),  None, fcall.end,   False),
-    Stamp(C("CFUNC4"),    ";",      C("STATEINI"),  None, fcall.end,   False),
+    Stamp(C("CFUNC4"),    "nl",     C("STPOP"),  None, fcall.end,   False),
+    Stamp(C("CFUNC4"),    ";",      C("STPOP"),  None, fcall.end,   False),
     )
 
 Dtest = (
@@ -244,7 +249,7 @@ Dtest = (
     #Stamp(C("STARITH"),  "nl",     C("STPOP"),    None,   func_assn_stop, False),
 )
 
-# Where parenthases are valid
+# Where parent phases are valid
 PARENSTATE =  C("STARITH"), C("SFASSN"), C("SFADD"),  C("SFSUB"), C("SFMUL")
 
 #, C("STATEANY")
@@ -342,7 +347,8 @@ Ddecl = (
 
 stamps =  (  \
 
-    Stamp(C("STATEINI"), "ident",   C("STARITH"),  None,  arith.arithstart, True),
+    #Stamp(C("STATEINI"), "ident",   C("STARITH"),  None,  arith.arithstart, True),
+    Stamp(STBASE, "ident",   C("STARITH"),  None,  arith.arithstart, True),
     Stamp(C("STATEINI"), "extern",  C("EXTERN"),   None,  misc.extern, True),
     Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  None,  misc.extadd, False),
     Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  None,  misc.extadd, False),

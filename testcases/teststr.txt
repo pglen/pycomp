@@ -1,0 +1,8 @@
+ [
+   [ "str",  "./pyvcomp.py -e examples/str.pc",  "svar: db \"xyz\", 10, 0", True,],
+    [ "str2", "./pyvcomp.py -e examples/str2.pc", 'svar: db "hello world", 10, 0', True],
+    [ "str3", "./pyvcomp.py -e examples/str3.pc", "strvar: db 'hello world ', 13", True],
+    [ "str4", "./pyvcomp.py -e examples/str4.pc", 'v2: db "hello world"', True],
+    [ "str5", "./pyvcomp.py -e examples/str5.pc", "hello world: 1234 AB :; again ", True],
+    [ "str9", "./pyvcomp.py -e examples/str9.pc", 'strvar: db "AB", 0', True],
+]

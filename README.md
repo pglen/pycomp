@@ -56,11 +56,11 @@ Def: stands for default value. Options after file names are also interpreted.
 |codegen/   |        |The code generation directory|
 |  -        |lexdef.py     |Lexical definitions| This is the token definition file |
 |  -        |lexer.py      |Lexer code|
-|  -        |lindef.py     |Parser definitions| This is the actual grammer|
+|  -        |lindef.py     |Parser definitions| This is the actual grammar|
 |  -        |linparse.py   |Parser proper|
 |  -        |stack.py      |Helper stack|
 |  -        |utils.py      |Helper miscellanea|
-|  -        |garbage       |Ignore this -- was for testing / eperimenting|
+|  -        |garbage       |Ignore this -- was for testing / experimenting|
 
 ## History:
 

@@ -1,26 +1,26 @@
-Timeline for PCOMP parallel compiler
+# Timeline for PVCOMP parallel compiler
 
   The project started around 2018 as an idea to merge levels of compilation
 and assembly to one code base. While the original intent is mostly in effect,
-it evoled to what we are working on today.
+it evolved to what we are working on today.
 
   The landscape of computing is totally different today, we have more
-processing power, and we have ...
+processing power, and we have more ambitious targets.
 
-   Also reliability, reproducability, compatibility and consistancy have a
-higher importance than the old requirements.
+   Also reliability, reproducibility, compatibility ease of use and consistency
+have a higher importance than ever before.
 
-Timeline:
+## Timeline:
 
-Jun 27  2019        Initial attempts for compiler
-Thu 3.Jul.2025      Compiler in 'C' started
-Thu 24.Jul.2025     Switched to python project 'pyvcomp'
-Wed 16.Jul.2025     Moved from pgpygtk
-Thu 18.Sep.2025     Added float, down functions
-Thu 25.Sep.2025     Expression parser operational
+    Jun 27  2019        Initial attempts for compiler
+    Thu 3.Jul.2025      Compiler in 'C' started
+    Thu 24.Jul.2025     Switched to python project 'pyvcomp'
+    Wed 16.Jul.2025     Moved from pgpygtk
+    Thu 18.Sep.2025     Added float, down functions
+    Thu 25.Sep.2025     Expression parser operational
 
-Memory management
+## Memory management
 
-For now using stdlib.
+    For now using stdlib.
 
-
+ # EOF
