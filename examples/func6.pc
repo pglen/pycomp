@@ -1,6 +1,7 @@
-func hello ()
+func hello(( u64:q=1 ; u32:aa=1))
 {
-enter {}
-leave {}
-return val
+    enter { u32:a=0; }
+    leave { u32:b=0; }
+
+    return
 }

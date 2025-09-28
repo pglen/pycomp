@@ -22,11 +22,12 @@ class LinParse():
         defpvg(pvg)
         funcpvg(pvg)
 
+        linfunc.initall()
         linpool.emptypool()
+
         self.state = ST.val("STATEINI")
-        #self.context = 0
         self.statestack = stack.pStack(True, "statestack")
-        #self.statestack = stack.pStack()
+        # Guard state
         self.statestack.push(ST.val("STATEINI"))
 
         # Print stamps:
@@ -71,7 +72,7 @@ class LinParse():
         #print("end scan")
         if self.state !=  ST.val("STATEINI"):
             #print("state =", self.state)
-            print("Warn: unexpected parse state:", pp(ST.get(self.state)), "on exit.")
+            error(self, "Unexpected parse state: '%s' on exit." % ST.get(self.state))
 
     def stamps_iter(self, startx, endd):
 
@@ -124,7 +125,9 @@ class LinParse():
         #print("stamp", stamps[idx])
 
         if self.pvg.opt_debug > 6:
-            print("    stamp:", pp(currstamp.tokens), "token:", pp(currtoken.stamp.xstr))
+            sss = ""
+            for aa in currstamp.tokens: sss += aa + " "
+            print("    stamp:", pp(sss), "token:", pp(currtoken.stamp.xstr))
 
         # ----------------------------------------------------------------
         # Compare current position to ONE stamp
@@ -140,6 +143,7 @@ class LinParse():
                     xprintf( \
                             "state:",  ST.get(self.state),
                             "tok:", pp(currtoken.mstr),
+                            pp(currtoken.stamp.xstr),
                             "tprog =", tprog,
                             #"stamp:", pp(currstamp.token),
                             #padx(pp(currtoken.stamp.xstr), 7),
@@ -153,55 +157,46 @@ class LinParse():
 
             if currstamp.nstate == ST.val("STIGN"):
                 # No state change, but call function
-                if self.pvg.opt_debug > 4:
-                    print("sti ign", ST.get(self.state), end = " ")
+                if self.pvg.opt_debug > 6:
+                    print("sti ign", ST.get(self.state), currstamp.tokens, end = " ")
                 if currstamp.upcall:
                     currstamp.upcall(self, tprog)
-
             elif currstamp.nstate == ST.val("STPOP"):
-                #if self.pvg.opt_debug > 4:
-                #    for aa in self.statestack:
-                #        print("statestack:", aa)
-                if self.pvg.opt_debug > 4:
-                    print("pop state", ST.get(self.state), end = " ")
-
                 # Catch underflow
-                #if self.statestack.getlen() > 0:
+                #if self.statestack.getlen() == 0:
+                #    print("Stack underflow")
                 self.state = self.statestack.pop()
-
+                if self.pvg.opt_debug > 3:
+                    print("pop state to:", ST.get(self.state), end = " ")
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
-
-                if self.pvg.opt_debug > 4:
-                    print("pop to:", ST.get(self.state), end = " \n")
             else:
                 if currstamp.upcall:
                     currstamp.upcall(self, tprog)
 
-                if currstamp.push:
+                if currstamp.prepush:
                     if self.pvg.opt_debug > 4:
-                        print("push:", ST.get(self.state), end = " ")
+                        print("pre push:", end = " ")
                     self.statestack.push(self.state)
 
                 self.state = currstamp.nstate
                 if self.pvg.opt_debug > 4:
-                    print("set to:", ST.get(self.state))
+                    print("set to:", ST.get(self.state), end = " ")
+
+                # Push target state
+                if currstamp.push:
+                    if self.pvg.opt_debug > 4:
+                        print("push:", end = " ")
+                    self.statestack.push(self.state)
+
+                if self.pvg.opt_debug > 4:
+                    print()
 
                 if self.pvg.opt_debug > 7:
                     for aa in self.statestack:
                         print("statestack:", aa)
-
-                #if self.pvg.opt_debug > 4:
-                #    print("state to:", ST.get(self.state), end = "\n")
-                pass
-
-            #global lastnode
-            #if currstamp.nstate != ST.val("STIGN"):
-            #    lastnode = lastnode.add(TreeNode(currtoken.stamp.xstr))
-            #    #if self.pvg.opt_emit:
-            #    #    emit("match:", currtoken.stamp.xstr)
         else:
-            #print("misMatch")
+            #print("state misMatch", currstamp)
             pass
 
         if self.pvg.opt_animate:

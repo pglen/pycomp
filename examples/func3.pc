@@ -1,13 +1,8 @@
-
-function declfunc2(u32 var, u16 var2, u8 var3, s32 var4)
-
+func declfunc2((u32:var1; u16:var2; ))
 {
-	u32 aa = 100;
-
-	aa = ee + ff;
-	//xx = callfunc(gg, hh, ii);
-	return qq + vv;
+	u32 : aa = 100
+    u32 : xx = 0;
+	#aa = var1 + var2;
+	#xx = callfunc((var1, var2))
+	return 22+33
 }
-
-
-

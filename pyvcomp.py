@@ -195,6 +195,8 @@ def parsefile(strx):
         if lpg.opt_Execute != "x":
             if lpg.opt_verbose.cnt > 0:
                 print("Executing: %s %s" % (exefile, lpg.opt_Execute) )
+            else:
+                sys.stdout.flush()
             codegen.exec(exefile, lpg.opt_Execute, lpg)
 
 def setheads(lpg):

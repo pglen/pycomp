@@ -1,11 +1,4 @@
-u32 : aaaa = 0; u32 : ddd = 0;
-u32 : ccc =  aaaa; // + ddd;
-#aaaa = ddd + ccc;
-#ddd = aaaa + ddd;
-
-func wwww()
+func www((u32:aa=0))
 {
-    u32 : aa = 0; u32 : dddd = 0;
+  u32:bb=0
 }
-
-# EOF

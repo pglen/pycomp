@@ -1,9 +1,1 @@
-// Test functions
-func emptyfunc()
-{
-}
-func func2(u32 : aa)
-{
-}
-
-
+func emptyfunc(()){}

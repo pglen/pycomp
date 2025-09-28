@@ -1,5 +1,4 @@
-func hello (u32 : name = defval)
+func hello ((u32 : var = 2))
 {
-    return val
+    return  1+2*3
 }
-

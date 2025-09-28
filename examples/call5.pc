@@ -1,0 +1,5 @@
+u32:retx = 11 ; u32:rety=22 ; u32: retz = 33
+arr:strz="Hello %d\n"
+retx = printf((strz, retx))
+retx = printf(("retx = %d\n", 44))
+retx = printf(("rety = %d\n", rety))
