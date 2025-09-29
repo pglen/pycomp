@@ -134,11 +134,8 @@ Dfuncx = ( \
     Stamp(C("STFUNC"),     "((",     C("SFUNARG"), None,  funcs.args_start, True, False),
 
     Stamp(C("SFUNARG"),  "))",      C("STPOP"),    funcs.args_end, None, False, False),
-    #Stamp(C("SFUNARG2"), "))",      C("STPOP"),    funcs.args_end, None, False, False),
 
     Stamp(C("STFUNC"),  "{",       C("SFUNBODY"),  None,  funcs.startbody, True, False),
-    #Stamp(C("SFUNBODY"), ";",      C("STIGN"),    None,  None, False, False),
-    #Stamp(C("SFUNBODY"), "nl",     C("STIGN"),    None,  None, False, False),
     Stamp(C("SFUNBODY"), "}",      C("STPOP"),     funcs.endbody, None,   False, False),
 
     Stamp(C("STFUNC"),  ";",       C("STPOP"),     None,  funcs.endfunc, True, False),
@@ -192,10 +189,10 @@ Dtest = (
 Darith = (
     # Arithmetics (+ - * / sqr assn)
     #Stamp(C("c"), "=",        C("SFASSN"),    None,  arith.arithop, False, False),
-    Stamp(C("SFASSN"),  "ident",    C("STARITH"),  None,  arith.assnexpr, False, False),
-    Stamp(C("SFASSN"),  "num",      C("STARITH"),  None,  arith.assnexpr, False, False),
-    Stamp(C("SFASSN"),  "num2",     C("STARITH"),  None,  arith.assnexpr, False, False),
-    Stamp(C("SFASSN"),  "str",      C("STARITH"),  None,  arith.assnexpr, False, False),
+    Stamp(C("SFASSN"),  "ident",    C("STARITH"),  None,  arith.assnexpr, True, False),
+    Stamp(C("SFASSN"),  "num",      C("STARITH"),  None,  arith.assnexpr, True, False),
+    Stamp(C("SFASSN"),  "num2",     C("STARITH"),  None,  arith.assnexpr, True, False),
+    Stamp(C("SFASSN"),  "str",      C("STARITH"),  None,  arith.assnexpr, True, False),
 
     Stamp(PARENSTATE,   "(",        C("STIGN"),    None,   misc.parent, False, False),
     Stamp(PARENSTATE,   ")",        C("STIGN"),    None,   misc.parent, False, False),
@@ -252,9 +249,9 @@ FLOAT   = "float", "double", "quad",
 
 Ddecl = (
     # Declarations
-    Stamp(STBASE,   "decl",     C("DECL2"),   None,   decl.start,   False, True),
-    Stamp(STBASE,   FLOAT,      C("DECL2"),   None,   decl.start,   False, True),
-    Stamp(STBASE,   "arr",      C("DECLA"),   None,   adecl.astart, False, True),
+    Stamp(STBASE,   "decl",     C("DECL2"),   None,   decl.start,   False, False),
+    Stamp(STBASE,   FLOAT,      C("DECL2"),   None,   decl.start,   False, False),
+    Stamp(STBASE,   "arr",      C("DECLA"),   None,   adecl.astart, False, False),
 
     Stamp(C("DECL2"),   ":",     C("DECL3"),   None,   decl.col,    False, False),
     Stamp(C("DECL3"),   "ident", C("STARITH"), None,   decl.ident,  False, False),
@@ -310,7 +307,7 @@ stamps =  (  \
     # This will ignore white spaces (fall through)
     Stamp(C("STATEANY"), "tab",     C("STIGN"),   None,  misc.tab, False, False),
     Stamp(C("STATEANY"), "sp",      C("STIGN"),   None,  misc.space, False, False),
-    #Stamp(C("STATEANY"), "nl",      C("STIGN"),   None,  misc.nl, False, False),
+    Stamp(C("STATEANY"), "nl",      C("STIGN"),   None,  misc.nl, False, False),
     )
 
 if __name__ == "__main__":
