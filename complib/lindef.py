@@ -26,7 +26,6 @@
     new line and ';' is interpreted as a sequence terminator,
 
     See grammar spec for more details.
-
 '''
 
 from   complib.utils import *
@@ -36,51 +35,6 @@ import complib.linfunc  as linfunc
 
 def defpvg(xpvg):
     global pvg ; pvg = xpvg
-
-class   Xenum():
-
-    ''' Simple autofill enum to use in parser '''
-
-    def __init__(self, *val):
-        self.arr = [] ; self.narr = {}
-        self.add(*val)
-
-    def add(self, *val):
-        for aa in val:
-            self.narr[aa] = len(self.arr)
-            self.arr.append(aa)
-
-    def dump(self):
-        strx = ""
-        for cnt, aa in enumerate(self.arr):
-            #print(cnt, aa)
-            strx += str(cnt) + " = " + str(aa) + "\n"
-        return strx
-
-    def get(self, cnt):
-        return self.arr[cnt]
-
-    def val(self, name):
-        try:
-            ret = self.narr[name]
-        except:
-            if 0: #pvg.opt_verbose:
-                print("Warn: adding:", name)
-            self.add(name)
-            ret = self.narr[name]
-        return ret
-
-def test_xenum():
-
-    ''' Test Xenum class '''
-    eee = Xenum("no", "yes",)
-    eee.add( "maybe")
-    assert eee.get(0) == "no"
-    assert eee.get(1) == "yes"
-    assert eee.val("no")  == 0
-    assert eee.val("yes") == 1
-    # Autogen
-    assert eee.val("none") == 3
 
 class Stamp:
 
@@ -101,10 +55,10 @@ class Stamp:
         else:
             self.tokens  = tokenx
 
-        self.nstate = nstatex ;    self.push   = pushx
+        self.nstate  = nstatex ;  self.push   = pushx
+        self.dncall  = dncall  ;  self.upcall = upcall
+        self.group   = groupx  ;  self.flags  = flagsx
         self.prepush = pushy
-        self.dncall = dncall  ;    self.upcall = upcall
-        self.group  = groupx  ;    self.flags  = flagsx
 
     def dump(self):
 
@@ -123,7 +77,10 @@ class Stamp:
 
         states =  ""
         for aa in self.state:
-            states += ST.get(aa) + " "
+            sss = ST.get(aa)
+            if states: sss = " " + sss
+            states += sss
+
         if self.upcall:
             fnameU = str(self.upcall.__name__)
         else:
@@ -133,7 +90,8 @@ class Stamp:
         else:
             fnameD = "NoDNFunc"
 
-        strx = "cState: " + states + " "  + pp(str(self.tokens)) \
+        ttt = stringify(self.tokens)
+        strx = "cState: " + pp(states) + " tok: "  + pp(ttt) \
                 + " nState: " + ST.get(self.nstate) + " " + fnameD \
                 + " " + fnameU + " " + str(self.push) + " " + str(self.prepush)
         return strx
@@ -171,31 +129,35 @@ PARENSTATE =  C("STARITH"), C("SFASSN"), C("SFADD"),  C("SFSUB"), C("SFMUL")
 
 Dfuncx = ( \
     # Function Declaration
-    Stamp(C("STATEANY"),  "func",   C("STFUNC"),    None,  None, False, False),
-    Stamp(C("STFUNC"),    "ident",  C("STFUNC2"),   None,  funcs.start, False, False),
-    Stamp(C("STFUNC2"),   "((",     C("SFUNARG"),   None,  funcs.args_start, True, False),
+    Stamp(C("STATEANY"),   "func",   C("STFUNC2"), None,  None, False, False),
+    Stamp(C("STFUNC2"),    "ident",  C("STFUNC"),  None,  funcs.start, True, False),
+    Stamp(C("STFUNC"),     "((",     C("SFUNARG"), None,  funcs.args_start, True, False),
 
-    Stamp(C("SFUNARG"),  "))",      C("STPOP"),     funcs.args_end, None, False, False),
-    Stamp(C("SFUNARG2"), "))",      C("STPOP"),     funcs.args_end, None, False, False),
+    Stamp(C("SFUNARG"),  "))",      C("STPOP"),    funcs.args_end, None, False, False),
+    #Stamp(C("SFUNARG2"), "))",      C("STPOP"),    funcs.args_end, None, False, False),
 
-    Stamp(C("SFUNARG"),  "{",      C("SFUNBODY"),   None,  funcs.startbody, True, False),
-    Stamp(C("SFUNBODY"), "}",      C("STATEINI"),   None,  funcs.endbody, False, False),
+    Stamp(C("STFUNC"),  "{",       C("SFUNBODY"),  None,  funcs.startbody, True, False),
+    #Stamp(C("SFUNBODY"), ";",      C("STIGN"),    None,  None, False, False),
+    #Stamp(C("SFUNBODY"), "nl",     C("STIGN"),    None,  None, False, False),
+    Stamp(C("SFUNBODY"), "}",      C("STPOP"),     funcs.endbody, None,   False, False),
 
-    Stamp(C("SFUNBODY"), "enter",  C("SFUNENT2"),   None,  None, False, True),
-    Stamp(C("SFUNENT2"), "{",      C("SFUNENT"),    None,  funcs.enter, False, False),
-    Stamp(C("SFUNENT"),  "}",      C("STPOP"),      funcs.enter_end, None, False, False),
+    Stamp(C("STFUNC"),  ";",       C("STPOP"),     None,  funcs.endfunc, True, False),
+    Stamp(C("STFUNC"),  "nl",       C("STPOP"),    None,  funcs.endfunc, True, False),
 
-    Stamp(C("SFUNBODY"), "leave",   C("SFUNLEA2"),  None,  None, False, True),
-    Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),   None,  funcs.leave, False, False),
-    Stamp(C("SFUNLEA"),  "}",       C("STPOP"),     funcs.leave_end, None, False, False),
+    Stamp(C("SFUNBODY"), "enter",  C("SFUNENT2"),  None,  None, False, True),
+    Stamp(C("SFUNENT2"), "{",      C("SFUNENT"),   None,  funcs.enter, False, False),
+    Stamp(C("SFUNENT"),  "}",      C("STPOP"),     funcs.enter_end, None, False, False),
 
-    Stamp(C("SFUNBODY"), "return", C("SFASSN"),     None,  funcs.ret, False, False),
+    Stamp(C("SFUNBODY"), "leave",   C("SFUNLEA2"), None,  None, False, True),
+    Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),  None,  funcs.leave, False, False),
+    Stamp(C("SFUNLEA"),  "}",       C("STPOP"),    funcs.leave_end, None, False, False),
+
+    Stamp(C("SFUNBODY"), "return", C("SFASSN"),    None,  funcs.ret, False, False),
 
     #Stamp(C("SFUNCRET"), "nl",     C("SFUNBODY"),   None,  None, False, False),
     #Stamp(C("SFUNCRET"), ";",      C("SFUNBODY"),   None,  None, False, False),
     #Stamp(C("SFUNCRET"), "num",    C("SFUNBODY"),   None,  None, False, False),
     #Stamp(C("SFUNCRET"), "ident",  C("SFUNBODY"),   None,  None, False, False),
-
 )
 
 Drassn  = (
@@ -216,8 +178,8 @@ Dfcall  = (
     Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.val, False, False),
     Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.val, False, False),
 
-    Stamp(C("CFUNC3"),    "))",      C("STPOP"), fcall.end, None, False, False),
-    Stamp(C("CFUNC4"),    "))",      C("STPOP"), fcall.end, None, False, False),
+    Stamp(C("CFUNC3"),    "))",     C("STPOP"), fcall.end, None, False, False),
+    Stamp(C("CFUNC4"),    "))",     C("STPOP"), fcall.end, None, False, False),
     Stamp(C("CFUNC4"),    ",",      C("CFUNC3"), None, fcall.comma, False, False),
     Stamp(C("CFUNC4"),    "nl",     C("STPOP"),  fcall.end, None,  False, False),
     Stamp(C("CFUNC4"),    ";",      C("STPOP"),  fcall.end, None,  False, False),
@@ -257,7 +219,7 @@ Darith = (
     Stamp(C("STARITH"), "+",        C("SFADD"),    None,  arith.arithop, False, False),
     Stamp(C("SFADD"),   "ident",    C("STARITH"),  None,  arith.addexpr, False, False),
     Stamp(C("SFADD"),   "num",      C("STARITH"),  None,  arith.addexpr, False, False),
-    Stamp(C("SFMUL"),   "num2",     C("STARITH"),  None,  arith.mulexpr, False, False),
+    Stamp(C("SFADD"),   "num2",     C("STARITH"),  None,  arith.mulexpr, False, False),
 
     Stamp(C("STARITH"), "/",        C("SFDIV"),    None,  arith.arithop, False, False),
     Stamp(C("SFDIV"),   "ident",    C("STARITH"),  None,  arith.divexpr, False, False),
@@ -281,10 +243,9 @@ Darith = (
 
     # Down state to:
     Stamp(PARENSTATE,   "))",      C("STPOP"),    misc.dbldwn, None, False, False),
-    #Stamp(C("STARITH"), "}",       C("STPOP"),    None,  arith.arith_stop, False, False),
 
     Stamp(C("STARITH"), ";",       C("STPOP"),    None,  arith.arith_stop, False, False),
-    #Stamp(C("STARITH"), "nl",     C("STPOP"),    None,  arith.arith_stop, False, False),
+    Stamp(C("STARITH"), "nl",      C("STPOP"),    None,  arith.arith_stop, False, False),
     )
 
 FLOAT   = "float", "double", "quad",
@@ -298,8 +259,9 @@ Ddecl = (
     Stamp(C("DECL2"),   ":",     C("DECL3"),   None,   decl.col,    False, False),
     Stamp(C("DECL3"),   "ident", C("STARITH"), None,   decl.ident,  False, False),
     Stamp(C("STARITH"), ",",     C("DECL3"),   None,   decl.comma,  False, False),
+
     Stamp(C("STARITH"), "nl",    C("STPOP"),   decl.down, None,     False, False),
-    Stamp(C("STARITH"), ";",     C("STPOP"),   decl.down, None,    False, False),
+    Stamp(C("STARITH"), ";",     C("STPOP"),   decl.down, None,     False, False),
 
     # String operations
     Stamp(C("DECLA"),   ":",     C("DECLA2"),  None,   adecl.acol,   False, False),
@@ -320,14 +282,15 @@ Ddecl = (
 
 stamps =  (  \
 
-    #Stamp(C("STATEINI"), "ident",   C("STARITH"),  None,  arith.arithstart, True, False),
-    Stamp(STBASE,        "ident",   C("STARITH"),  None,  arith.arithstart, True, False),
+    Stamp(STBASE,        "ident",   C("STARITH"),  None,  arith.arithstart, False, False),
     Stamp(C("STATEINI"), "extern",  C("EXTERN"),   None,  misc.extern, True, False),
     Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  None,  misc.extadd, False, False),
     Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  None,  misc.extadd, False, False),
     Stamp(C("EXTERN2"),  ",",       C("EXTERN"),   None,  misc.extcomma, False, False),
     Stamp(C("EXTERN2"),  ";",       C("STPOP"),    misc.exdn,  None, False, False),
     Stamp(C("EXTERN2"),  "nl",      C("STPOP"),    misc.exdn,  None, False, False),
+
+    #Stamp(C("STATEINI"),  "nl",      C("STIGN"),    None,  None, False, False),
 
     # Include sub systems
     *Ddecl,
@@ -347,7 +310,7 @@ stamps =  (  \
     # This will ignore white spaces (fall through)
     Stamp(C("STATEANY"), "tab",     C("STIGN"),   None,  misc.tab, False, False),
     Stamp(C("STATEANY"), "sp",      C("STIGN"),   None,  misc.space, False, False),
-    Stamp(C("STATEANY"), "nl",      C("STIGN"),   None,  misc.nl, False, False),
+    #Stamp(C("STATEANY"), "nl",      C("STIGN"),   None,  misc.nl, False, False),
     )
 
 if __name__ == "__main__":

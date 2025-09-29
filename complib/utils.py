@@ -418,6 +418,13 @@ def isfile(fname):
         return True
     return False
 
+def stringify(lll):
+    ttt = ""
+    for aa in lll:
+        if ttt: aa = " " + aa
+        ttt += aa
+    return ttt
+
 def hd(varx):
     ''' Hex dump it '''
     strx = ""
@@ -492,6 +499,51 @@ def dumpstack(self2, stackx, eolx = "", label = "", active=False):
             continue
         print("  " + str(self2.arrx[aa]), end=eolx)
     if eolx == "": print()
+
+class   Xenum():
+
+    ''' Simple autofill enum to use in parser '''
+
+    def __init__(self, *val):
+        self.arr = [] ; self.narr = {}
+        self.add(*val)
+
+    def add(self, *val):
+        for aa in val:
+            self.narr[aa] = len(self.arr)
+            self.arr.append(aa)
+
+    def dump(self):
+        strx = ""
+        for cnt, aa in enumerate(self.arr):
+            #print(cnt, aa)
+            strx += str(cnt) + " = " + str(aa) + "\n"
+        return strx
+
+    def get(self, cnt):
+        return self.arr[cnt]
+
+    def val(self, name):
+        try:
+            ret = self.narr[name]
+        except:
+            if 0: #pvg.opt_verbose:
+                print("Warn: adding:", name)
+            self.add(name)
+            ret = self.narr[name]
+        return ret
+
+def test_xenum():
+
+    ''' Test Xenum class '''
+    eee = Xenum("no", "yes",)
+    eee.add( "maybe")
+    assert eee.get(0) == "no"
+    assert eee.get(1) == "yes"
+    assert eee.val("no")  == 0
+    assert eee.val("yes") == 1
+    # Autogen
+    assert eee.val("none") == 3
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

@@ -242,6 +242,10 @@ class   Funcs():
             print("funcs.args_start()", pp(self2.arrx[tprog]))
         scopestack.push(scopestack.peek() + "arg_")
 
+    def endfunc(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("funcs.endfunc()", pp(self2.arrx[tprog]))
+
     def endbody(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.endbody()", pp(self2.arrx[tprog]))
