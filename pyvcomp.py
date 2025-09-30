@@ -21,7 +21,8 @@ from complib.utils import *
 Version = "Version: 1.0.0; "
 Build   = "Build date: Mon 15.Sep.2025"
 
-# Name is prepened opt_ and name's first letter becomes the option letter
+# Name is prepened opt_ and the name's first letter becomes the option letter
+# for the single option ("Define" -> opt_Define -> --Define -> -D)
 # Execute is activated if outprog != 'x'
 
 opts =  (\
@@ -50,6 +51,7 @@ opts =  (\
     ("frame_show",  False,      True,   "Show CRT frame strings. (for testing)"),
     ("ignore",      False,      True,   "Ignore error, continue compilation"),
     ("nocolor",     False,      True,   "Output no color info to terminal"),
+    ("ztrace",      "",         True,   "Trace event to stdout (event ex: stack)"),
     )
 
 def parsefile(strx):
@@ -61,6 +63,8 @@ def parsefile(strx):
 
     if lpg.opt_verbose.cnt > 0:
         print ("Processing:", strx)
+
+    lpg.nowfile = strx
 
     #if lpg.opt_outfile == "":
     strx2 = os.path.basename(strx)
@@ -159,11 +163,6 @@ def parsefile(strx):
     # Output results
     if lpg.opt_emit:
         codegen.show_emit()
-
-    if lpg.opt_ymtab:
-        print("Symtab:")
-        for aa in linpool.gpool:
-            print(aa)
 
     if not lpg.opt_comp_only:
         codegen.dep_assemble(lpg)

@@ -231,8 +231,9 @@ class Lexer():
                     print("Newline at pos:", tt.start)
                 self.lastline = tt.end
 
-            if tt.stamp.xstr == "comm2" or \
-                    tt.stamp.xstr == "comm4":
+            # Comments influence line numbers
+            COMS = "comm2", "comm4", "comm2d", "comm4d"
+            if  tt.stamp.xstr in COMS:
                 self.linestart = pos
                 self.linenum += 1
 
@@ -347,6 +348,12 @@ class Lexer():
                 res.append(tt)
 
             #print("fin", self.state, "tt", tt, "acc", self.accum[self.state])
+
+            # Calculate comment line feeds
+            if  tt.stamp.xstr == "comm3" or tt.stamp.xstr == "comm3d":
+                ccc = count_newlines(tt.mstr)
+                #print(ccc, "Comm 3: [", "]", tt)
+                self.linenum += ccc
 
         return res
 

@@ -1,1 +1,1 @@
-func hello(()) { }
+func hello(()){}

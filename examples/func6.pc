@@ -1,7 +1,6 @@
-func hello(( u64:q=1 ; u32:aa=1))
+u32:aaa=11+22;
+func hello(())
 {
-    enter { u32:a=0; }
-    leave { u32:b=0; }
-
-    return
+    enter {u32:aa=1+2;}
+    leave {u32:bb=3+4;}
 }

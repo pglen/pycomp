@@ -26,8 +26,10 @@ def unique():             # create a unique temporary number
 def xprintf(*args, end = " "):
     strx = ""
     for aa in args:
-        strx += str(aa) + " "
-    strx += end
+        aa = str(aa)
+        if strx:  aa = "\t" + aa
+        strx +=  aa
+    #strx += end
     print(strx, end = "")
     #return strx
 
@@ -204,9 +206,9 @@ def asmesc(strx):
     if cumm:
         retx += sep + cumm + sep + ", "
     retx += "0"
-    if pvg and pvg.opt_debug > 4:
+    if pvg and pvg.opt_debug > 7:
         print("asmesc:", strx, "->", retx)
-    if pvg and pvg.opt_debug > 6:
+    if pvg and pvg.opt_debug > 8:
         for aa in retx:
             print(retx)
 
@@ -298,7 +300,7 @@ def cesc(strx):
             retx += chh
         pos += 1
 
-    if pvg and pvg.opt_debug > 5:
+    if pvg and pvg.opt_debug > 8:
         print("cesc:", strx, "=>", retx)
 
     return retx
@@ -440,6 +442,13 @@ def padx(strx, lenx = 4):
     #print("[[" + strx + "]]")
     return strx;
 
+def count_newlines(xstr):
+    cnt = 0
+    for aa in xstr:
+        if aa == "\n":
+            cnt += 1
+    return cnt
+
 def error(self2, errstr, newpos = -1, addstr = ""):
 
     ''' Print compiler error, add more info if  requested '''
@@ -454,14 +463,23 @@ def error(self2, errstr, newpos = -1, addstr = ""):
             eol = aa
             #print("Found pos", posx.linestart, eol)
             break
-    print("\n" + self2.buf[posx.linestart:eol])
-    print("-" *  (posx.end - posx.linestart - 2), end = "" )
-    print("^", end = "")
-    print("-" *  (eol - posx.end) )
-    print(errstr, red("error"), "at line:", posx.linenum + 1,
-                    "col:", posx.start - posx.linestart, end = " " )
-    print(addstr)
-    sys.exit(1)
+    print("\n" + self2.buf[posx.linestart:eol], file=sys.stderr, )
+    print("-" *  (posx.end - posx.linestart - 2), file=sys.stderr, end = "" )
+    print("^", file=sys.stderr, end = "")
+    print("-" *  (eol - posx.end), file=sys.stderr,  )
+    print(pvg.nowfile + ":", errstr, red("error"), "at line:", posx.linenum + 1,
+          "near col:", posx.start - posx.linestart, file=sys.stderr, end = " " )
+    print(addstr, file=sys.stderr)
+    subexit(self2, 1)
+
+def subexit(self2, errx):
+    if pvg.opt_ymtab:
+        import complib.linpool as linpool
+        print("Symtab:")
+        linpool.showpool(self2)
+
+    if(not pvg.opt_ignore):
+        sys.exit(1)
 
 # 30: Black     31: Red     32: Green   33: Yellow
 # 34: Blue      35: Magenta 36: Cyan    37: White
@@ -478,6 +496,9 @@ def green(strx):
 def color(strx, col = "31"):
 
     if not os.isatty(1):
+        return strx
+
+    if not os.isatty(2):
         return strx
 
     if not pvg.opt_nocolor:
@@ -521,7 +542,10 @@ class   Xenum():
         return strx
 
     def get(self, cnt):
-        return self.arr[cnt]
+        try:
+            return self.arr[cnt]
+        except:
+            return("Invalid")
 
     def val(self, name):
         try:

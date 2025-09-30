@@ -1,6 +1,6 @@
 u32:aa=1
 u16:bb=3*4
-#func hello((u32:a1=1; u16:a2=2))
-#{
-#    u32:loc1=1
-#}
+func hello((u32:a1=1; u16:a2=2 ; ))
+{
+    u32:loc1=1
+}

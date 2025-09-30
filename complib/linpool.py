@@ -26,10 +26,16 @@ def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
         varval = self2.arrx[xstack.get(4)].mstr
     else:
         varval = 0
-    ret = add2pool(self2, typename, varname, varval)
+
+    print("addto:", self2.arrx[xstack.get(2)])
+
+    linenum = self2.arrx[xstack.get(2)].linenum
+    colnum = self2.arrx[xstack.get(2)].lineoffs
+
+    ret = add2pool(self2, typename, varname, varval, linenum, colnum)
     return ret
 
-def add2pool(self2, typename, varname, varval):
+def add2pool(self2, typename, varname, varval, linenum):
 
     if pvg.opt_debug > 7:
         print("addtopool:", "type:", pp(typename),
@@ -40,13 +46,17 @@ def add2pool(self2, typename, varname, varval):
                 print("Dumping pool:")
                 for aa in gpool:
                     print(" pool:", aa)
-            error(self2, "Duplicate definition") #, varname)
+            error(self2, "Duplicate definition (from line: %d) " % (aa.linenumx + 1))
             sys.exit(1)
 
-    tpi = TypI(typename, varname, varval)
+    tpi = TypI(typename, varname, varval, linenum)
     gpool.push(tpi)
     datatype = pctona(typename)
     return datatype
+
+def showpool(self2):
+    for aa in gpool:
+        print(aa)
 
 def lookpool(self2, varname):
 
@@ -113,14 +123,17 @@ class TypI:
 
     ''' Global type structure '''
 
-    def __init__(self, typex, namex, valx):
+    def __init__(self, typex, namex, valx, linenumx, colx = 0):
         self.typex = typex
         self.namex = namex
         self.valx = valx
+        self.linenumx = linenumx
+        self.colx = colx
 
     def __str__(self):
         return str(self.typex) + " : " + str(self.namex) + \
-                " = " + str(self.valx)
+                " = " + str(self.valx) + " -- line: " + \
+                str(self.linenumx) + " : " + str(self.colx)
 
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")

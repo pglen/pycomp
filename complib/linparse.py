@@ -77,10 +77,11 @@ class LinParse():
         else:
             if not match:
                 error(self, "Parse")
-        if self.pvg.opt_debug > 5:
+        if self.pvg.opt_debug > 7 or "dump" in self.pvg.opt_ztrace:
             print("statestack:", self.show_statestack())
         if self.state !=  ST.val("STATEINI"):
-            print("state =", self.state)
+            if self.pvg.opt_debug > 5 or "dump" in self.pvg.opt_ztrace:
+                print("state =", self.state)
             error(self, "Unexpected parser end state: '%s' on exit." % ST.get(self.state))
 
     def stamps_iter(self, startx, endd):
@@ -105,6 +106,7 @@ class LinParse():
         # No matter what, step forward
         if xprog == 0:
             xprog = 1
+
         return  matchx, xprog
 
     def itemx(self, sidx, tprog, endd):
@@ -148,30 +150,31 @@ class LinParse():
 
         if currtoken.stamp.xstr in currstamp.tokens:
             match = True
-            if self.pvg.opt_debug > 6:
+            if self.pvg.opt_debug > 8:
                 if currstamp.tokens[0] != "sp":
                     print(currstamp, "mstr:", pp(currtoken.mstr), end = " ")
 
-            if self.pvg.opt_debug > 6:
+            if self.pvg.opt_debug > 7:
                 if currstamp.nstate != ST.val("STIGN"):
                     print(" sState;", ST.get(self.state))
 
-            if self.pvg.opt_debug > 6:
+            if self.pvg.opt_debug > 6 or "state" in self.pvg.opt_ztrace:
                 if  currtoken.stamp.xstr != "sp":    # no sp display
-                    xprintf( \
-                            "state:",  ST.get(self.state),
+                    xprintf("state:",  ST.get(self.state),
                             "tok:", pp(currtoken.mstr),
-                            pp(currtoken.stamp.xstr),
-                            "tprog =", tprog,
-                            #"stamp:", pp(currstamp.token),
-                            #padx(pp(currtoken.stamp.xstr), 7),
-                            #padx(pp(currtoken.mstr, 6), 5),
+                            "stamp:", pp(currtoken.stamp.xstr),
+                            "tprog =", tprog, "\n"
                             )
-                    global row
-                    rrr =  6
-                    if row % rrr == rrr - 1:
-                        print()
-                    row += 1
+
+                    #"stamp:", pp(currstamp.token),
+                    #padx(pp(currtoken.stamp.xstr), 7),
+                    #padx(pp(currtoken.mstr, 6), 5),
+
+                    #global row
+                    #rrr =  6
+                    #if row % rrr == rrr - 1:
+                    #    print()
+                    #row += 1
 
             if currstamp.nstate == ST.val("STIGN"):
                 # No state change, but call function
@@ -182,15 +185,25 @@ class LinParse():
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
             elif currstamp.nstate == ST.val("STPOP"):
-                # Catch underflow
-                #if self.statestack.getlen() == 0:
-                #    print("Stack underflow")
-                if self.pvg.opt_debug > 5:
-                    print("stack:", pp(self.show_statestack()) )
+                if self.pvg.opt_debug > 8 or "dump" in self.pvg.opt_ztrace:
+                    print("pop:", self.show_statestack())
+                if self.pvg.opt_debug > 4  or "state" in self.pvg.opt_ztrace:
+                    print("pop from:", ST.get(self.state), end = " ")
                 self.statestack.pop()
                 self.state = self.statestack.peek()
-                if self.pvg.opt_debug > 4:
-                    print("popped state to:", ST.get(self.state), end = " ")
+                if self.pvg.opt_debug > 2  or "state" in self.pvg.opt_ztrace:
+                    print(" pop to:", ST.get(self.state))
+                if currstamp.dncall:
+                    currstamp.dncall(self, tprog)
+            elif currstamp.nstate == ST.val("STPOP2"):
+                # Double stack pop
+                if self.pvg.opt_debug > 8 or "dump" in self.pvg.opt_ztrace:
+                    print("dbl pop:", pp(self.show_statestack()) )
+                self.statestack.pop()
+                self.statestack.pop()
+                self.state = self.statestack.peek()
+                if self.pvg.opt_debug > 2 or "state" in self.pvg.opt_ztrace:
+                    print(" dbl pop to:", ST.get(self.state))
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
             else:
@@ -198,31 +211,31 @@ class LinParse():
                     currstamp.upcall(self, tprog)
 
                 if currstamp.prepush:
-                    if self.pvg.opt_debug > 4:
-                        print("pre push:", end = " ")
+                    if self.pvg.opt_debug > 4 or "stack" in self.pvg.opt_ztrace:
+                        print("pre push:", ST.get(self.state))
                     self.statestack.push(self.state)
 
                 # Assign new state here
                 self.state = currstamp.nstate
-                if self.pvg.opt_debug > 4:
-                    print("set to:", ST.get(self.state), end = " ")
+                if self.pvg.opt_debug > 2 or "state" in self.pvg.opt_ztrace:
+                    print(" state to:", ST.get(self.state))
 
                 # Push target state
                 if currstamp.push:
-                    if self.pvg.opt_debug > 4:
-                        print("push:", ST.get(self.state), end = " ")
+                    if self.pvg.opt_debug > 4  or "stack" in self.pvg.opt_ztrace:
+                        print("push:", ST.get(self.state))
                     self.statestack.push(self.state)
 
-                if self.pvg.opt_debug > 4:
-                    print()
+                #if self.pvg.opt_debug > 4:
+                #    print()
 
-                if self.pvg.opt_debug > 7:
-                    for aa in self.statestack:
-                        print("statestack:", aa)
+                #if self.pvg.opt_debug > 7  or "stack" in self.pvg.opt_ztrace:
+                #    for aa in self.statestack:
+                #        print("statestack:", aa)
 
-            if self.pvg.opt_debug > 5:
+            if self.pvg.opt_debug > 7 or "dump" in self.pvg.opt_ztrace:
                 if currstamp.tokens[0] != "sp":
-                    print("stack:", pp(self.show_statestack()) )
+                    print("statestack:", pp(self.show_statestack()) )
         else:
             #print("state misMatch", currstamp)
             pass
@@ -232,6 +245,8 @@ class LinParse():
 
         if  self.pvg.opt_debug > 7:
             print("itemx return:", match, iprog)
+
+        #breakpoint()
 
         return match, iprog
 

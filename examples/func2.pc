@@ -1,4 +1,4 @@
-func www((u32:aa=0))
+ u32:bb=0 ; u32:aa=0
+func www(( u32:bb=0;))
 {
-  u32:bb=0
 }

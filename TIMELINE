@@ -18,6 +18,7 @@ have a higher importance than ever before.
     Wed 16.Jul.2025     Moved from pgpygtk
     Thu 18.Sep.2025     Added float, down functions
     Thu 25.Sep.2025     Expression parser operational
+    Tue 30.Sep.2025     Added trace expression
 
 ## Memory management
 

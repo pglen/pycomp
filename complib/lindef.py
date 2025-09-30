@@ -36,12 +36,16 @@ import complib.linfunc  as linfunc
 def defpvg(xpvg):
     global pvg ; pvg = xpvg
 
+PUSH=True
+NOPUSH=False
+NOCALL=False
+
 class Stamp:
 
     ''' The class that holds the token descriptions for the parser '''
 
     def __init__(self, statex, tokenx, nstatex, dncall, upcall, pushx, pushy,
-                                groupx = None, flagsx = None):
+                                groupx = False, flagsx = False):
         # Extend to array if a number is passed
         if type(statex) == type(0):
             self.state = (statex,)
@@ -99,6 +103,9 @@ class Stamp:
 # List of identities for declaration
 IDEN = ("ident", "num", "num2", "str", "arr", "float", "dbl",  "dbl2", )
 
+# List of identities for number declaration
+FLOAT   = "float", "double", "quad",
+
 # Changed to auto add new state (note: no dup checking)
 ST = Xenum()
 def C(vvv):
@@ -112,182 +119,171 @@ STBASE =  ( C("STATEINI"), C("SFUNBODY"), C("SFUNARG"),
 PARENSTATE =  C("STARITH"), C("SFASSN"), C("SFADD"),  C("SFSUB"), C("SFMUL")
 
 # Parse tables consist of:
-#       a.) Parser state or states
-#       b.) Token definition or tokens
-#       c.) New parser state
-#       e.) Parser function to call on up state
-#       f.) Parser function to call on down state
+#       a.) Parser state or parse states
+#       b.) Token definition or tokens definitions
+#       c.) New parser state to change to
+#       e.) Function to call on up (set) state
+#       f.) Function to call on down (pop) state
 #       g.) Push flag at the end  (after set state)
-#       h.) Push flag at the beginning (before stet state)
+#       h.) Push flag at the beginning (before set state)
 #
-# To create a custom rule, just add new tokens / states in
-#   the definition section. the D* declarations are extracted subsections.
-
+# To create a new (custom) rule, just add new tokens / states in
+#   the definition section. the "D*" declarations are extracted subsections.
+#
 # The entries to be matched agains the parse array.
 # state(s)  token(s)  newState  downFunction  upFunction  pushFlag pre-pushFlag
 # -------   -------   --------  ------------- ----------- -------- ------------
 
 Dfuncx = ( \
     # Function Declaration
-    Stamp(C("STATEANY"),   "func",   C("STFUNC2"), None,  None, False, False),
-    Stamp(C("STFUNC2"),    "ident",  C("STFUNC"),  None,  funcs.start, True, False),
-    Stamp(C("STFUNC"),     "((",     C("SFUNARG"), None,  funcs.args_start, True, False),
+    Stamp(C("STATEANY"), "func",  C("STFUNC2"), NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STFUNC2"),  "ident", C("STFUNC"),  NOCALL,  funcs.start, PUSH, NOPUSH),
+    Stamp(C("STFUNC"),   "((",    C("SFUNARG"), NOCALL,  funcs.args_start, PUSH, NOPUSH),
 
-    Stamp(C("SFUNARG"),  "))",      C("STPOP"),    funcs.args_end, None, False, False),
+    Stamp(C("SFUNARG"),  "))",      C("STPOP"),    funcs.args_end, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STARITH"),  "))",      C("STPOP"),    funcs.args_end, NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("STFUNC"),  "{",       C("SFUNBODY"),  None,  funcs.startbody, True, False),
-    Stamp(C("SFUNBODY"), "}",      C("STPOP"),     funcs.endbody, None,   False, False),
+    Stamp(C("STFUNC"),   "{",       C("SFUNBODY"),  NOCALL,  funcs.startbody, PUSH, NOPUSH),
+    Stamp(C("SFUNBODY"), "}",       C("STPOP2"),     funcs.endbody, NOCALL,   NOPUSH, NOPUSH),
 
-    Stamp(C("STFUNC"),  ";",       C("STPOP"),     None,  funcs.endfunc, True, False),
-    Stamp(C("STFUNC"),  "nl",       C("STPOP"),    None,  funcs.endfunc, True, False),
+    #Stamp(C("STFUNC"),  ";",       C("STPOP"),     NOCALL,  funcs.endfunc, PUSH, NOPUSH),
+    #Stamp(C("STFUNC"),  "nl",       C("STPOP"),    NOCALL,  funcs.endfunc, PUSH, NOPUSH),
 
-    Stamp(C("SFUNBODY"), "enter",  C("SFUNENT2"),  None,  None, False, True),
-    Stamp(C("SFUNENT2"), "{",      C("SFUNENT"),   None,  funcs.enter, False, False),
-    Stamp(C("SFUNENT"),  "}",      C("STPOP"),     funcs.enter_end, None, False, False),
+    Stamp(C("SFUNBODY"), "enter",  C("SFUNENT2"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("SFUNENT2"), "{",      C("SFUNENT"),   NOCALL,  funcs.enter, PUSH, NOPUSH),
+    Stamp(C("SFUNENT"),  "}",      C("STPOP"),     funcs.enter_end, NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("SFUNBODY"), "leave",   C("SFUNLEA2"), None,  None, False, True),
-    Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),  None,  funcs.leave, False, False),
-    Stamp(C("SFUNLEA"),  "}",       C("STPOP"),    funcs.leave_end, None, False, False),
+    Stamp(C("SFUNBODY"), "leave",   C("SFUNLEA2"), NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),  NOCALL,  funcs.leave, PUSH, NOPUSH),
+    Stamp(C("SFUNLEA"),  "}",       C("STPOP"),    funcs.leave_end, NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("SFUNBODY"), "return", C("SFASSN"),    None,  funcs.ret, False, False),
+    Stamp(C("SFUNBODY"), "return",  C("SFASSN"),    NOCALL,  funcs.ret, PUSH, NOPUSH),
 
-    #Stamp(C("SFUNCRET"), "nl",     C("SFUNBODY"),   None,  None, False, False),
-    #Stamp(C("SFUNCRET"), ";",      C("SFUNBODY"),   None,  None, False, False),
-    #Stamp(C("SFUNCRET"), "num",    C("SFUNBODY"),   None,  None, False, False),
-    #Stamp(C("SFUNCRET"), "ident",  C("SFUNBODY"),   None,  None, False, False),
+    #Stamp(C("SFUNCRET"), "nl",     C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    #Stamp(C("SFUNCRET"), ";",      C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    #Stamp(C("SFUNCRET"), "num",    C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    #Stamp(C("SFUNCRET"), "ident",  C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
 )
 
 Drassn  = (
     # Right side assignment
-    #Stamp(C("STARITH"),  "=>",     C("STRASSN3"),  None,  None, False, False),
-    #Stamp(C("STRASSN3"), "num",    C("STRASSN4"),  None,  assn.rassn, False, False),
-    #Stamp(C("STRASSN3"), "num2",   C("STRASSN4"),  None,  assn.rassn, False, False),
-    #Stamp(C("STRASSN3"), "ident",  C("STRASSN4"),  None,  assn.rassn, False, False),
-    #Stamp(C("STRASSN4"),  ";",     C("STPOP"),     None,  assn.rassn_stop, False, False),
-    #Stamp(C("STRASSN4"),  "nl",    C("STPOP"),     None,  assn.rassn_stop, False, False),
+    #Stamp(C("STARITH"),  "=>",     C("STRASSN3"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    #Stamp(C("STRASSN3"), "num",    C("STRASSN4"),  NOCALL,  assn.rassn, NOPUSH, NOPUSH),
+    #Stamp(C("STRASSN3"), "num2",   C("STRASSN4"),  NOCALL,  assn.rassn, NOPUSH, NOPUSH),
+    #Stamp(C("STRASSN3"), "ident",  C("STRASSN4"),  NOCALL,  assn.rassn, NOPUSH, NOPUSH),
+    #Stamp(C("STRASSN4"),  ";",     C("STPOP"),     NOCALL,  assn.rassn_stop, NOPUSH, NOPUSH),
+    #Stamp(C("STRASSN4"),  "nl",    C("STPOP"),     NOCALL,  assn.rassn_stop, NOPUSH, NOPUSH),
     )
 
 Dfcall  = (
     # Function call
-    Stamp(C("STARITH"),   "((",     C("CFUNC3"),  None, fcall.start, False, False),
-    Stamp(STBASE,         "((",     C("CFUNC3"),  None, fcall.start, False, False),
-    Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  None, fcall.val, False, False),
-    Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  None, fcall.val, False, False),
-    Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  None, fcall.val, False, False),
+    Stamp(C("STARITH"),   "((",     C("CFUNC3"),  NOCALL, fcall.start, NOPUSH, NOPUSH),
+    Stamp(STBASE,         "((",     C("CFUNC3"),  NOCALL, fcall.start, NOPUSH, NOPUSH),
+    Stamp(C("CFUNC3"),    "num",    C("CFUNC4"),  NOCALL, fcall.val, NOPUSH, NOPUSH),
+    Stamp(C("CFUNC3"),    "ident",  C("CFUNC4"),  NOCALL, fcall.val, NOPUSH, NOPUSH),
+    Stamp(C("CFUNC3"),    "str",    C("CFUNC4"),  NOCALL, fcall.val, NOPUSH, NOPUSH),
 
-    Stamp(C("CFUNC3"),    "))",     C("STPOP"), fcall.end, None, False, False),
-    Stamp(C("CFUNC4"),    "))",     C("STPOP"), fcall.end, None, False, False),
-    Stamp(C("CFUNC4"),    ",",      C("CFUNC3"), None, fcall.comma, False, False),
-    Stamp(C("CFUNC4"),    "nl",     C("STPOP"),  fcall.end, None,  False, False),
-    Stamp(C("CFUNC4"),    ";",      C("STPOP"),  fcall.end, None,  False, False),
+    Stamp(C("CFUNC3"),    "))",     C("STPOP"), fcall.end, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("CFUNC4"),    "))",     C("STPOP"), fcall.end, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("CFUNC4"),    ",",      C("CFUNC3"), NOCALL, fcall.comma, NOPUSH, NOPUSH),
+    Stamp(C("CFUNC4"),    "nl",     C("STPOP"),  fcall.end, NOCALL,  NOPUSH, NOPUSH),
+    Stamp(C("CFUNC4"),    ";",      C("STPOP"),  fcall.end, NOCALL,  NOPUSH, NOPUSH),
     )
-
-Dtest = (
-    # Assignments / Start of arithmetic
-)
 
 Darith = (
     # Arithmetics (+ - * / sqr assn)
-    #Stamp(C("c"), "=",        C("SFASSN"),    None,  arith.arithop, False, False),
-    Stamp(C("SFASSN"),  "ident",    C("STARITH"),  None,  arith.assnexpr, True, False),
-    Stamp(C("SFASSN"),  "num",      C("STARITH"),  None,  arith.assnexpr, True, False),
-    Stamp(C("SFASSN"),  "num2",     C("STARITH"),  None,  arith.assnexpr, True, False),
-    Stamp(C("SFASSN"),  "str",      C("STARITH"),  None,  arith.assnexpr, True, False),
+    Stamp(C("STARITH"), "=",        C("SFASSN"),   NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFASSN"),  "ident",    C("STARITH"),  NOCALL,  arith.assnexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFASSN"),  "num",      C("STARITH"),  NOCALL,  arith.assnexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFASSN"),  "num2",     C("STARITH"),  NOCALL,  arith.assnexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFASSN"),  "str",      C("STARITH"),  NOCALL,  arith.assnexpr, NOPUSH, NOPUSH),
 
-    Stamp(PARENSTATE,   "(",        C("STIGN"),    None,   misc.parent, False, False),
-    Stamp(PARENSTATE,   ")",        C("STIGN"),    None,   misc.parent, False, False),
+    Stamp(PARENSTATE,   "(",        C("STIGN"),    NOCALL,   misc.parent, NOPUSH, NOPUSH),
+    Stamp(PARENSTATE,   ")",        C("STIGN"),    NOCALL,   misc.parent, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "=",        C("SFASSN"),   None,  arith.arithop, False, False),
+    Stamp(C("STARITH"), "=>",       C("SFPUT"),    NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFPUT"),   "ident",    C("STARITH"),  NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFPUT"),   "num",      C("STARITH"),  NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFPUT"),   "num2",      C("STARITH"), NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "=>",       C("SFPUT"),    None,  arith.arithop, False, False),
-    Stamp(C("SFPUT"),   "ident",    C("STARITH"),  None,  arith.mulexpr, False, False),
-    Stamp(C("SFPUT"),   "num",      C("STARITH"),  None,  arith.mulexpr, False, False),
-    Stamp(C("SFPUT"),   "num2",      C("STARITH"),  None,  arith.mulexpr, False, False),
+    Stamp(C("STARITH"), "expo",     C("SFSQR"),    NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFSQR"),   "ident",    C("STARITH"),  NOCALL,  arith.expexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFSQR"),   "num",      C("STARITH"),  NOCALL,  arith.expexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "expo",     C("SFSQR"),    None,  arith.arithop, False, False),
-    Stamp(C("SFSQR"),   "ident",    C("STARITH"),  None,  arith.expexpr, False, False),
-    Stamp(C("SFSQR"),   "num",      C("STARITH"),  None,  arith.expexpr, False, False),
+    Stamp(C("STARITH"), "*",        C("SFMUL"),    NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFMUL"),   "ident",    C("STARITH"),  NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFMUL"),   "num",      C("STARITH"),  NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFMUL"),   "num2",     C("STARITH"),  NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "*",        C("SFMUL"),    None,  arith.arithop, False, False),
-    Stamp(C("SFMUL"),   "ident",    C("STARITH"),  None,  arith.mulexpr, False, False),
-    Stamp(C("SFMUL"),   "num",      C("STARITH"),  None,  arith.mulexpr, False, False),
-    Stamp(C("SFMUL"),   "num2",     C("STARITH"),  None,  arith.mulexpr, False, False),
+    Stamp(C("STARITH"), "+",        C("SFADD"),    NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFADD"),   "ident",    C("STARITH"),  NOCALL,  arith.addexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFADD"),   "num",      C("STARITH"),  NOCALL,  arith.addexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFADD"),   "num2",     C("STARITH"),  NOCALL,  arith.mulexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "+",        C("SFADD"),    None,  arith.arithop, False, False),
-    Stamp(C("SFADD"),   "ident",    C("STARITH"),  None,  arith.addexpr, False, False),
-    Stamp(C("SFADD"),   "num",      C("STARITH"),  None,  arith.addexpr, False, False),
-    Stamp(C("SFADD"),   "num2",     C("STARITH"),  None,  arith.mulexpr, False, False),
+    Stamp(C("STARITH"), "/",        C("SFDIV"),    NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFDIV"),   "ident",    C("STARITH"),  NOCALL,  arith.divexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFDIV"),   "num",      C("STARITH"),  NOCALL,  arith.divexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "/",        C("SFDIV"),    None,  arith.arithop, False, False),
-    Stamp(C("SFDIV"),   "ident",    C("STARITH"),  None,  arith.divexpr, False, False),
-    Stamp(C("SFDIV"),   "num",      C("STARITH"),  None,  arith.divexpr, False, False),
+    Stamp(C("STARITH"), "%",        C("SFDIV"),    NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFDIV"),   "ident",    C("STARITH"),  NOCALL,  arith.divexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFDIV"),   "num",      C("STARITH"),  NOCALL,  arith.divexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "%",        C("SFDIV"),    None,  arith.arithop, False, False),
-    Stamp(C("SFDIV"),   "ident",    C("STARITH"),  None,  arith.divexpr, False, False),
-    Stamp(C("SFDIV"),   "num",      C("STARITH"),  None,  arith.divexpr, False, False),
+    Stamp(C("STARITH"), "-",        C("SFSUB"),     NOCALL, arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFSUB"),   "ident",    C("STARITH"),   NOCALL, arith.subexpr, NOPUSH, NOPUSH),
+    Stamp(C("SFSUB"),   "num",      C("STARITH"),   NOCALL, arith.subexpr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "-",        C("SFSUB"),     None, arith.arithop, False, False),
-    Stamp(C("SFSUB"),   "ident",    C("STARITH"),   None, arith.subexpr, False, False),
-    Stamp(C("SFSUB"),   "num",      C("STARITH"),   None, arith.subexpr, False, False),
+    Stamp(C("STARITH"), "<<",       C("SFSHIFT"),  NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFSHIFT"), "ident",    C("STARITH"),  NOCALL,  arith.expr, NOPUSH, NOPUSH),
+    Stamp(C("SFSHIFT"), "num",      C("STARITH"),  NOCALL,  arith.expr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "<<",       C("SFSHIFT"),  None,  arith.arithop, False, False),
-    Stamp(C("SFSHIFT"), "ident",    C("STARITH"),  None,  arith.expr, False, False),
-    Stamp(C("SFSHIFT"), "num",      C("STARITH"),  None,  arith.expr, False, False),
+    Stamp(C("STARITH"), ">>",      C("SFRSHIFT"), NOCALL,  arith.arithop, NOPUSH, NOPUSH),
+    Stamp(C("SFRSHIFT"),"ident",   C("STARITH"),  NOCALL,  arith.expr, NOPUSH, NOPUSH),
+    Stamp(C("SFRSHIFT"),"num",     C("STARITH"),  NOCALL,  arith.expr, NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"),  ">>",      C("SFRSHIFT"), None,  arith.arithop, False, False),
-    Stamp(C("SFRSHIFT"), "ident",   C("STARITH"),  None,  arith.expr, False, False),
-    Stamp(C("SFRSHIFT"), "num",     C("STARITH"),  None,  arith.expr, False, False),
-
-    # Down state to:
-    Stamp(PARENSTATE,   "))",      C("STPOP"),    misc.dbldwn, None, False, False),
-
-    Stamp(C("STARITH"), ";",       C("STPOP"),    None,  arith.arith_stop, False, False),
-    Stamp(C("STARITH"), "nl",      C("STPOP"),    None,  arith.arith_stop, False, False),
+    Stamp(C("STARITH"), ",",       C("DECL3"),    NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STARITH"), ";",       C("STPOP"),    NOCALL,  arith.arith_stop, NOPUSH, NOPUSH),
+    Stamp(C("STARITH"), "nl",      C("STPOP"),    NOCALL,  arith.arith_stop, NOPUSH, NOPUSH),
     )
-
-FLOAT   = "float", "double", "quad",
 
 Ddecl = (
     # Declarations
-    Stamp(STBASE,   "decl",     C("DECL2"),   None,   decl.start,   False, False),
-    Stamp(STBASE,   FLOAT,      C("DECL2"),   None,   decl.start,   False, False),
-    Stamp(STBASE,   "arr",      C("DECLA"),   None,   adecl.astart, False, False),
+    Stamp(STBASE,   "decl",     C("DECL2"),   NOCALL,   decl.start,   NOPUSH, PUSH),
+    Stamp(STBASE,   FLOAT,      C("DECL2"),   NOCALL,   decl.start,   NOPUSH, PUSH),
+    Stamp(STBASE,   "arr",      C("DECLA"),   NOCALL,   adecl.astart, NOPUSH, PUSH),
 
-    Stamp(C("DECL2"),   ":",     C("DECL3"),   None,   decl.col,    False, False),
-    Stamp(C("DECL3"),   "ident", C("STARITH"), None,   decl.ident,  False, False),
-    Stamp(C("STARITH"), ",",     C("DECL3"),   None,   decl.comma,  False, False),
+    Stamp(C("DECL2"),   ":",     C("DECL3"),   NOCALL,   decl.col,    NOPUSH, NOPUSH),
+    Stamp(C("DECL3"),   "ident", C("STARITH"), NOCALL,   decl.ident,  NOPUSH, NOPUSH),
+    Stamp(C("STARITH"), ",",     C("DECL3"),   NOCALL,   decl.comma,  NOPUSH, NOPUSH),
 
-    Stamp(C("STARITH"), "nl",    C("STPOP"),   decl.down, None,     False, False),
-    Stamp(C("STARITH"), ";",     C("STPOP"),   decl.down, None,     False, False),
+    Stamp(C("STARITH"), "nl",    C("STPOP"),   decl.down, NOCALL,     NOPUSH, NOPUSH),
+    Stamp(C("STARITH"), ";",     C("STPOP"),   decl.down, NOCALL,     NOPUSH, NOPUSH),
 
     # String operations
-    Stamp(C("DECLA"),   ":",     C("DECLA2"),  None,   adecl.acol,   False, False),
-    Stamp(C("DECLA2"),  "ident", C("STTARI"),  None,   adecl.aident, False, False),
-    Stamp(C("STTARI"),  "=",     C("STTARI2"), None,   adecl.aeq,    False, False),
-    Stamp(C("STTARI2"), "str",   C("STTARI3"), None,   adecl.astr,   False, False),
+    Stamp(C("DECLA"),   ":",     C("DECLA2"),  NOCALL,   adecl.acol,   NOPUSH, NOPUSH),
+    Stamp(C("DECLA2"),  "ident", C("STTARI"),  NOCALL,   adecl.aident, NOPUSH, NOPUSH),
+    Stamp(C("STTARI"),  "=",     C("STTARI2"), NOCALL,   adecl.aeq,    NOPUSH, NOPUSH),
+    Stamp(C("STTARI2"), "str",   C("STTARI3"), NOCALL,   adecl.astr,   NOPUSH, NOPUSH),
 
-    Stamp(C("STTARI3"), ",",     C("DECLA2"),  None,   adecl.acomma, False, False),
-    Stamp(C("STTARI3"), "+",     C("STTARI2"), None,   adecl.aadd,   False, False),
-    Stamp(C("STTARI3"), "*",     C("STTARI4"), None,   adecl.amul,   False, False),
-    Stamp(C("STTARI4"), "num",   C("STTARI3"), None,   adecl.anum,   False, False),
+    Stamp(C("STTARI3"), ",",     C("DECLA2"),  NOCALL,   adecl.acomma, NOPUSH, NOPUSH),
+    Stamp(C("STTARI3"), "+",     C("STTARI2"), NOCALL,   adecl.aadd,   NOPUSH, NOPUSH),
+    Stamp(C("STTARI3"), "*",     C("STTARI4"), NOCALL,   adecl.amul,   NOPUSH, NOPUSH),
+    Stamp(C("STTARI4"), "num",   C("STTARI3"), NOCALL,   adecl.anum,   NOPUSH, NOPUSH),
 
-    Stamp(C("STTARI3"), ";",     C("STPOP"),   adecl.adown, None,    False, False),
-    Stamp(C("STTARI3"), "nl",    C("STPOP"),   adecl.adown, None,    False, False),
+    Stamp(C("STTARI3"), ";",     C("STPOP"),   adecl.adown, NOCALL,    NOPUSH, NOPUSH),
+    Stamp(C("STTARI3"), "nl",    C("STPOP"),   adecl.adown, NOCALL,    NOPUSH, NOPUSH),
 )
 
+# ------------------------------------------------------------------------
 # Main stamps definition
 
-stamps =  (  \
-
-    Stamp(STBASE,        "ident",   C("STARITH"),  None,  arith.arithstart, False, False),
-    Stamp(C("STATEINI"), "extern",  C("EXTERN"),   None,  misc.extern, True, False),
-    Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  None,  misc.extadd, False, False),
-    Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  None,  misc.extadd, False, False),
-    Stamp(C("EXTERN2"),  ",",       C("EXTERN"),   None,  misc.extcomma, False, False),
-    Stamp(C("EXTERN2"),  ";",       C("STPOP"),    misc.exdn,  None, False, False),
-    Stamp(C("EXTERN2"),  "nl",      C("STPOP"),    misc.exdn,  None, False, False),
-
-    #Stamp(C("STATEINI"),  "nl",      C("STIGN"),    None,  None, False, False),
+stamps =  (
+    Stamp(STBASE,        "ident",   C("STARITH"),  NOCALL,  arith.arithstart, NOPUSH, NOPUSH),
+    Stamp(C("STATEINI"), "extern",  C("EXTERN"),   NOCALL,  misc.extern, PUSH, NOPUSH),
+    Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  NOCALL,  misc.extadd, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  NOCALL,  misc.extadd, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN2"),  ",",       C("EXTERN"),   NOCALL,  misc.extcomma, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN2"),  ";",       C("STPOP"),    misc.exdn,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN2"),  "nl",      C("STPOP"),    misc.exdn,  NOCALL, NOPUSH, NOPUSH),
 
     # Include sub systems
     *Ddecl,
@@ -297,17 +293,17 @@ stamps =  (  \
     *Drassn,
 
     # This will ignore comments
-    Stamp(C("STATEANY"), "comm2",   C("STIGN"),   None,  misc.comment, False, False),
-    Stamp(C("STATEANY"), "comm2d",  C("STIGN"),   None,  misc.dcomment, False, False),
-    Stamp(C("STATEANY"), "comm3",   C("STIGN"),   None,  misc.comment, False, False),
-    Stamp(C("STATEANY"), "comm3d",  C("STIGN"),   None,  misc.dcomment2, False, False),
-    Stamp(C("STATEANY"), "comm4",   C("STIGN"),   None,  misc.comment, False, False),
-    Stamp(C("STATEANY"), "comm4d",  C("STIGN"),   None,  misc.dcomment3, False, False),
+    Stamp(C("STATEANY"), "comm2",   C("STIGN"),   NOCALL,  misc.comment, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "comm2d",  C("STIGN"),   NOCALL,  misc.dcomment, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "comm3",   C("STIGN"),   NOCALL,  misc.comment, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "comm3d",  C("STIGN"),   NOCALL,  misc.dcomment2, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "comm4",   C("STIGN"),   NOCALL,  misc.comment, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "comm4d",  C("STIGN"),   NOCALL,  misc.dcomment3, NOPUSH, NOPUSH),
 
     # This will ignore white spaces (fall through)
-    Stamp(C("STATEANY"), "tab",     C("STIGN"),   None,  misc.tab, False, False),
-    Stamp(C("STATEANY"), "sp",      C("STIGN"),   None,  misc.space, False, False),
-    Stamp(C("STATEANY"), "nl",      C("STIGN"),   None,  misc.nl, False, False),
+    Stamp(C("STATEANY"), "tab",     C("STIGN"),   NOCALL,  misc.tab, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "sp",      C("STIGN"),   NOCALL,  misc.space, NOPUSH, NOPUSH),
+    Stamp(C("STATEANY"), "nl",      C("STIGN"),   NOCALL,  misc.nl, NOPUSH, NOPUSH),
     )
 
 if __name__ == "__main__":
