@@ -54,13 +54,14 @@ Def: stands for default value. Options after file names are also interpreted.
 |examples   |        |Directory for syntax tests|
 |complib/   |        |The compiler directory|
 |codegen/   |        |The code generation directory|
-|  -        |lexdef.py     |Lexical definitions| This is the token definition file |
-|  -        |lexer.py      |Lexer code|
-|  -        |lindef.py     |Parser definitions| This is the actual grammar|
-|  -        |linparse.py   |Parser proper|
-|  -        |stack.py      |Helper stack|
-|  -        |utils.py      |Helper miscellanea|
-|  -        |garbage       |Ignore this -- was for testing / experimenting|
+|docs/      | pcomp_syntax.odt | Language documentation
+|  -        | lexdef.py     |Lexical definitions| This is the token definition file |
+|  -        | lexer.py      |Lexer code|
+|  -        | lindef.py     |Parser definitions| This is the actual grammar|
+|  -        | linparse.py   |Parser proper|
+|  -        | stack.py      |Helper stack|
+|  -        | utils.py      |Helper miscellanea|
+|  -        | garbage       |Ignore this -- was for testing / experimenting|
 
 ## History:
 
@@ -80,5 +81,7 @@ Expr4            	 OK
 str2             	 OK
 str3             	 OK
 str4             	 OK
+
+The testvdrive utility is available on pypi.
 
 # EOF

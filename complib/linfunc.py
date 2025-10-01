@@ -365,7 +365,26 @@ class Arith():
     def expr(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.expr()", "tprog =", tprog, self2.arrx[tprog])
-        ''' Just push '''
+        arithstack.push(tprog)
+
+    def eqeq_start(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("arith.eqeq_start()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def eqeq(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("arith.eqeq()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def orx_start(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("arith.orx_start()", "tprog =", tprog, self2.arrx[tprog])
+        arithstack.push(tprog)
+
+    def orx(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("arith.orx()", "tprog =", tprog, self2.arrx[tprog])
         arithstack.push(tprog)
 
 arith = Arith()
@@ -729,9 +748,54 @@ class Decl():
 
 decl = Decl()
 
+class Loop():
+
+    def enter(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("loop.enter()", "tprog =", tprog)
+
+    def enter_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("loop.enter_end()", "tprog =", tprog)
+
+    def leave(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("looop.leave()", "tprog =", tprog)
+
+    def leave_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("looop.leave_end()", "tprog =", tprog)
+
+    def end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("looop.end()", "tprog =", tprog)
+
+
+
+loop = Loop()
+
 # ------------------------------------------------------------------------
 
 class Misc():
+
+    def ifx(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.ifx()", "tprog =", tprog)
+
+    def elifx(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.elifx()", "tprog =", tprog)
+
+    def elifx_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.elifx_end()", "tprog =", tprog)
+
+    def if_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.if_end()", "tprog =", tprog)
+    def if_body_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("misc.if_body_end()", "tprog =", tprog)
 
     def extern(self, self2, tprog):
         if pvg.opt_debug > 1:

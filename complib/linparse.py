@@ -189,10 +189,15 @@ class LinParse():
                     print("pop:", self.show_statestack())
                 if self.pvg.opt_debug > 4  or "state" in self.pvg.opt_ztrace:
                     print("pop from:", ST.get(self.state), end = " ")
+                if self.pvg.opt_debug > 2  or "stack" in self.pvg.opt_ztrace:
+                    print(" pop from:", ST.get(self.state), end = " ")
                 self.statestack.pop()
                 self.state = self.statestack.peek()
                 if self.pvg.opt_debug > 2  or "state" in self.pvg.opt_ztrace:
                     print(" pop to:", ST.get(self.state))
+                if self.pvg.opt_debug > 2  or "stack" in self.pvg.opt_ztrace:
+                    print(" pop to:", ST.get(self.state))
+
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
             elif currstamp.nstate == ST.val("STPOP2"):
@@ -203,6 +208,8 @@ class LinParse():
                 self.statestack.pop()
                 self.state = self.statestack.peek()
                 if self.pvg.opt_debug > 2 or "state" in self.pvg.opt_ztrace:
+                    print(" dbl pop to:", ST.get(self.state))
+                if self.pvg.opt_debug > 2 or "stack" in self.pvg.opt_ztrace:
                     print(" dbl pop to:", ST.get(self.state))
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
@@ -222,7 +229,7 @@ class LinParse():
 
                 # Push target state
                 if currstamp.push:
-                    if self.pvg.opt_debug > 4  or "stack" in self.pvg.opt_ztrace:
+                    if self.pvg.opt_debug > 4 or "stack" in self.pvg.opt_ztrace:
                         print("push:", ST.get(self.state))
                     self.statestack.push(self.state)
 

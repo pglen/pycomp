@@ -1,14 +1,13 @@
 // if
-
-	if (xx == yy)
-		{
-		//bb = cc + dd;
-		hh = ii * gg;
-		}
-	else
-		{
-	    ee = ff + gg;
-		}
-
-
-
+if (())
+	{
+	//bb = cc + dd;
+	#hh = ii * gg;
+	}
+#elif ((aa==2;))
+#    {
+#    }
+else
+	{
+    #ee = ff + gg;
+	}

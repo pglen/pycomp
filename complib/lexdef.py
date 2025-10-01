@@ -180,8 +180,8 @@ try:
 
     (INI_STATE, "peq",      r"\+=>" ,           None, None),  # Add to
     (INI_STATE, "meq",      r"\-=>" ,           None, None),  # Sub from
-    (INI_STATE, "deq",      r"=="   ,           None, None),  # Equal
-    (INI_STATE, "ndeq",     r"!="   ,           None, None),  # Not Equal
+    (INI_STATE, "==",       r"=="   ,           None, None),  # Equal
+    (INI_STATE, "!=",       r"!="   ,           None, None),  # Not Equal
     (INI_STATE, "teq",      r"==="  ,           None, None),  # Identical
     (INI_STATE, "tneq",     r"!=="  ,           None, None),  # Not Identical
     (INI_STATE, "=>",       r"=>"   ,           None, None),  # Assignment

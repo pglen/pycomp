@@ -1,20 +1,18 @@
 // Nested if
 
-	if (aa == cc)
+if (aa == cc)
+	{
+	if (bb == dd)
 		{
-		if (bb == dd)
-			{
-			bb = cc + dd;
-			}
-		else
-			{
-	    	ee = ff + gg;
-	    	}
+		bb = cc + dd;
 		}
 	else
 		{
-		hh = ii * jj;
-		}
-
-
+    	ee = ff + gg;
+    	}
+	}
+else
+	{
+	hh = ii * jj;
+	}
 

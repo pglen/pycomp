@@ -1,12 +1,6 @@
-// if
-
-	//uu = zz = aa == bb;
-
-	if (aa == 0)
-		{
-		bb = cc + dd;
-	    //ee = ff + gg;
-		}
-
-
-
+#u32:aa=1;u32:bb=1;
+if ((aa || bb;))
+{#u32:aaa = 0;
+}
+else
+{ }
