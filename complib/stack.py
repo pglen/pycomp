@@ -26,6 +26,14 @@ class pStack():
     def empty(self):
         self._store = []
 
+    def copy(self, other):
+        cnt = 0; xlen = len(self._store)
+        while True:
+            if cnt >= xlen:
+                break
+            other.push(self._store[cnt])
+            cnt += 1
+
     def push(self, item):
         try:
             self._store.append(item)
@@ -172,6 +180,14 @@ def test_empty():
     assert len(ss) == 1
     ss.empty()
     assert len(ss) == 0
+
+def test_copy():
+    ss = pStack() ; sss = pStack()
+    ss.push("abc") ; ss.push("123")
+    assert len(ss) == 2
+    ss.copy(sss)
+    assert len(ss) == len(sss)
+    assert str(ss) == str(sss)
 
 def fakedummy():
     ''' Simulate runtime debug var '''

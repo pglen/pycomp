@@ -30,17 +30,20 @@ def funcpvg(xpvg):
 
 # Stack definitions
 
+#arithstack  = stack.pStack(name='arithstack')       # Declarations
 arithstack = stack.pStack(name='arithstack')      # Arithmetic
 argstack   = stack.pStack(name='argstack')        # Function arguments
 callstack  = stack.pStack(name='callstack')       # Function calls
 extstack   = stack.pStack(name='extstack')        # External definitions
 scopestack = stack.pStack(name='scopestack')      # Inside function
+funcstack  = stack.pStack(name='funcstack')       # Function definitions
 
 def initall():
     arithstack.empty()
     argstack.empty()
     callstack.empty()
     extstack.empty()
+    funcstack.empty()
     scopestack.empty()
     # Empty (global) scope
     scopestack.push("")
@@ -202,13 +205,15 @@ class   Funcs():
         if pvg.opt_debug > 1:
             print("funcs.start()", pp(self2.arrx[tprog]))
         argstack.empty()
+        funcstack.empty()
+        funcstack.push(tprog)
         scopestack.push(self2.arrx[tprog].mstr + "_")
         #print("scopestack:", pp(scopestack.peek()) )
 
     def startbody(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.startbody()", pp(self2.arrx[tprog]))
-        scopestack.pop()
+        #scopestack.pop()
 
     def argident(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -244,6 +249,7 @@ class   Funcs():
         if pvg.opt_debug > 1:
             print("funcs.args_start()", pp(self2.arrx[tprog]))
         scopestack.push(scopestack.peek() + "arg_")
+        print("scopestack:", scopestack.dump())
 
     def endfunc(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -253,12 +259,17 @@ class   Funcs():
         if pvg.opt_debug > 1:
             print("funcs.endbody()", pp(self2.arrx[tprog]))
         #print("scopestack:", scopestack.dump())
-        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
+        #dumpstack(self2, funcstack)
+        if 1: #pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
+            dumpstack(self2, funcstack)
             dumpstack(self2, arithstack)
+        scopestack.pop()
+        #print("scopestack:", scopestack.dump())
 
     def args_end(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.args_end()", pp(self2.arrx[tprog]))
+        dumpstack(self2, argstack)
         scopestack.pop()
 
     def ret(self, self2, tprog):
@@ -266,9 +277,6 @@ class   Funcs():
             print("funcs.ret()", "tprog =", tprog, self2.arrx[tprog])
         #arithstack.push(tprog)
 
-    def down(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("funcs.down()", pp(self2.arrx[tprog]))
 
 funcs = Funcs()
 
@@ -626,6 +634,8 @@ class Decl():
 
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
+
+        dumpstack(self2, arithstack)
 
         # Call into upper parse entity
         #arith.arith_stop(self2, tprog)

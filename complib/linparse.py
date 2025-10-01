@@ -198,7 +198,7 @@ class LinParse():
                 if self.pvg.opt_debug > 2 or "state" in self.pvg.opt_ztrace:
                     print(" dbl pop to:", ST.get(self.state))
                 if self.pvg.opt_debug > 2 or "stack" in self.pvg.opt_ztrace:
-                    print(" dbl pop to:", ST.get(self.state))
+                    print(" dbl pop stack:", ST.get(self.state))
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
             else:

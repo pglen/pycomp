@@ -1,1 +1,1 @@
-func emptyfunc(( )){ }
+func emptyfunc((u32:aa=1;)){ }

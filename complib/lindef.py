@@ -167,9 +167,9 @@ Dif = ( \
     Stamp(C("STIF"),     "elif",    C("STELIF"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELIF"),    "((",     C("STELIF2"),  NOCALL,  NOCALL, PUSH, NOPUSH),
     Stamp(C("STELIF2"),   "))",     C("STPOP"),    misc.elifx,  NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("STELIF"),    "{",      C("STELIFBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
-    Stamp(C("STELIFBODY"), "break", C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
-    Stamp(C("STELIFBODY"), "}",     C("STPOP"),     misc.elifx_end,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STELIF"),    "{",      C("STELIFBD"), NOCALL,  NOCALL, PUSH, NOPUSH),
+    Stamp(C("STELIFBD"), "break", C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
+    Stamp(C("STELIFBD"), "}",     C("STPOP"),    misc.elifx_end,  NOCALL, NOPUSH, NOPUSH),
 
     Stamp(C("STIF"),    "else",     C("STELSE"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELSE"),    "{",      C("STELBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
@@ -179,22 +179,22 @@ Dif = ( \
 
 Dfuncx = ( \
     # Function Declaration
-    Stamp(C("STATEANY"), "func",  C("STFUNC2"), NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("STFUNC2"),  "ident", C("STFUNC"),  NOCALL,  funcs.start, PUSH, NOPUSH),
-    Stamp(C("STFUNC"),   "((",    C("SFUNARG"), NOCALL,  funcs.args_start, PUSH, NOPUSH),
+    Stamp(C("STATEANY"), "func",    C("STFUNC2"), NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STFUNC2"),  "ident",   C("STFUNC"),  funcs.endfunc,  funcs.start, PUSH, NOPUSH),
+    Stamp(C("STFUNC"),   "((",      C("SFUNARG"), NOCALL,  funcs.args_start, PUSH, NOPUSH),
 
     Stamp(C("SFUNARG"),  "))",      C("STPOP"),    funcs.args_end, NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STARITH"),  "))",      C("STPOP"),    funcs.args_end, NOCALL, NOPUSH, NOPUSH),
 
     Stamp(C("STFUNC"),   "{",       C("SFUNBODY"),  NOCALL,  funcs.startbody, PUSH, NOPUSH),
-    Stamp(C("SFUNBODY"), "}",       C("STPOP2"),     funcs.endbody, NOCALL,   NOPUSH, NOPUSH),
+    Stamp(C("SFUNBODY"), "}",       C("STPOP2"),    funcs.endbody, NOCALL,   NOPUSH, NOPUSH),
 
     #Stamp(C("STFUNC"),  ";",       C("STPOP"),     NOCALL,  funcs.endfunc, PUSH, NOPUSH),
-    #Stamp(C("STFUNC"),  "nl",       C("STPOP"),    NOCALL,  funcs.endfunc, PUSH, NOPUSH),
+    #Stamp(C("STFUNC"),  "nl",      C("STPOP"),    NOCALL,  funcs.endfunc, PUSH, NOPUSH),
 
-    Stamp(C("SFUNBODY"), "enter",  C("SFUNENT2"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("SFUNENT2"), "{",      C("SFUNENT"),   NOCALL,  funcs.enter, PUSH, NOPUSH),
-    Stamp(C("SFUNENT"),  "}",      C("STPOP"),     funcs.enter_end, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("SFUNBODY"), "enter",   C("SFUNENT2"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("SFUNENT2"), "{",       C("SFUNENT"),   NOCALL,  funcs.enter, PUSH, NOPUSH),
+    Stamp(C("SFUNENT"),  "}",       C("STPOP"),     funcs.enter_end, NOCALL, NOPUSH, NOPUSH),
 
     Stamp(C("SFUNBODY"), "leave",   C("SFUNLEA2"), NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),  NOCALL,  funcs.leave, PUSH, NOPUSH),
