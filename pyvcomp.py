@@ -201,7 +201,7 @@ def parsefile(strx):
 def setheads(lpg):
     prestr =    "PYVCOMP parallel compiler.\n" \
                 "Usage: " + lpg.myname + \
-                " [options] filename [filename(s)] ... [options]\n" \
+                " [options] filename [filename(s) ] ... [options]\n" \
                 "Available options:"
 
     poststr  =  "Argument values are identical for the short " \

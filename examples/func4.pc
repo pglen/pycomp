@@ -1,8 +1,4 @@
 u32 : aa = 0; u32 : bb = 1; u8 : cc = 3;
-
-#aa = (u32) cc + 12;
-#aa = func1();
-
 function func1(())
 {
 	u32 : dd = 10;

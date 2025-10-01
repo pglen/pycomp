@@ -48,8 +48,8 @@ class LinParse():
 
         self.buf = buf; self.arrx = arrx
 
-        if self.pvg.opt_verbose.cnt > 2:
-            print("stamps len =", len(stamps), "arrx len =", len(self.arrx))
+        #if self.pvg.opt_verbose.cnt > 2:
+        #    print("stamps len =", len(stamps), "arrx len =", len(self.arrx))
 
         if self.pvg.opt_debug > 8:
             print("arrx:")
@@ -165,17 +165,6 @@ class LinParse():
                             "stamp:", pp(currtoken.stamp.xstr),
                             "tprog =", tprog, "\n"
                             )
-
-                    #"stamp:", pp(currstamp.token),
-                    #padx(pp(currtoken.stamp.xstr), 7),
-                    #padx(pp(currtoken.mstr, 6), 5),
-
-                    #global row
-                    #rrr =  6
-                    #if row % rrr == rrr - 1:
-                    #    print()
-                    #row += 1
-
             if currstamp.nstate == ST.val("STIGN"):
                 # No state change, but call function
                 if self.pvg.opt_debug > 6:
@@ -186,9 +175,9 @@ class LinParse():
                     currstamp.dncall(self, tprog)
             elif currstamp.nstate == ST.val("STPOP"):
                 if self.pvg.opt_debug > 8 or "dump" in self.pvg.opt_ztrace:
-                    print("pop:", self.show_statestack())
+                    print(" pop:", self.show_statestack())
                 if self.pvg.opt_debug > 4  or "state" in self.pvg.opt_ztrace:
-                    print("pop from:", ST.get(self.state), end = " ")
+                    print(" pop from:", ST.get(self.state), end = " ")
                 if self.pvg.opt_debug > 2  or "stack" in self.pvg.opt_ztrace:
                     print(" pop from:", ST.get(self.state), end = " ")
                 self.statestack.pop()
@@ -197,7 +186,6 @@ class LinParse():
                     print(" pop to:", ST.get(self.state))
                 if self.pvg.opt_debug > 2  or "stack" in self.pvg.opt_ztrace:
                     print(" pop to:", ST.get(self.state))
-
                 if currstamp.dncall:
                     currstamp.dncall(self, tprog)
             elif currstamp.nstate == ST.val("STPOP2"):

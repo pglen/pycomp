@@ -1,0 +1,17 @@
+loop {
+        enter {u32 :aa = 0; }
+        leave {u32 :bb = 0; }
+    if ((aa==1;)) {
+        u32 :cc = 0;
+        break
+        }
+    elif ((aa==0;)) {
+         u32 :dd = 0;
+         break
+         }
+    else {
+        u32 :ee = 0;
+        break
+        }
+    aa = aa + 1
+    }

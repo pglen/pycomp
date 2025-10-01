@@ -1,6 +1,7 @@
 #u32:aa=1;u32:bb=1;
-if ((aa || bb;))
-{#u32:aaa = 0;
+if ((aa == bb;))
+{u32:aaa = 0;}
+elif ((aa == bb;))
+{ u32:ccc = 0;}
+else {u32:bbb = 0;
 }
-else
-{ }

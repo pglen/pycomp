@@ -112,10 +112,12 @@ ST = Xenum()
 def C(vvv):
     return ST.val(vvv)
 
-# Compund states for matching multiple states
+# def Compund states for matching multiple states
 STBASE =  ( C("STATEINI"), C("SFUNBODY"), C("SFUNARG"),
-                C("SFUNENT"), C("SFUNLEA"), C("STIFBODY"),
-                    C("STIF2"), C("STELIF2"))
+            C("SFUNENT"), C("SFUNLEA"), C("STIFBODY"), C("STELBODY"),
+            C("STIF2"), C("STELIF2"), C("STLOBODY"), C("SLOENT"),
+            C("SLOLEA"),
+        )
 
 # Where parentheses phases are valid
 PARENSTATE =  ( C("STARITH"), C("SFASSN"), C("SFADD"),
@@ -138,17 +140,19 @@ PARENSTATE =  ( C("STARITH"), C("SFASSN"), C("SFADD"),
 # -------   -------   --------  ------------- ----------- -------- ------------
 
 Dloop = ( \
-    Stamp(STBASE,       "loop",      C("STLOOP"),   NOCALL,  NOCALL, PUSH, NOPUSH),
-    Stamp(C("STLOOP"),   "{",        C("STLOBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
+    Stamp(STBASE,       "loop",     C("STLOOP"),    NOCALL,  loop.start, PUSH, NOPUSH),
+    Stamp(C("STLOOP"),   "{",       C("STLOBODY"),  NOCALL,  NOCALL, PUSH, NOPUSH),
 
-    Stamp(C("STLOBODY"), "enter",    C("STLOOP2"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STLOBODY"), "enter",   C("STLOOP2"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STLOOP2"), "{",        C("SLOENT"),    NOCALL,  loop.enter, PUSH, NOPUSH),
     Stamp(C("SLOENT"),  "}",        C("STPOP"),     loop.enter_end, NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("STLOBODY"), "leave",  C("STLOOP3"),    NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("STLOOP3"), "{",       C("SLOLEA"),     NOCALL,  loop.leave, PUSH, NOPUSH),
-    Stamp(C("SLOLEA"),  "}",       C("STPOP"),      loop.leave_end, NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("STLOBODY"), "}",      C("STPOP2"),     loop.end,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STLOBODY"), "leave",   C("STLOOP3"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STLOOP3"), "{",        C("SLOLEA"),    NOCALL,  loop.leave, PUSH, NOPUSH),
+    Stamp(C("SLOLEA"),  "}",        C("STPOP"),     loop.leave_end, NOCALL, NOPUSH, NOPUSH),
+
+    Stamp(C("STLOBODY"), "break",   C("STLOBODY"),  NOCALL,  loop.breakx, NOPUSH, NOPUSH),
+    Stamp(C("STLOBODY"), "}",       C("STPOP2"),    loop.end,  NOCALL, NOPUSH, NOPUSH),
 )
 
 Dif = ( \
@@ -156,16 +160,20 @@ Dif = ( \
     Stamp(C("STIF"),    "((",       C("STIF2"),    NOCALL,  NOCALL, PUSH, NOPUSH),
     Stamp(C("STIF2"),   "))",       C("STPOP"),    misc.ifx,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STIF"),    "{",        C("STIFBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
+    Stamp(C("STIFBODY"), "break",   C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
     Stamp(C("STIFBODY"), "}",       C("STPOP"),    misc.if_end,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STIFBODY"), "}}",      C("STPOP2"),   misc.if_end,  NOCALL, NOPUSH, NOPUSH),
 
     Stamp(C("STIF"),     "elif",    C("STELIF"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELIF"),    "((",     C("STELIF2"),  NOCALL,  NOCALL, PUSH, NOPUSH),
     Stamp(C("STELIF2"),   "))",     C("STPOP"),    misc.elifx,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELIF"),    "{",      C("STELIFBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
-    Stamp(C("STELIFBODY"), "}",     C("STPOP"),    misc.elifx_end,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STELIFBODY"), "break", C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
+    Stamp(C("STELIFBODY"), "}",     C("STPOP"),     misc.elifx_end,  NOCALL, NOPUSH, NOPUSH),
 
     Stamp(C("STIF"),    "else",     C("STELSE"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELSE"),    "{",      C("STELBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
+    Stamp(C("STELBODY"), "break",   C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
     Stamp(C("STELBODY"),  "}",      C("STPOP2"),   misc.if_body_end,  NOCALL, NOPUSH, NOPUSH),
 )
 

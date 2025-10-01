@@ -76,6 +76,8 @@ class   FuncCall():
         if pvg.opt_debug > 6:
             dumpstack(self2, callstack)
             dumpstack(self2, argstack)
+
+        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
             dumpstack(self2, arithstack)
 
         idx  =   callstack.get(0)
@@ -105,7 +107,7 @@ class   FuncCall():
                     uuu = "str_%d" % unique()
                     strx =  uuu + " : db " + asmesc(self2.arrx[aa].mstr) + "\n"
                     linpool.add2pool(self2, self2.arrx[aa].stamp.xstr,
-                                                uuu, self2.arrx[aa].mstr)
+                                                uuu, self2.arrx[aa].mstr, linex)
                     tpi = linpool.lookpool(self2, uuu)
                     codegen.emitdata(strx)
 
@@ -251,7 +253,7 @@ class   Funcs():
         if pvg.opt_debug > 1:
             print("funcs.endbody()", pp(self2.arrx[tprog]))
         #print("scopestack:", scopestack.dump())
-        if pvg.opt_debug > 6:
+        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
             dumpstack(self2, arithstack)
 
     def args_end(self, self2, tprog):
@@ -277,14 +279,14 @@ class Arith():
         if pvg.opt_debug > 1:
             print("arith.arith_stop()", "tprog =", tprog, self2.arrx[tprog])
 
-        if pvg.opt_debug > 6:
+        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
             dumpstack(self2, arithstack, eolx="\n", label="arith stop:")
 
         # Execute as operator precedence
         for aa in ops_prec:
             linpool.reduce(self2, arithstack, aa)
 
-        if pvg.opt_debug > 6:
+        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
             dumpstack(self2, arithstack, eolx="\n",
                                     label="arith stop post:", active=True)
 
@@ -538,7 +540,7 @@ class Adecl():
 
         if pvg.opt_debug > 1:
             print("adecl.adown()", "tprog =", tprog, self2.arrx[tprog])
-        if pvg.opt_debug > 6:
+        if pvg.opt_debug > 6  or "arith" in pvg.opt_ztrace:
             dumpstack(self2, arithstack, label="adown:")
         strx = "" ; statex = 0; lab = "" ; val = "" ; linenum = 0;
         for aa in arithstack:
@@ -566,7 +568,8 @@ class Adecl():
                 val = val[0] + val[1:-1] + self2.arrx[aa].mstr[1:-1] + val[-1]
                 statex = 0
             elif  statex == 4:
-                print("val:", val)
+                if pvg.opt_debug > 6:
+                    print("val:", val)
                 val = val[0] + val[1:-1] * self2.arrx[aa].ival + val[-1]
                 statex = 0
             else:
@@ -627,7 +630,7 @@ class Decl():
         # Call into upper parse entity
         #arith.arith_stop(self2, tprog)
 
-        if pvg.opt_debug > 6:
+        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
             dumpstack(self2, arithstack, eolx="\n", label="decl down:")
 
         # Nothing to see here
@@ -750,6 +753,10 @@ decl = Decl()
 
 class Loop():
 
+    def start(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("loop.start()", "tprog =", tprog)
+
     def enter(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("loop.enter()", "tprog =", tprog)
@@ -770,7 +777,9 @@ class Loop():
         if pvg.opt_debug > 1:
             print("looop.end()", "tprog =", tprog)
 
-
+    def breakx(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("looop.break()", "tprog =", tprog)
 
 loop = Loop()
 
@@ -806,7 +815,7 @@ class Misc():
         if pvg.opt_debug > 1:
             print("misc.dbldwn()", "tprog =", tprog)
         #extstack.empty()
-        if pvg.opt_debug > 3:
+        if pvg.opt_debug > 3 or "arith" in self.pvg.opt_ztrace:
             dumpstack(self2, arithstack)
 
     def extadd(self, self2, tprog):
