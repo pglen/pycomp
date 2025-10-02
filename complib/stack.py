@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import sys
-
 def funcpvg(xpvg):
     global pvg
     pvg = xpvg
@@ -26,19 +24,24 @@ class pStack():
     def empty(self):
         self._store = []
 
-    def copy(self, other):
-        cnt = 0; xlen = len(self._store)
-        while True:
-            if cnt >= xlen:
-                break
-            other.push(self._store[cnt])
-            cnt += 1
+    def copyto(self, other):
+        #cnt = 0; xlen = len(self._store)
+        #while True:
+        #    if cnt >= xlen:
+        #        break
+        #    other.push(self._store[cnt])
+        #    cnt += 1
+        other._store +=  self._store
+
+    def copyfrom(self, other):
+        self._store +=  other._store
 
     def push(self, item):
         try:
             self._store.append(item)
             #self.cnt = self.cnt+1
         except Exception as xxx:
+            import sys
             print ("exception:", xxx, sys.exc_info(), self.name)
             if self.raisex: raise
 
@@ -69,6 +72,7 @@ class pStack():
             if self.raisex:
                 raise ValueError
             else:
+                import sys
                 print("exception:", xxx, sys.exc_info(), self.name)
         return item
 
@@ -109,9 +113,14 @@ class pStack():
         return strx;
 
     def show(self):
+        strx = ""
         cnt = len(self._store) - 1
         while cnt >= 0:
-            print (self._store[cnt]);  cnt -= 1
+            aa = self._store[cnt]
+            if strx: aa = " " + aa
+            strx += aa
+            cnt -= 1
+        return strx
 
     def __getitem__(self, idx):
         try:
@@ -185,8 +194,12 @@ def test_copy():
     ss = pStack() ; sss = pStack()
     ss.push("abc") ; ss.push("123")
     assert len(ss) == 2
-    ss.copy(sss)
+    ss.copyto(sss)
     assert len(ss) == len(sss)
+    assert str(ss) == str(sss)
+    ss.push("abcd") ; ss.push("1233")
+    sss.empty()
+    ss.copyto(sss)
     assert str(ss) == str(sss)
 
 def fakedummy():
@@ -196,15 +209,18 @@ def fakedummy():
     pvg = dummy()
     pvg.opt_debug = 0
 
+#def timeit(ttt, strx):
+#    print(strx, "%d us" % (time.time() * 1000000 - ttt * 1000000)  )
+
 if __name__ == "__main__":
     print ("This module was not meant to operate as main.")
     fakedummy()
 
     st2 =  pStack(True, "st2")
-    st =  pStack()
-    st.push("hello") ;  st.push("world")
-    print("stack len:", len(st), st.getlen())
-    st.show()
+    st =  pStack() ; st.push("hello") ; st.push("new"),  st.push("world")
+
+    print("stack len():", len(st), "getlen():", st.getlen())
+    print("show:", st.show())
     print("stack len:", len(st))
     print("dump:", st.dump(", "))
     print("first:", st.first())
@@ -230,6 +246,29 @@ if __name__ == "__main__":
     try:
         st2.pop()
     except:
+        #import sys
         #print(sys.exc_info())
         print("pop exc OK")
+
+    # ASSIGN
+    st.push("hello3") ;  st.push("world3")
+    print("st:", st);
+    import time, utils, copy
+
+    ttt = time.time()
+    st2 = copy.copy(st)
+    utils.timeit(ttt, "CP time delta:")
+    print("st2:", st);
+
+    # Performance
+    st.empty() ; st2.empty()
+    ttt = time.time()
+    for aa in range(1000):
+        st.push(aa)
+    utils.timeit(ttt, "Create time delta:")
+
+    ttt = time.time()
+    st.copyto(st2)
+    utils.timeit(ttt, "Copyto time delta:")
+
 # EOF

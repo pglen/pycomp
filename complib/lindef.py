@@ -180,7 +180,7 @@ Dif = ( \
 Dfuncx = ( \
     # Function Declaration
     Stamp(C("STATEANY"), "func",    C("STFUNC2"), NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("STFUNC2"),  "ident",   C("STFUNC"),  funcs.endfunc,  funcs.start, PUSH, NOPUSH),
+    Stamp(C("STFUNC2"),  "ident",   C("STFUNC"),  NOCALL,  funcs.start, PUSH, NOPUSH),
     Stamp(C("STFUNC"),   "((",      C("SFUNARG"), NOCALL,  funcs.args_start, PUSH, NOPUSH),
 
     Stamp(C("SFUNARG"),  "))",      C("STPOP"),    funcs.args_end, NOCALL, NOPUSH, NOPUSH),
@@ -188,9 +188,6 @@ Dfuncx = ( \
 
     Stamp(C("STFUNC"),   "{",       C("SFUNBODY"),  NOCALL,  funcs.startbody, PUSH, NOPUSH),
     Stamp(C("SFUNBODY"), "}",       C("STPOP2"),    funcs.endbody, NOCALL,   NOPUSH, NOPUSH),
-
-    #Stamp(C("STFUNC"),  ";",       C("STPOP"),     NOCALL,  funcs.endfunc, PUSH, NOPUSH),
-    #Stamp(C("STFUNC"),  "nl",      C("STPOP"),    NOCALL,  funcs.endfunc, PUSH, NOPUSH),
 
     Stamp(C("SFUNBODY"), "enter",   C("SFUNENT2"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("SFUNENT2"), "{",       C("SFUNENT"),   NOCALL,  funcs.enter, PUSH, NOPUSH),
@@ -200,12 +197,10 @@ Dfuncx = ( \
     Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),  NOCALL,  funcs.leave, PUSH, NOPUSH),
     Stamp(C("SFUNLEA"),  "}",       C("STPOP"),    funcs.leave_end, NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("SFUNBODY"), "return",  C("SFASSN"),    NOCALL,  funcs.ret, PUSH, NOPUSH),
+    Stamp(C("SFUNBODY"), "return",  C("SFRET"),    NOCALL,  funcs.ret, PUSH, NOPUSH),
+    Stamp(C("SFRET"),    "ident",   C("STARITH"),  NOCALL,  funcs.ret_id, NOPUSH, NOPUSH),
+    Stamp(C("SFRET"),    "num",     C("STARITH"),  NOCALL,  funcs.ret_id, NOPUSH, NOPUSH),
 
-    #Stamp(C("SFUNCRET"), "nl",     C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    #Stamp(C("SFUNCRET"), ";",      C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    #Stamp(C("SFUNCRET"), "num",    C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
-    #Stamp(C("SFUNCRET"), "ident",  C("SFUNBODY"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
 )
 
 Drassn  = (

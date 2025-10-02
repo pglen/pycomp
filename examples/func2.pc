@@ -1,6 +1,8 @@
-#u32:bb=0 ; u32:aa=0
-func main2(( u64:bb=0;u64:cc=0;))
+#u32:bb=0 ;
+#u32:aa=0
+func main(( u64:bb=0;u32:cc=0;))
 {
-    u32:dd=2
-    printf(("Hello\n"))
+    #u32:dd=2
+    #printf(("Hello\n"))
+    return 11
 }

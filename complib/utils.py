@@ -513,13 +513,22 @@ def color(strx, col = "31"):
         return strx
     return "\033[" + str(col) + ";1m" + strx + "\033[0m"
 
-def dumpstack(self2, stackx, eolx = "", label = "", active=False):
-    print(stackx.name + ":", label, end = eolx)
+def dumpstack(self2, stackx, label = "", eol = "", active=False):
+    print(stackx.name + ":", label, end = eol)
     for aa in stackx:
         if active and self2.arrx[aa].flag != 0:
             continue
-        print("  " + str(self2.arrx[aa]), end=eolx)
-    if eolx == "": print()
+        print("  " + str(self2.arrx[aa]), end=eol)
+    if eol == "": print()
+
+def timeit(ttt, strx):
+    print(strx, "%d us" % (time.time() * 1000000 - ttt * 1000000)  )
+
+#def timeitx(strx, xx):
+#    ttt = time.time()
+#    ret = exec(xx, locals=locals())
+#    print(strx, "%d us" % (time.time() * 1000000 - ttt * 1000000)  )
+#    return ret
 
 class   Xenum():
 

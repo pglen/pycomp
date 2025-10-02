@@ -30,13 +30,14 @@ def funcpvg(xpvg):
 
 # Stack definitions
 
-#arithstack  = stack.pStack(name='arithstack')       # Declarations
+inststack  = stack.pStack(name='inststack')       # Instructions
+retstack   = stack.pStack(name='retstack')        # Return
 arithstack = stack.pStack(name='arithstack')      # Arithmetic
 argstack   = stack.pStack(name='argstack')        # Function arguments
 callstack  = stack.pStack(name='callstack')       # Function calls
 extstack   = stack.pStack(name='extstack')        # External definitions
-scopestack = stack.pStack(name='scopestack')      # Inside function
-funcstack  = stack.pStack(name='funcstack')       # Function definitions
+scopestack = stack.pStack(name='scopestack')      # Inside function scope
+funcstack  = stack.pStack(name='funcstack')       # Function name definitions
 
 def initall():
     arithstack.empty()
@@ -204,8 +205,10 @@ class   Funcs():
     def start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.start()", pp(self2.arrx[tprog]))
+
         argstack.empty()
         funcstack.empty()
+        inststack.empty()
         funcstack.push(tprog)
         scopestack.push(self2.arrx[tprog].mstr + "_")
         #print("scopestack:", pp(scopestack.peek()) )
@@ -249,34 +252,65 @@ class   Funcs():
         if pvg.opt_debug > 1:
             print("funcs.args_start()", pp(self2.arrx[tprog]))
         scopestack.push(scopestack.peek() + "arg_")
-        print("scopestack:", scopestack.dump())
-
-    def endfunc(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("funcs.endfunc()", pp(self2.arrx[tprog]))
-
-    def endbody(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("funcs.endbody()", pp(self2.arrx[tprog]))
-        #print("scopestack:", scopestack.dump())
-        #dumpstack(self2, funcstack)
-        if 1: #pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, funcstack)
-            dumpstack(self2, arithstack)
-        scopestack.pop()
-        #print("scopestack:", scopestack.dump())
+        if pvg.opt_debug > 3:
+            print("scopestack:", scopestack.dump())
 
     def args_end(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.args_end()", pp(self2.arrx[tprog]))
-        dumpstack(self2, argstack)
+        #if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
+        #    dumpstack(self2, arithstack, "args_end\n")
+        argstack.copyfrom(arithstack)
+        if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
+            dumpstack(self2, argstack, label = "args_end\n", eol=" ")
+        arithstack.empty()
         scopestack.pop()
 
     def ret(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.ret()", "tprog =", tprog, self2.arrx[tprog])
-        #arithstack.push(tprog)
+        #retstack.push(tprog)
 
+    def ret_id(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("funcs.ret_id()", "tprog =", tprog, self2.arrx[tprog])
+        retstack.push(tprog)
+
+    def endbody(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("funcs.endbody()", pp(self2.arrx[tprog]))
+
+        if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
+            dumpstack(self2, funcstack)
+            dumpstack(self2, argstack)
+            dumpstack(self2, arithstack)
+            dumpstack(self2, retstack)
+
+        #print("scopestack:", scopestack.dump())
+        fff = self2.arrx[funcstack.peek()].mstr
+        strx = fff + ": ; Function '" + fff + "'\n"
+        strx += "    push    rbp\n"
+        strx += "    mov     rbp, rsp\n"
+        strx += "\n    ; Function body\n\n"
+        codegen.emit(strx)
+
+        # Prologue
+        strx =  "    mov     rsp, rbp\n"
+        strx += "    pop     rbp\n"
+        if retstack.getlen():
+            ttt = self2.arrx[retstack.peek()]
+            if ttt.stamp.xstr == "num":
+                strx += "    mov     rax, " + ttt.mstr + " \n"
+            elif ttt.stamp.xstr == "ident":
+                strx += "    lea     rsi, " + ttt.mstr + "\n"
+                strx += "    mov     rax, [ rsi ] \n"
+        else:
+            strx += "    mov     rax, 0 \n"
+        strx += "    ret\n"
+        codegen.emit(strx)
+
+        scopestack.pop()
+        #print("scopestack:", scopestack.dump())
 
 funcs = Funcs()
 
@@ -288,14 +322,14 @@ class Arith():
             print("arith.arith_stop()", "tprog =", tprog, self2.arrx[tprog])
 
         if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, arithstack, eolx="\n", label="arith stop:")
+            dumpstack(self2, arithstack, eol="\n", label="arith stop:")
 
         # Execute as operator precedence
         for aa in ops_prec:
             linpool.reduce(self2, arithstack, aa)
 
         if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, arithstack, eolx="\n",
+            dumpstack(self2, arithstack, eol="\n",
                                     label="arith stop post:", active=True)
 
     def arithstart(self, self2, tprog):
@@ -635,18 +669,14 @@ class Decl():
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
 
-        dumpstack(self2, arithstack)
-
         # Call into upper parse entity
         #arith.arith_stop(self2, tprog)
 
-        if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, arithstack, eolx="\n", label="decl down:")
+        #if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
+        #    dumpstack(self2, arithstack, label = "decl down:\n")
 
-        # Nothing to see here
-        if not arithstack.getlen():
-            print("Empty arithstack")
-            return
+        '''
+        # Move to sub item
         statex = 0; typey = "" ; typex = "" ; lab = ""; val = "";
         orgline = 0
         for aa in arithstack:
@@ -733,6 +763,7 @@ class Decl():
                                         + " -- generated from " \
                                         + self2.arrx[aa].mstr + "\n"
             codegen.emitdata(strx)
+        '''
 
         #datatype = self2.arrx[arithstack.get(0)].mstr
         #asmtype = linpool.addtopool(self2, arithstack)
@@ -757,7 +788,7 @@ class Decl():
         #    strx += self2.arrx[arithstack.get(2)].mstr
 
         # Done with this, empty it
-        arithstack.empty()
+        #arithstack.empty()
 
 decl = Decl()
 

@@ -1,1 +1,4 @@
-func hello(()){}
+func main(())
+{
+return rrr;
+}

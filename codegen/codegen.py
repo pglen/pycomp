@@ -34,9 +34,9 @@ prolstr = '''\
     global main, exit_code
 %include "codegen/crt.inc"
 section .text
-main:
-    push    rbp
-    mov     rbp, rsp
+;main:
+;    push    rbp
+;    mov     rbp, rsp
 '''
 
 prolstr2 = '''\
