@@ -1,0 +1,3 @@
+asm { label: "\n" ";comment"}
+asm { mov dword [rsi], 22 ; Memory}
+asm { datax: db "'World:'", 0 ; Memory}

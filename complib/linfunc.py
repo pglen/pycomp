@@ -38,6 +38,9 @@ callstack  = stack.pStack(name='callstack')       # Function calls
 extstack   = stack.pStack(name='extstack')        # External definitions
 scopestack = stack.pStack(name='scopestack')      # Inside function scope
 funcstack  = stack.pStack(name='funcstack')       # Function name definitions
+stackstack = stack.pStack(name='stackstack')      # Stack of stacks
+
+currptr =  arithstack
 
 def initall():
     arithstack.empty()
@@ -46,8 +49,15 @@ def initall():
     extstack.empty()
     funcstack.empty()
     scopestack.empty()
-    # Empty (global) scope
-    scopestack.push("")
+    scopestack.push("")    # Empty (global) scope
+
+    stackstack.empty()
+    global  currptr
+    currptr =  arithstack
+    stackstack.push(currptr)
+
+#print("arith:", hex(id(arithstack)))
+#print("arg:", hex(id(argstack)))
 
 class   FuncCall():
 
@@ -67,7 +77,7 @@ class   FuncCall():
     def val(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("call.decl_val()", self2.arrx[tprog])
-        argstack.push(tprog)
+        #argstack.push(tprog)
 
     def comma(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -205,7 +215,6 @@ class   Funcs():
     def start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.start()", pp(self2.arrx[tprog]))
-
         argstack.empty()
         funcstack.empty()
         inststack.empty()
@@ -216,13 +225,9 @@ class   Funcs():
     def startbody(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.startbody()", pp(self2.arrx[tprog]))
-        #scopestack.pop()
-
-    def argident(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("funcs.argident()", pp(self2.arrx[tprog]))
-        print("argident:", pp(scopestack.peek() + self2.arrx[tprog].mstr))
-        argstack.push(tprog)
+        global currptr
+        stackstack.push(currptr)
+        currptr = inststack
 
     def initval(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -254,27 +259,49 @@ class   Funcs():
         scopestack.push(scopestack.peek() + "arg_")
         if pvg.opt_debug > 3:
             print("scopestack:", scopestack.dump())
+        global currptr
+        stackstack.push(currptr)
+        currptr = argstack
+        #print("currptr:", print_id(currptr))
+
+    #def arg_ident(self, self2, tprog):
+    #    if pvg.opt_debug > 1:
+    #        print("funcs.argident()", pp(self2.arrx[tprog]))
+    #    print("argident:", pp(scopestack.peek() + self2.arrx[tprog].mstr))
+    #    argstack.push(tprog)
 
     def args_end(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.args_end()", pp(self2.arrx[tprog]))
         #if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
         #    dumpstack(self2, arithstack, "args_end\n")
-        argstack.copyfrom(arithstack)
-        if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, argstack, label = "args_end\n", eol=" ")
-        arithstack.empty()
-        scopestack.pop()
+        #argstack.copyfrom(arithstack)
+        #if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
+        #    dumpstack(self2, argstack, label = "args_end\n", eol=" ")
+        #arithstack.empty()
+        # Restore stack
+        stackstack.pop()
+        global currptr
+        currptr = stackstack.peek()
 
-    def ret(self, self2, tprog):
+    def ret_start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.ret()", "tprog =", tprog, self2.arrx[tprog])
-        #retstack.push(tprog)
+        global currptr
+        stackstack.push(currptr)
+        currptr = retstack
 
     def ret_id(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("funcs.ret_id()", "tprog =", tprog, self2.arrx[tprog])
-        retstack.push(tprog)
+        currptr.push(tprog)
+
+    def ret_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("funcs.ret_end()", "tprog =", tprog, self2.arrx[tprog])
+        global currptr
+        statckstack.pop()
+        currptr = stackstack(peek())
 
     def endbody(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -283,7 +310,7 @@ class   Funcs():
         if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
             dumpstack(self2, funcstack)
             dumpstack(self2, argstack)
-            dumpstack(self2, arithstack)
+            dumpstack(self2, inststack)
             dumpstack(self2, retstack)
 
         #print("scopestack:", scopestack.dump())
@@ -312,6 +339,11 @@ class   Funcs():
         scopestack.pop()
         #print("scopestack:", scopestack.dump())
 
+        global currptr
+        stackstack.pop()
+        currptr = stackstack.peek()
+        #print(currptr)
+
 funcs = Funcs()
 
 class Arith():
@@ -326,24 +358,24 @@ class Arith():
 
         # Execute as operator precedence
         for aa in ops_prec:
-            linpool.reduce(self2, arithstack, aa)
+            linpool.reduce(self2, currptr, aa)
 
         if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, arithstack, eol="\n",
+            dumpstack(self2, currptr, eol="\n",
                                     label="arith stop post:", active=True)
 
     def arithstart(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.arithstart()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.empty()
-        arithstack.push(tprog)
+        currptr.empty()
+        currptr.push(tprog)
 
     def arithop(self, self2, tprog):
         #if pvg.opt_debug > 1:
         #    print("arith.arithop()", "tprog =", tprog, self2.arrx[tprog])
         if pvg.opt_debug > 5:
             print("arith.arithop()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def addexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -353,7 +385,7 @@ class Arith():
             print("arith.addexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def subexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -363,7 +395,7 @@ class Arith():
             print("arith.subexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def divexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -373,7 +405,7 @@ class Arith():
             print("arith.divexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def expexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -383,7 +415,7 @@ class Arith():
             print("arith.expexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def mulexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -394,7 +426,7 @@ class Arith():
             print("misc.mulexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def assnexpr(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -404,32 +436,32 @@ class Arith():
             print("assnexpr: ",
                     "tprog  =", tprog,  self2.arrx[tprog],
                     "tprog2 =", tprog2, self2.arrx[tprog2] )
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def expr(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.expr()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def eqeq_start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.eqeq_start()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def eqeq(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.eqeq()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def orx_start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.orx_start()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def orx(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("arith.orx()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
 arith = Arith()
 
@@ -630,28 +662,22 @@ class Decl():
     def start(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.start()", "tprog =", tprog, self2.arrx[tprog])
-        #arithstack.empty()
-        arithstack.push(tprog)
-        #if pvg.opt_debug > 2:
-        #    print("arithstack start:", end = " ")
-        #    for aa in arithstack:
-        #        print(self2.arrx[aa], end = " ")
-        #    print()
+        currptr.push(tprog)
 
     def col(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.col()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def ident(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.ident()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def val(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("decl.val()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def comma(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -668,18 +694,19 @@ class Decl():
 
         if pvg.opt_debug > 1:
             print("decl.down()", "tprog =", tprog, self2.arrx[tprog])
+        currptr.push(tprog)
 
-        # Call into upper parse entity
-        #arith.arith_stop(self2, tprog)
-
-        #if pvg.opt_debug > 6 or "arith" in pvg.opt_ztrace:
-        #    dumpstack(self2, arithstack, label = "decl down:\n")
+        #global currptr
+        #stackstack.pop()
+        #currptr = stackstack.peek()
+        #print("ddd", currptr.name)
 
         '''
         # Move to sub item
         statex = 0; typey = "" ; typex = "" ; lab = ""; val = "";
         orgline = 0
-        for aa in arithstack:
+        #for aa in arithstack:
+        for aa in stackstack:
             if self2.arrx[aa].flag:
                 continue
             #if self2.arrx[aa].stamp.xstr == "sp":
@@ -826,6 +853,131 @@ loop = Loop()
 
 # ------------------------------------------------------------------------
 
+class Exter():
+
+    def extern(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.extern()", "tprog =", tprog)
+        extstack.empty()
+
+    def dbldwn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.dbldwn()", "tprog =", tprog)
+        #extstack.empty()
+        if pvg.opt_debug > 3 or "arith" in self.pvg.opt_ztrace:
+            dumpstack(self2, arithstack)
+
+    def extadd(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.extadd()", "tprog =", tprog)
+        extstack.push(tprog)
+
+    def extcomma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.extcomma()", "tprog =", tprog)
+
+    def exdn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.extdn()", "tprog =", tprog)
+        strx = ""
+        for aa in extstack:
+            #print("extstack:", self2.arrx[aa].mstr, self2.arrx[aa].stamp.xstr)
+            if self2.arrx[aa].stamp.xstr == "str":
+                strx += "extern " + self2.arrx[aa].mstr[1:-1]
+            else:
+                strx += "extern " + self2.arrx[aa].mstr
+            strx += " ; line: %d -- " % (self2.arrx[aa].linenum + 1)
+            strx += " extern " + self2.arrx[aa].mstr + "\n"
+        codegen.emit(strx)
+
+        # ----------------------------------------------------------------------
+
+    def glob(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.global()", "tprog =", tprog)
+        extstack.empty()
+
+    def gndwn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.gndwn()", "tprog =", tprog)
+        #extstack.empty()
+        if pvg.opt_debug > 3 or "arith" in self.pvg.opt_ztrace:
+            dumpstack(self2, arithstack)
+
+    def globadd(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.globadd()", "tprog =", tprog)
+        extstack.push(tprog)
+
+    def globcomma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.globcomma()", "tprog =", tprog)
+
+    def gldn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.gldn()", "tprog =", tprog)
+        strx = ""
+        for aa in extstack:
+            #print("extstack:", self2.arrx[aa].mstr, self2.arrx[aa].stamp.xstr)
+            if self2.arrx[aa].stamp.xstr == "str":
+                strx += "global " + self2.arrx[aa].mstr[1:-1]
+            else:
+                strx += "global " + self2.arrx[aa].mstr
+            strx += " ; line: %d -- " % (self2.arrx[aa].linenum + 1)
+            strx += " global " + self2.arrx[aa].mstr + "\n"
+        codegen.emit(strx)
+
+    # ----------------------------------------------------------------------
+
+    def assem(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.assem()", "tprog =", tprog)
+        extstack.empty()
+
+    def gndwn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.gndwn()", "tprog =", tprog)
+        #extstack.empty()
+        if pvg.opt_debug > 3 or "arith" in self.pvg.opt_ztrace:
+            dumpstack(self2, arithstack)
+
+    def asmadd(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.asmadd()", "tprog =", tprog)
+        extstack.push(tprog)
+
+    def asmcomma(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.asmcomma()", "tprog =", tprog)
+
+    def asmdn(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.asmdn()", "tprog =", tprog)
+        strx = ""
+        for aa in extstack:
+            #print("extstack:", self2.arrx[aa].mstr, self2.arrx[aa].stamp.xstr)
+            if self2.arrx[aa].stamp.xstr == "str":
+                strx += "asm " + self2.arrx[aa].mstr[1:-1]
+            else:
+                strx += "asm " + self2.arrx[aa].mstr
+            strx += " ; line: %d -- " % (self2.arrx[aa].linenum + 1)
+            strx += " asm " + self2.arrx[aa].mstr + "\n"
+        codegen.emit(strx)
+
+    def asm_start(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.asmstart()", "tprog =", tprog)
+
+    def asm_item(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.asm_item()", "tprog =", tprog, self2.arrx[tprog])
+
+    def asm_end(self, self2, tprog):
+        if pvg.opt_debug > 1:
+            print("exter.asm_end()", "tprog =", tprog)
+
+exter = Exter()
+
 class Misc():
 
     def ifx(self, self2, tprog):
@@ -846,41 +998,6 @@ class Misc():
     def if_body_end(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("misc.if_body_end()", "tprog =", tprog)
-
-    def extern(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("misc.extern()", "tprog =", tprog)
-        extstack.empty()
-
-    def dbldwn(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("misc.dbldwn()", "tprog =", tprog)
-        #extstack.empty()
-        if pvg.opt_debug > 3 or "arith" in self.pvg.opt_ztrace:
-            dumpstack(self2, arithstack)
-
-    def extadd(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("misc.extadd()", "tprog =", tprog)
-        extstack.push(tprog)
-
-    def extcomma(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("misc.extcomma()", "tprog =", tprog)
-
-    def exdn(self, self2, tprog):
-        if pvg.opt_debug > 1:
-            print("misc.extdn()", "tprog =", tprog)
-        strx = ""
-        for aa in extstack:
-            #print("extstack:", self2.arrx[aa].mstr, self2.arrx[aa].stamp.xstr)
-            if self2.arrx[aa].stamp.xstr == "str":
-                strx += "extern " + self2.arrx[aa].mstr[1:-1]
-            else:
-                strx += "extern " + self2.arrx[aa].mstr
-            strx += " ; line: %d -- " % (self2.arrx[aa].linenum + 1)
-            strx += " extern " + self2.arrx[aa].mstr + "\n"
-        codegen.emit(strx)
 
     def space(self, self2, tprog):
         if pvg.opt_debug > 8:

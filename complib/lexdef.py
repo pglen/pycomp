@@ -132,6 +132,12 @@ try:
     (INI_STATE, "ident",    r"extern" + IDEN3,  None, None ),
     (INI_STATE, "extern",   r"extern",          None, None ),
 
+    (INI_STATE, "ident",    r"asm" + IDEN3,     None, None ),
+    (INI_STATE, "asm",      r"asm",             None, None ),
+
+    (INI_STATE, "ident",    r"global" + IDEN3,  None, None ),
+    (INI_STATE, "global",   r"global",          None, None ),
+
     (INI_STATE, "type",     r"type" + IDEN3,    None, None ),
     (INI_STATE, "type",     r"type",            None, None ),
     (INI_STATE, "aggr",     r"aggr" + IDEN3,    None, None ),

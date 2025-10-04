@@ -76,7 +76,8 @@ class LinParse():
             pass
         else:
             if not match:
-                error(self, "Parse")
+                error(self, "Parse", "Last token: '%s'" % self.arrx[startx].mstr)
+
         if self.pvg.opt_debug > 7 or "dump" in self.pvg.opt_ztrace:
             print("statestack:", self.show_statestack())
         if self.state !=  ST.val("STATEINI"):

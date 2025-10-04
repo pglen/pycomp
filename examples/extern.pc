@@ -1,0 +1,2 @@
+extern hello, none ;
+global globx, globy ;

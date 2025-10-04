@@ -136,9 +136,9 @@ class pStack():
 
     #def __setitem__(self, idx, item):
     #    self._store[idx] = item
-    #def __repr__(self):
-    #    strx = self.dump()
-    #    return strx
+
+    def __repr__(self):
+        return self
 
     def __str__(self):
         strx = self.dump()

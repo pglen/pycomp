@@ -1,0 +1,5 @@
+asm { label: "\n" ";comment"}
+asm { mov ax, 0 ; Direct}
+asm { mov ax, [rsi] ; Indirect}
+asm { mov dword [rsi], 22 ; Memory}
+

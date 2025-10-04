@@ -449,7 +449,7 @@ def count_newlines(xstr):
             cnt += 1
     return cnt
 
-def error(self2, errstr, newpos = -1, addstr = ""):
+def error(self2, errstr, addstr = "",  newpos = -1):
 
     ''' Print compiler error, add more info if  requested '''
 
@@ -523,6 +523,10 @@ def dumpstack(self2, stackx, label = "", eol = "", active=False):
 
 def timeit(ttt, strx):
     print(strx, "%d us" % (time.time() * 1000000 - ttt * 1000000)  )
+
+def print_id(objx):
+    strx = hex(id(objx)) + " " + str(objx.__class__)
+    return strx
 
 #def timeitx(strx, xx):
 #    ttt = time.time()

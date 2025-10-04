@@ -168,12 +168,12 @@ Dif = ( \
     Stamp(C("STELIF"),    "((",     C("STELIF2"),  NOCALL,  NOCALL, PUSH, NOPUSH),
     Stamp(C("STELIF2"),   "))",     C("STPOP"),    misc.elifx,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELIF"),    "{",      C("STELIFBD"), NOCALL,  NOCALL, PUSH, NOPUSH),
-    Stamp(C("STELIFBD"), "break", C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
-    Stamp(C("STELIFBD"), "}",     C("STPOP"),    misc.elifx_end,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STELIFBD"),  "break",  C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
+    Stamp(C("STELIFBD"),  "}",      C("STPOP"),    misc.elifx_end,  NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("STIF"),    "else",     C("STELSE"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STIF"),      "else",   C("STELSE"),   NOCALL,  NOCALL, NOPUSH, NOPUSH),
     Stamp(C("STELSE"),    "{",      C("STELBODY"), NOCALL,  NOCALL, PUSH, NOPUSH),
-    Stamp(C("STELBODY"), "break",   C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
+    Stamp(C("STELBODY"),  "break",  C("STIGN"),    NOCALL,  loop.breakx, NOPUSH, NOPUSH),
     Stamp(C("STELBODY"),  "}",      C("STPOP2"),   misc.if_body_end,  NOCALL, NOPUSH, NOPUSH),
 )
 
@@ -197,9 +197,10 @@ Dfuncx = ( \
     Stamp(C("SFUNLEA2"), "{",       C("SFUNLEA"),  NOCALL,  funcs.leave, PUSH, NOPUSH),
     Stamp(C("SFUNLEA"),  "}",       C("STPOP"),    funcs.leave_end, NOCALL, NOPUSH, NOPUSH),
 
-    Stamp(C("SFUNBODY"), "return",  C("SFRET"),    NOCALL,  funcs.ret, PUSH, NOPUSH),
+    Stamp(C("SFUNBODY"), "return",  C("SFRET"),    NOCALL,  funcs.ret_start, PUSH, NOPUSH),
     Stamp(C("SFRET"),    "ident",   C("STARITH"),  NOCALL,  funcs.ret_id, NOPUSH, NOPUSH),
     Stamp(C("SFRET"),    "num",     C("STARITH"),  NOCALL,  funcs.ret_id, NOPUSH, NOPUSH),
+    #Stamp(C("SFRET"),    ";",       C("STPOP"),    funcs.ret_end, NOCALL, NOPUSH, NOPUSH),
 
 )
 
@@ -312,12 +313,38 @@ Ddecl = (
 
 stamps =  (
     Stamp(STBASE,        "ident",   C("STARITH"),  NOCALL,  arith.arithstart, PUSH, NOPUSH),
-    Stamp(C("STATEINI"), "extern",  C("EXTERN"),   NOCALL,  misc.extern, PUSH, NOPUSH),
-    Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  NOCALL,  misc.extadd, NOPUSH, NOPUSH),
-    Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  NOCALL,  misc.extadd, NOPUSH, NOPUSH),
-    Stamp(C("EXTERN2"),  ",",       C("EXTERN"),   NOCALL,  misc.extcomma, NOPUSH, NOPUSH),
-    Stamp(C("EXTERN2"),  ";",       C("STPOP"),    misc.exdn,  NOCALL, NOPUSH, NOPUSH),
-    Stamp(C("EXTERN2"),  "nl",      C("STPOP"),    misc.exdn,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("STATEINI"), "extern",  C("EXTERN"),   NOCALL,  exter.extern, PUSH, NOPUSH),
+    Stamp(C("EXTERN"),   "ident",   C("EXTERN2"),  NOCALL,  exter.extadd, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN"),   "str",     C("EXTERN2"),  NOCALL,  exter.extadd, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN2"),  ",",       C("EXTERN"),   NOCALL,  exter.extcomma, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN2"),  ";",       C("STPOP"),    exter.exdn,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("EXTERN2"),  "nl",      C("STPOP"),    exter.exdn,  NOCALL, NOPUSH, NOPUSH),
+
+    Stamp(C("STATEINI"), "global",  C("GLOBAL"),   NOCALL,  exter.glob, PUSH, NOPUSH),
+    Stamp(C("GLOBAL"),   "ident",   C("GLOBAL2"),  NOCALL,  exter.globadd, NOPUSH, NOPUSH),
+    Stamp(C("GLOBAL"),   "str",     C("GLOBAL2"),  NOCALL,  exter.globadd, NOPUSH, NOPUSH),
+    Stamp(C("GLOBAL2"),  ",",       C("GLOBAL"),   NOCALL,  exter.globcomma, NOPUSH, NOPUSH),
+    Stamp(C("GLOBAL2"),  ";",       C("STPOP"),    exter.gldn,  NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("GLOBAL2"),  "nl",      C("STPOP"),    exter.gldn,  NOCALL, NOPUSH, NOPUSH),
+
+    Stamp(C("STATEINI"), "asm",     C("ASSEM"),    NOCALL,  exter.assem, PUSH, NOPUSH),
+
+    Stamp(C("ASSEM"),   "{",        C("ASSEM3"),   NOCALL,  exter.asm_start, PUSH, NOPUSH),
+    # These are the tokens that one can include in asm.
+    # If a character is not allowed, embed it in a string.
+    # If you want to put a string in assembler, use string in string like: "'hello'"
+    Stamp(C("ASSEM3"),  "ident",    C("ASSEM3"),   NOCALL, exter.asm_item, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  "num",      C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  "str",      C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  ",",        C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  ";",        C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  ":",        C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  "[",        C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+    Stamp(C("ASSEM3"),  "]",        C("ASSEM3"),   NOCALL, exter.asm_item, NOCALL, NOPUSH, NOPUSH),
+
+    Stamp(C("ASSEM3"),  "}",        C("STPOP2"),   exter.asm_end, NOCALL, NOPUSH, NOPUSH),
+
+    #Stamp(C("ASSEM2"),  "nl",      C("STPOP"),    exter.asmdn,  NOCALL, NOPUSH, NOPUSH),
 
     # Include sub systems
     *Ddecl,    *Darith,      *Dfcall,
