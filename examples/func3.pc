@@ -1,5 +1,8 @@
-func func3(())
+u64:bbb=20 ;
+func main(())
 {
-    u64:bb=20;
-    bb = 12
+    u64:bb=20 ;
+    bb = 12 ;
+    u32:cc=10 ;
+    cc = 24 ;
 }

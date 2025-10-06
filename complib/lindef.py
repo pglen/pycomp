@@ -187,6 +187,10 @@ Dfuncx = ( \
     Stamp(C("STARITH"),  "))",      C("STPOP"),    funcs.args_end, NOCALL, NOPUSH, NOPUSH),
 
     Stamp(C("STFUNC"),   "{",       C("SFUNBODY"),  NOCALL,  funcs.startbody, PUSH, NOPUSH),
+
+    Stamp(C("SFUNBODY"), ";",       C("SFUNBODY"), NOCALL, funcs.additem,   NOPUSH, NOPUSH),
+    Stamp(C("SFUNBODY"), "nl",      C("SFUNBODY"), NOCALL, NOCALL,   NOPUSH, NOPUSH),
+
     Stamp(C("SFUNBODY"), "}",       C("STPOP2"),    funcs.endbody, NOCALL,   NOPUSH, NOPUSH),
 
     Stamp(C("SFUNBODY"), "enter",   C("SFUNENT2"),  NOCALL,  NOCALL, NOPUSH, NOPUSH),
