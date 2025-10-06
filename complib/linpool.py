@@ -37,7 +37,7 @@ def addtopool(self2, xstack, nameoff = 0, typeoff = 1):
 
 def add2pool(self2, typename, varname, varval, linenum):
 
-    if pvg.opt_debug > 7:
+    if pvg.opt_debug > 7  or "pool" in pvg.opt_ztrace:
         print("addtopool:", "type:", pp(typename),
                         "var:", pp(varname), "val:", pp(varval))
     for aa in gpool:

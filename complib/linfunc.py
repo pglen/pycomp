@@ -31,7 +31,6 @@ def funcpvg(xpvg):
 # Stack definitions
 
 inststack  = stack.pStack(name='inststack')       # Instructions
-retstack   = stack.pStack(name='retstack')        # Return
 arithstack = stack.pStack(name='arithstack')      # Arithmetic
 argstack   = stack.pStack(name='argstack')        # Function arguments
 callstack  = stack.pStack(name='callstack')       # Function calls
@@ -56,8 +55,103 @@ def initall():
     currptr =  arithstack
     stackstack.push(currptr)
 
-#print("arith:", hex(id(arithstack)))
-#print("arg:", hex(id(argstack)))
+def emitstack(self2, xstack, xcontext):
+
+    ''' Parse stack for instructions, output assembly '''
+
+    argcnt = 0
+    strxx = "" ; datax = "" ; typey = "" ; typex = "" ;
+    statex = 0; lab = "" ; val = "" ; linenum = 0; orgline = 0
+    for aa in xstack:
+        #print("emit: [", xcontext, "] state:", statex, "tok:", self2.arrx[aa])
+        #print("      ", "type:", typey, "lab:", lab, "val:", val)
+        if statex == 0:
+            #if self2.arrx[aa].stamp.xstr == "decl":
+            if self2.arrx[aa].stamp.xstr in numtypes:
+                statex = 1
+                typey = self2.arrx[aa].mstr
+                typex = linpool.pctona(self2.arrx[aa].mstr)
+            if self2.arrx[aa].stamp.xstr == "ident":
+                statex = 4
+                orgline =  self2.arrx[aa].linenum
+                val = ""
+                lab = scopestack.peek() + self2.arrx[aa].mstr
+        elif statex == 1:
+            if self2.arrx[aa].stamp.xstr == "ident":
+                lab = scopestack.peek() + self2.arrx[aa].mstr
+                statex = 2
+        elif statex == 2:
+            if self2.arrx[aa].stamp.xstr == "ident":
+                linpool.add2pool(self2, typey, lab, val, linenum)
+                datax += lab + " : " + typex + " "  + " 0 " + \
+                        "; line: " + str(orgline+1) + \
+                        " generated from " + pp(lab) + "\n"
+                #print("      ", "type:", typey, "lab:", lab, "val:", val)
+                #codegen.emitdata(strxx)
+                statex = 1
+            if self2.arrx[aa].stamp.xstr == "=":
+                statex = 3
+        elif statex == 3:
+            val = self2.arrx[aa].mstr
+            linenum = self2.arrx[aa].linenum
+            linpool.add2pool(self2, typey, lab, val, linenum)
+            statex = 0
+            # output decl opeartion
+            #print("typex :", typex, "typey:", typey, "lab =", pp(lab), "val =", val)
+            if typey.lower() in int_types:
+                #print("int type", lab, typex, val)
+                #if arithstack.getlen() <= 4:
+                #    # patch missing declaration argument with zero /empty
+                #    datax += " 0 "
+                #else:
+                if xcontext == "args_end":
+                    strxx +=  lab + " EQU " + "rbp + %d" % argcnt  + \
+                        " ; -- args " + lab + "\n"
+                    argcnt += 8
+                else:
+                    datax +=  lab + " : " + typex + " " + val + \
+                        " ; -- " + lab + "\n"
+
+            elif typey.lower() in float_types:
+                #print("float type", lab, typex, val)
+                #if arithstack.getlen() <= 3:
+                #    # patch missing declaration argument with zero /empty
+                #    datax += " 0 "
+                #else:
+                datax +=  lab + " : " + typex + " " + val + \
+                            " ; " + "\n"
+            else:
+                #print("other type", typex)
+                error(self2, "No type specified", )
+            #codegen.emitdata(datax)
+        elif statex == 4:
+            if self2.arrx[aa].stamp.xstr == "num":
+                state = 0
+                tpi = linpool.lookpool(self2, lab)
+                if not tpi:
+                    error(self2, "Undefined variable: '%s'" % lab)
+                typex = linpool.pctona(tpi.typex)
+                typey = tpi.typex
+                val = self2.arrx[aa].mstr
+                # output assn opeartion
+                ttt = linpool.pctocast(typey)
+                #print("ttt", ttt)
+                strxx += "   mov   " + ttt + " [" + lab + "], " + val + \
+                         "; line: " + str(orgline+1) + \
+                          " generated from " + pp(lab) + "\n"
+                #codegen.emit(strxx)
+        else:
+            pass
+            print("Warn: invalid state", __file__, __line__)
+
+    if statex == 1:
+        # State machine left this incomplete
+        print("left over:", lab, typex, val)
+        datax += self2.arrx[aa].mstr + " : " + typex + " 0 " + "; line: " \
+                                    + str(self2.arrx[aa].linenum+1) \
+                                    + " -- generated from " \
+                                    + self2.arrx[aa].mstr + "\n"
+    return strxx, datax
 
 class   FuncCall():
 
@@ -69,7 +163,6 @@ class   FuncCall():
             for aa in arithstack:
                 print(self2.arrx[aa], end = " ")
             print()
-
         argstack.empty()
         callstack.empty()
         callstack.push(arithstack.pop())
@@ -264,21 +357,14 @@ class   Funcs():
         currptr = argstack
         #print("currptr:", print_id(currptr))
 
-    #def arg_ident(self, self2, tprog):
-    #    if pvg.opt_debug > 1:
-    #        print("funcs.argident()", pp(self2.arrx[tprog]))
-    #    print("argident:", pp(scopestack.peek() + self2.arrx[tprog].mstr))
-    #    argstack.push(tprog)
-
     def args_end(self, self2, tprog):
+
         if pvg.opt_debug > 1:
             print("funcs.args_end()", pp(self2.arrx[tprog]))
-        #if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
-        #    dumpstack(self2, arithstack, "args_end\n")
-        #argstack.copyfrom(arithstack)
-        #if pvg.opt_debug > 4 or "arith" in pvg.opt_ztrace:
-        #    dumpstack(self2, argstack, label = "args_end\n", eol=" ")
-        #arithstack.empty()
+
+        ccc, ddd = emitstack(self2, argstack, "args_end")
+        print("args emit got:\n", ccc, ddd)
+
         # Restore stack
         stackstack.pop()
         global currptr
@@ -289,7 +375,8 @@ class   Funcs():
             print("funcs.ret()", "tprog =", tprog, self2.arrx[tprog])
         global currptr
         stackstack.push(currptr)
-        currptr = retstack
+        currptr = inststack
+        currptr.push(tprog)
 
     def ret_id(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -311,28 +398,26 @@ class   Funcs():
             dumpstack(self2, funcstack)
             dumpstack(self2, argstack)
             dumpstack(self2, inststack)
-            dumpstack(self2, retstack)
 
         #print("scopestack:", scopestack.dump())
-        fff = self2.arrx[funcstack.peek()].mstr
-        strx = fff + ": ; Function '" + fff + "'\n"
+        fff = self2.arrx[funcstack.peek()]
+        strx = fff.mstr + ": ; Function '" + fff.mstr + "'\n"
+        # Prologue
         strx += "    push    rbp\n"
         strx += "    mov     rbp, rsp\n"
-        strx += "\n    ; Function body\n\n"
+        strx += "\n    ; line: %d -- Function body\n\n" % \
+                                    (self2.arrx[tprog].linenum + 1)
         codegen.emit(strx)
 
-        # Prologue
+        # Actual code
+        ccc, ddd = emitstack(self2, inststack, "inst")
+        #print("code got", ccc, ddd)
+        codegen.emit(ccc)
+        codegen.emitdata(ddd)
+
+        # Epilogue
         strx =  "    mov     rsp, rbp\n"
         strx += "    pop     rbp\n"
-        if retstack.getlen():
-            ttt = self2.arrx[retstack.peek()]
-            if ttt.stamp.xstr == "num":
-                strx += "    mov     rax, " + ttt.mstr + " \n"
-            elif ttt.stamp.xstr == "ident":
-                strx += "    lea     rsi, " + ttt.mstr + "\n"
-                strx += "    mov     rax, [ rsi ] \n"
-        else:
-            strx += "    mov     rax, 0 \n"
         strx += "    ret\n"
         codegen.emit(strx)
 
@@ -565,37 +650,37 @@ class Adecl():
     def astart(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.astart()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.empty()
+        currptr.empty()
 
     def aident(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.aident()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def aequ(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.aeq()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def astr(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.astr()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def amul(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.amul()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def anum(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.anum()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def aadd(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.aadd()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def acol(self, self2, tprog):
         if pvg.opt_debug > 1:
@@ -608,16 +693,18 @@ class Adecl():
     def acomma(self, self2, tprog):
         if pvg.opt_debug > 1:
             print("adecl.acomma()", "tprog =", tprog, self2.arrx[tprog])
-        arithstack.push(tprog)
+        currptr.push(tprog)
 
     def adown(self, self2, tprog):
 
         if pvg.opt_debug > 1:
             print("adecl.adown()", "tprog =", tprog, self2.arrx[tprog])
-        if pvg.opt_debug > 6  or "arith" in pvg.opt_ztrace:
-            dumpstack(self2, arithstack, label="adown:")
+
+        #if pvg.opt_debug > 6  or "arith" in pvg.opt_ztrace:
+        #    dumpstack(self2, arithstack, label="adown:")
+
         strx = "" ; statex = 0; lab = "" ; val = "" ; linenum = 0;
-        for aa in arithstack:
+        for aa in currptr:
             if statex == 0:
                 if self2.arrx[aa].stamp.xstr  == "ident":
                     statex = 1

@@ -1,5 +1,6 @@
 func main(( u64:bb=33; u32:cc=44;))
 {
-    u32:dd=22
-    return 11
+    #u32:dd=22
+    #arr:aa="Hello"
+    #return 11
 }
